@@ -9,3 +9,7 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+/sampleDB-2
+/database
+/sampleDB-1
+/logs
