@@ -5,7 +5,6 @@ import org.adridadou.ethereum.EthAddress;
 import org.adridadou.util.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumProvider;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
-import org.adridadou.util.EthereumConfigTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,8 +16,7 @@ import java.io.IOException;
  */
 public class EthereumProviderSpec {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
-    private final EthereumConfigTest config = new EthereumConfigTest();
-    private final EthereumProvider ethereumProvider = new EthereumProvider(config, new EthereumContractInvocationHandler(bcProxy), bcProxy);
+    private final EthereumProvider ethereumProvider = new EthereumProvider(new EthereumContractInvocationHandler(bcProxy), bcProxy);
 
     @Test
     public void checkSuccessCase() throws IOException {

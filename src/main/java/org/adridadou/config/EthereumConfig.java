@@ -8,5 +8,4 @@ public interface EthereumConfig {
 
     Class getUserSpringConfig();
 
-    byte[] getAddress(Class<?> contractInterface);
 }
