@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.Map;
 
 /**
@@ -29,10 +30,21 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        final String contractName = proxy.getClass().getSimpleName().toLowerCase();
+        final String contractName = method.getDeclaringClass().getSimpleName().toLowerCase();
         final String methodName = method.getName();
         SolidityContract contract = contracts.get(contractName);
-        return blockchainProxy.call(contract, methodName, args);
+        Object[] arguments = args == null ? new Object[0] : args;
+        return convertResult(blockchainProxy.call(contract, methodName, arguments), method);
+    }
+
+    private Object convertResult(Object[] result, Method method) {
+        Object obj = result[0];
+        if (Integer.class.equals(method.getReturnType()) || method.getReturnType().getSimpleName().equals("int")) {
+            if (obj.getClass().equals(BigInteger.class)) {
+                return ((BigInteger) obj).intValue();
+            }
+        }
+        return obj;
     }
 
     void register(Class<?> contractInterface, String code, EthAddress address) throws IOException {
@@ -53,7 +65,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(found.abi, address.address));
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, address.address));
     }
 
     private CompilationResult compile(final String contract) throws IOException {
