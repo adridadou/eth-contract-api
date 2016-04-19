@@ -19,7 +19,6 @@ public class EthereumProvider {
     }
 
     public <T> T createContractProxy(String code, EthAddress address, Class<T> contractInterface) throws IOException {
-
         handler.register(contractInterface, code, address);
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }

@@ -5,10 +5,12 @@ import org.adridadou.ethereum.EthAddress;
 import org.adridadou.util.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumProvider;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -32,10 +34,33 @@ public class EthereumProviderSpec {
 
         MyContract proxy = ethereumProvider.createContractProxy(contract, address, MyContract.class);
 
-        Assert.assertEquals(23, proxy.myMethod());
+        assertEquals(23, proxy.myMethod());
+    }
+
+    @Test
+    public void checkCreateTx() throws IOException, ExecutionException, InterruptedException {
+        String contract =
+                "contract myContract2 {" +
+                        "  int i1;" +
+                        "  function myMethod(int value) {i1 = value;}" +
+                        "  function getI1() constant returns (int) {return i1;}" +
+                        "}";
+
+        EthAddress address = ethereumProvider.publishContract(contract);
+
+        MyContract2 proxy = ethereumProvider.createContractProxy(contract, address, MyContract2.class);
+        proxy.myMethod(12);
+
+        assertEquals(12, proxy.getI1());
     }
 
     private interface MyContract {
         int myMethod();
+    }
+
+    private interface MyContract2 {
+        void myMethod(int value);
+
+        int getI1();
     }
 }

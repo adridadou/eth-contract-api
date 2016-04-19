@@ -15,4 +15,9 @@ public class EthAddress {
     public static EthAddress of(byte[] address) {
         return new EthAddress(address);
     }
+
+    public static EthAddress of(final String address) {
+
+        return null;
+    }
 }
