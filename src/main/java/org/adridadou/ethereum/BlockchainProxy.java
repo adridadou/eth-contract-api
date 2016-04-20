@@ -9,11 +9,7 @@ import java.util.concurrent.Future;
  * This code is released under Apache 2 license
  */
 public interface BlockchainProxy {
-    void call(SolidityContract contract, String functionName, Object[] args);
-
-    Object[] callConst(SolidityContract contract, String functionName, Object[] args);
-
-    SolidityContract map(final String abi, byte[] address);
+    SolidityContract map(final String src, byte[] address);
 
     EthAddress publish(String code);
 }

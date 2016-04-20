@@ -35,10 +35,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         SolidityContract contract = contracts.get(contractName);
         Object[] arguments = args == null ? new Object[0] : args;
         if (method.getReturnType().equals(Void.TYPE)) {
-            blockchainProxy.call(contract, methodName, arguments);
+            contract.callFunction(methodName, arguments);
             return null;
         } else {
-            return convertResult(blockchainProxy.callConst(contract, methodName, arguments), method);
+            return convertResult(contract.callConstFunction(methodName, arguments), method);
         }
 
     }

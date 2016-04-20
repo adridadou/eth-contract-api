@@ -8,9 +8,6 @@ import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -29,15 +26,6 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
         blockchain = new StandaloneBlockchain();
         blockchain.withAutoblock(true);
-    }
-
-    @Override
-    public void call(final SolidityContract contract, final String functionName, Object[] args) {
-        contract.callFunction(functionName, args);
-    }
-
-    public Object[] callConst(final SolidityContract contract, final String functionName, Object[] args) {
-        return contract.callConstFunction(functionName, args);
     }
 
     @Override
