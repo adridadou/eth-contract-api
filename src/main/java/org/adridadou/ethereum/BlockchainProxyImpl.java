@@ -13,7 +13,6 @@ import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.spongycastle.util.encoders.Hex;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -31,7 +30,6 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     private Map<ByteArrayWrapper, TransactionReceipt> txWaiters =
             Collections.synchronizedMap(new HashMap<>());
 
-    @Inject
     public BlockchainProxyImpl(Ethereum ethereum, ECKey sender) {
         this.ethereum = ethereum;
         this.sender = sender;

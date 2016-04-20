@@ -7,7 +7,6 @@ import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.blockchain.SolidityContract;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,7 +22,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     private final Map<String, SolidityContract> contracts = Maps.newHashMap();
     private final BlockchainProxy blockchainProxy;
 
-    @Inject
     public EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
         this.blockchainProxy = blockchainProxy;
     }

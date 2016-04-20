@@ -1,6 +1,5 @@
 package org.adridadou.ethereum;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 
@@ -12,7 +11,6 @@ public class EthereumProvider {
     private final EthereumContractInvocationHandler handler;
     private final BlockchainProxy blockchainProxy;
 
-    @Inject
     public EthereumProvider(EthereumContractInvocationHandler handler, BlockchainProxy blockchainProxy) {
         this.handler = handler;
         this.blockchainProxy = blockchainProxy;
