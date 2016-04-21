@@ -11,16 +11,33 @@ public class KdfParams {
     private Integer dklen;
     private String prf;
     private String salt;
+    private Integer n;
+    private Integer p;
+    private Integer r;
 
-    public KdfParams() {
-        this(null, null, null, null);
+
+    public Integer getN() {
+        return n;
     }
 
-    public KdfParams(Integer c, Integer dklen, String prf, String salt) {
-        this.c = c;
-        this.dklen = dklen;
-        this.prf = prf;
-        this.salt = salt;
+    public Integer getR() {
+        return r;
+    }
+
+    public void setR(Integer r) {
+        this.r = r;
+    }
+
+    public void setN(Integer n) {
+        this.n = n;
+    }
+
+    public Integer getP() {
+        return p;
+    }
+
+    public void setP(Integer p) {
+        this.p = p;
     }
 
     public Integer getC() {

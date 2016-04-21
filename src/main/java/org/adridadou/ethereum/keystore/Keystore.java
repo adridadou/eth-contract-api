@@ -2,8 +2,10 @@ package org.adridadou.ethereum.keystore;
 
 import org.adridadou.exception.EthereumApiException;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.codehaus.jackson.annotate.JsonSetter;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.ethereum.crypto.ECKey;
+import org.spongycastle.crypto.generators.SCrypt;
 import org.spongycastle.util.encoders.Hex;
 
 import javax.crypto.*;
@@ -11,10 +13,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.util.Arrays;
 
 /**
@@ -25,21 +24,23 @@ public class Keystore {
     private KeystoreCrypto crypto;
     private String id;
     private Integer version;
-
-    public Keystore() {
-        this(null, null, null);
-    }
-
-    public Keystore(KeystoreCrypto crypto, String id, Integer version) {
-        this.crypto = crypto;
-        this.id = id;
-        this.version = version;
-    }
+    private String address;
 
     public static ECKey fromKeystore(final File keystore, final String password) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Keystore ksObj = mapper.readValue(keystore, Keystore.class);
-        byte[] cipherKey = checkMac(ksObj, password);
+        byte[] cipherKey;
+        switch (ksObj.getCrypto().getKdf()) {
+            case "pbkdf2":
+                cipherKey = checkMacSha3(ksObj, password);
+                break;
+            case "scrypt":
+                cipherKey = checkMacScrypt(ksObj, password);
+                break;
+            default:
+                throw new EthereumApiException("non valid algorithm " + ksObj.getCrypto().getCipher());
+        }
+
         byte[] secret = decryptAes(Hex.decode(ksObj.getCrypto().getCipherparams().getIv()), cipherKey, Hex.decode(ksObj.getCrypto().getCiphertext()));
 
         return ECKey.fromPrivate(secret);
@@ -57,7 +58,7 @@ public class Keystore {
         return cipher.doFinal(cipherText);
     }
 
-    private static byte[] checkMac(Keystore keystore, String password) throws Exception {
+    private static byte[] checkMacSha3(Keystore keystore, String password) throws Exception {
         byte[] salt = Hex.decode(keystore.getCrypto().getKdfparams().getSalt());
         int iterations = keystore.getCrypto().getKdfparams().getC();
         byte[] part = new byte[16];
@@ -75,6 +76,28 @@ public class Keystore {
         throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
     }
 
+    private static byte[] checkMacScrypt(Keystore keystore, String password) throws Exception {
+
+        byte[] part = new byte[16];
+        KdfParams params = keystore.getCrypto().getKdfparams();
+        byte[] h = scrypt(password.getBytes(), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
+        p(h);
+        byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
+        System.arraycopy(h, 16, part, 0, 16);
+
+        byte[] actual = sha3(concat(part, cipherText));
+
+        if (Arrays.equals(actual, Hex.decode(keystore.getCrypto().getMac()))) {
+            System.arraycopy(h, 0, part, 0, 16);
+            return part;
+        }
+
+        p(actual);
+        p(Hex.decode(keystore.getCrypto().getMac()));
+
+        throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
+    }
+
     private static void p(byte[] c) {
         System.out.println(Hex.toHexString(c));
     }
@@ -86,6 +109,10 @@ public class Keystore {
         System.arraycopy(a, 0, c, 0, aLen);
         System.arraycopy(b, 0, c, aLen, bLen);
         return c;
+    }
+
+    private static byte[] scrypt(byte[] pass, byte[] salt, int n, int r, int p, int dkLen) throws GeneralSecurityException {
+        return SCrypt.generate(pass, salt, n, r, p, dkLen);
     }
 
     private static byte[] hash(String encryptedData, byte[] salt, int iterations) throws Exception {
@@ -102,11 +129,25 @@ public class Keystore {
         return KECCAK.digest();
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public KeystoreCrypto getCrypto() {
         return crypto;
     }
 
+    @JsonSetter("crypto")
     public void setCrypto(KeystoreCrypto crypto) {
+        this.crypto = crypto;
+    }
+
+    @JsonSetter("Crypto")
+    public void setCryptoOld(KeystoreCrypto crypto) {
         this.crypto = crypto;
     }
 
