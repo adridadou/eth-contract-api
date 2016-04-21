@@ -1,13 +1,20 @@
 package org.adridadou.ethereum.keystore;
 
-import com.google.common.collect.Lists;
+import org.adridadou.exception.EthereumApiException;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 
-import javax.crypto.SecretKeyFactory;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -32,20 +39,44 @@ public class Keystore {
     public static ECKey fromKeystore(final File keystore, final String password) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Keystore ksObj = mapper.readValue(keystore, Keystore.class);
-        System.out.println(aesDecrypt(ksObj, password));
-        return null;
+        byte[] cipherKey = checkMac(ksObj, password);
+        byte[] secret = decryptAes(Hex.decode(ksObj.getCrypto().getCipherparams().getIv()), cipherKey, Hex.decode(ksObj.getCrypto().getCiphertext()));
+
+        return ECKey.fromPrivate(secret);
     }
 
-    private static String aesDecrypt(Keystore keystore, String password) throws Exception {
+    private static byte[] decryptAes(byte[] iv, byte[] keyBytes, byte[] cipherText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        //Initialisation
+        SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+        //Mode
+        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+
+        cipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
+        return cipher.doFinal(cipherText);
+    }
+
+    private static byte[] checkMac(Keystore keystore, String password) throws Exception {
         byte[] salt = Hex.decode(keystore.getCrypto().getKdfparams().getSalt());
         int iterations = keystore.getCrypto().getKdfparams().getC();
         byte[] part = new byte[16];
         byte[] h = hash(password, salt, iterations);
         byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
-        System.arraycopy(h, 15, part, 0, 16);
+        System.arraycopy(h, 16, part, 0, 16);
 
+        byte[] actual = sha3(concat(part, cipherText));
 
-        return Hex.toHexString(concat(part, cipherText));
+        if (Arrays.equals(actual, Hex.decode(keystore.getCrypto().getMac()))) {
+            System.arraycopy(h, 0, part, 0, 16);
+            return part;
+        }
+
+        throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
+    }
+
+    private static void p(byte[] c) {
+        System.out.println(Hex.toHexString(c));
     }
 
     private static byte[] concat(byte[] a, byte[] b) {
@@ -60,8 +91,15 @@ public class Keystore {
     private static byte[] hash(String encryptedData, byte[] salt, int iterations) throws Exception {
         char[] chars = encryptedData.toCharArray();
         PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 256);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         return skf.generateSecret(spec).getEncoded();
+    }
+
+    private static byte[] sha3(byte[] h) throws NoSuchAlgorithmException {
+        MessageDigest KECCAK = new Keccak.Digest256();
+        KECCAK.reset();
+        KECCAK.update(h);
+        return KECCAK.digest();
     }
 
     public KeystoreCrypto getCrypto() {

@@ -18,6 +18,6 @@ public class KeystoreTest {
     @Test
     public void test() throws Exception {
         final ECKey ecKey = Keystore.fromKeystore(new File("src/test/resources/keystore.json"), "testpassword");
-        assertEquals(BigInteger.valueOf(100000000L), ecKey.getPrivKey());
+        assertEquals(new BigInteger("55254095649631781209224057814590225966912998986153936485890744796566334537373"), ecKey.getPrivKey());
     }
 }
