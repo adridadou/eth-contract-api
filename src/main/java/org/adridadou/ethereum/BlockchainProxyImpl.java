@@ -37,7 +37,15 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     @Override
     public SolidityContract map(String src, byte[] address) {
-        return null;
+        CompilationResult.ContractMetadata metadata;
+        try {
+            metadata = compile(src);
+            SolidityContractImpl sc = new SolidityContractImpl(metadata, ethereum, sender);
+            sc.setAddress(address);
+            return sc;
+        } catch (IOException e) {
+            throw new EthereumApiException("error while mapping a smart contract");
+        }
     }
 
     @Override
@@ -52,7 +60,18 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
 
     private SolidityContract createContract(String soliditySrc) throws IOException, InterruptedException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(soliditySrc.getBytes(), true,
+        CompilationResult.ContractMetadata metadata = compile(soliditySrc);
+        TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin));
+
+        byte[] contractAddress = receipt.getTransaction().getContractAddress();
+
+        SolidityContractImpl newContract = new SolidityContractImpl(metadata, ethereum, sender);
+        newContract.setAddress(contractAddress);
+        return newContract;
+    }
+
+    private CompilationResult.ContractMetadata compile(String src) throws IOException {
+        SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
             throw new RuntimeException("Contract compilation failed:\n" + result.errors);
@@ -65,15 +84,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         if (metadata.bin == null || metadata.bin.isEmpty()) {
             throw new RuntimeException("Compilation failed, no binary returned:\n" + result.errors);
         }
-
-        TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin));
-
-        byte[] contractAddress = receipt.getTransaction().getContractAddress();
-
-        SolidityContractImpl newContract = new SolidityContractImpl(metadata, ethereum, sender);
-        newContract.setAddress(contractAddress);
-        return newContract;
-
+        return metadata;
     }
 
     private TransactionReceipt sendTxAndWait(byte[] receiveAddress, byte[] data) throws InterruptedException {
