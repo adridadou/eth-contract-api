@@ -1,5 +1,7 @@
 package org.adridadou.ethereum;
 
+import org.spongycastle.util.encoders.Hex;
+
 /**
  * Created by davidroon on 19.04.16.
  * This code is released under Apache 2 license
@@ -17,7 +19,10 @@ public class EthAddress {
     }
 
     public static EthAddress of(final String address) {
+        return of(Hex.decode(address));
+    }
 
-        return null;
+    public String toString() {
+        return Hex.toHexString(address);
     }
 }
