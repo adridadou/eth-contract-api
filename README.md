@@ -1,4 +1,4 @@
-# eth-api
+# eth-contract-api
 EthereumJ native API or how to call contracts easily and in type safely.
 
 The goal of this project is to ease the integration of Ethereum in a Java project.
