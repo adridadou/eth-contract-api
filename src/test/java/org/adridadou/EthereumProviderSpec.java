@@ -3,7 +3,7 @@ package org.adridadou;
 import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.util.BlockchainProxyTest;
-import org.adridadou.ethereum.EthereumProvider;
+import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class EthereumProviderSpec {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
-    private final EthereumProvider ethereumProvider = new EthereumProvider(new EthereumContractInvocationHandler(bcProxy), bcProxy);
+    private final EthereumFacade ethereumProvider = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy);
 
     @Test
     public void checkSuccessCase() throws IOException {
