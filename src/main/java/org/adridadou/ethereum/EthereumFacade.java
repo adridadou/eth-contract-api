@@ -28,4 +28,12 @@ public class EthereumFacade {
     public boolean isSyncDone() {
         return blockchainProxy.isSyncDone();
     }
+
+    public void waitForSyncDone() throws InterruptedException {
+        while (!isSyncDone()) {
+            synchronized (this) {
+                wait(200);
+            }
+        }
+    }
 }

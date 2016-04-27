@@ -1,13 +1,10 @@
 package org.adridadou.ethereum.provider;
 
-import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.keystore.Keystore;
-import org.ethereum.config.SystemProperties;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
-import org.springframework.context.annotation.Bean;
 
 import java.io.File;
 

@@ -35,11 +35,7 @@ public class TestnetConnectionTest {
 
         EthereumFacade provider = ethereumFacadeProvider.create(ethereumFacadeProvider.getKey(id, password));
 
-        while (!provider.isSyncDone()) {
-            synchronized (this) {
-                wait(200);
-            }
-        }
+        provider.waitForSyncDone();
 
         EthAddress address = provider.publishContract(contract);
         System.out.println("contract address:" + Hex.toHexString(address.address));
