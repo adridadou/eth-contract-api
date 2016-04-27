@@ -8,13 +8,13 @@ import java.lang.reflect.Method;
  */
 public class StringHandler implements TypeHandler<String> {
     @Override
-    public boolean isOfType(Method method) {
-        return String.class.equals(method.getReturnType());
+    public boolean isOfType(Class<?> cls) {
+        return String.class.equals(cls);
     }
 
     @Override
-    public String convert(Object[] result) {
-        return result[0].toString();
+    public String convert(Object obj) {
+        return obj.toString();
 
     }
 }

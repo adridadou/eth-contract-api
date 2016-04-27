@@ -9,13 +9,12 @@ import java.math.BigInteger;
  */
 public class IntegerHandler implements TypeHandler<Integer> {
     @Override
-    public boolean isOfType(Method method) {
-        return Integer.class.equals(method.getReturnType()) || method.getReturnType().getSimpleName().equals("int");
+    public boolean isOfType(Class<?> cls) {
+        return Integer.class.equals(cls) || cls.getSimpleName().equals("int");
     }
 
     @Override
-    public Integer convert(Object[] result) {
-        Object obj = result[0];
+    public Integer convert(Object obj) {
         if (obj.getClass().equals(BigInteger.class)) {
             return ((BigInteger) obj).intValue();
         }

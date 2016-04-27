@@ -10,8 +10,11 @@ import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.blockchain.SolidityContract;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,13 +51,58 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         } else {
             return convertResult(contract.callConstFunction(methodName, arguments), method);
         }
+    }
 
+    private Class<?> getCollectionType(Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (returnType.isArray()) {
+            return returnType.getComponentType();
+        }
+        if (List.class.equals(returnType)) {
+            return (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
+        }
+        return null;
+    }
+
+    private <T> T[] convertArray(Class<T> cls, Object[] arr) {
+        for (TypeHandler<?> handler : handlers) {
+            if (handler.isOfType(cls)) {
+                T[] result = (T[]) Array.newInstance(cls, arr.length);
+                for (int i = 0; i < arr.length; i++) {
+                    result[i] = (T) handler.convert(arr[i]);
+                }
+                return result;
+            }
+        }
+        throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
+    }
+
+    private <T> List<T> convertList(Class<T> cls, Object[] arr) {
+        for (TypeHandler<?> handler : handlers) {
+            if (handler.isOfType(cls)) {
+                List<T> result = new ArrayList<>();
+                for (Object obj : arr) {
+                    result.add((T) handler.convert(obj));
+                }
+                return result;
+            }
+        }
+        throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
     }
 
     private Object convertResult(Object[] result, Method method) {
+        Class<?> arrType = getCollectionType(method);
+        if (arrType != null) {
+            if (method.getReturnType().isArray()) {
+                return convertArray(arrType, (Object[]) result[0]);
+            }
+
+            return convertList(arrType, (Object[]) result[0]);
+        }
+
         for (TypeHandler<?> handler : handlers) {
-            if (handler.isOfType(method)) {
-                return handler.convert(result);
+            if (handler.isOfType(method.getReturnType())) {
+                return handler.convert(result[0]);
             }
         }
         throw new IllegalArgumentException("no handlers found for the method " + method.toString());

@@ -9,12 +9,12 @@ import java.math.BigInteger;
  */
 public class BooleanHandler implements TypeHandler<Boolean> {
     @Override
-    public boolean isOfType(Method method) {
-        return Boolean.class.equals(method.getReturnType()) || method.getReturnType().getSimpleName().equals("boolean");
+    public boolean isOfType(Class<?> cls) {
+        return Boolean.class.equals(cls) || cls.getSimpleName().equals("boolean");
     }
 
     @Override
-    public Boolean convert(Object[] result) {
-        return (Boolean) result[0];
+    public Boolean convert(Object obj) {
+        return (Boolean) obj;
     }
 }

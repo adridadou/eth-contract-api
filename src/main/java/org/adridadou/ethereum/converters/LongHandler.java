@@ -9,13 +9,12 @@ import java.math.BigInteger;
  */
 public class LongHandler implements TypeHandler<Long> {
     @Override
-    public boolean isOfType(Method method) {
-        return Long.class.equals(method.getReturnType()) || method.getReturnType().getSimpleName().equals("long");
+    public boolean isOfType(Class<?> cls) {
+        return Long.class.equals(cls) || cls.getSimpleName().equals("long");
     }
 
     @Override
-    public Long convert(Object[] result) {
-        Object obj = result[0];
+    public Long convert(Object obj) {
         if (obj.getClass().equals(BigInteger.class)) {
             return ((BigInteger) obj).longValue();
         }

@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
  * This code is released under Apache 2 license
  */
 public interface TypeHandler<T> {
-    boolean isOfType(Method method);
+    boolean isOfType(Class<?> cls);
 
-    T convert(Object[] result);
+    T convert(Object obj);
 }

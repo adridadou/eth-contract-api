@@ -11,13 +11,12 @@ import java.math.BigInteger;
  */
 public class AddressHandler implements TypeHandler<EthAddress> {
     @Override
-    public boolean isOfType(Method method) {
-        return EthAddress.class.equals(method.getReturnType());
+    public boolean isOfType(Class<?> cls) {
+        return EthAddress.class.equals(cls);
     }
 
     @Override
-    public EthAddress convert(Object[] result) {
-        Object obj = result[0];
+    public EthAddress convert(Object obj) {
         if (obj.getClass().equals(BigInteger.class)) {
             BigInteger bint = (BigInteger) obj;
             byte[] barray = bint.toByteArray();
