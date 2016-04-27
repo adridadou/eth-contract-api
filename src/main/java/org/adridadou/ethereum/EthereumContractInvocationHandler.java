@@ -1,6 +1,8 @@
 package org.adridadou.ethereum;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.adridadou.ethereum.converters.*;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.solidity.compiler.CompilationResult;
@@ -10,7 +12,7 @@ import org.ethereum.util.blockchain.SolidityContract;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,9 +23,16 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<String, SolidityContract> contracts = Maps.newHashMap();
     private final BlockchainProxy blockchainProxy;
+    private final List<TypeHandler<?>> handlers;
 
     public EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
         this.blockchainProxy = blockchainProxy;
+        handlers = Lists.newArrayList(
+                new IntegerHandler(),
+                new LongHandler(),
+                new StringHandler(),
+                new BooleanHandler()
+        );
     }
 
     @Override
@@ -42,13 +51,12 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private Object convertResult(Object[] result, Method method) {
-        Object obj = result[0];
-        if (Integer.class.equals(method.getReturnType()) || method.getReturnType().getSimpleName().equals("int")) {
-            if (obj.getClass().equals(BigInteger.class)) {
-                return ((BigInteger) obj).intValue();
+        for (TypeHandler<?> handler : handlers) {
+            if (handler.isOfType(method)) {
+                return handler.convert(result);
             }
         }
-        return obj;
+        throw new IllegalArgumentException("no handlers found for the method " + method.toString());
     }
 
     void register(Class<?> contractInterface, String code, EthAddress address) throws IOException {
