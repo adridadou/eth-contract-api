@@ -39,5 +39,10 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return EthAddress.of(result.getAddress());
     }
 
+    @Override
+    public boolean isSyncDone() {
+        return true;
+    }
+
 
 }

@@ -16,7 +16,7 @@
         <repository>
             <id>oss.jfrog.org</id>
             <name>Repository from Bintray</name>
-            <url>https://oss.jfrog.org/artifactory/libs-snapshot</url>
+            <url>http://dl.bintray.com/ethereum/maven</url>
         </repository>
     </repositories>
 
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.ethereum</groupId>
             <artifactId>ethereumj-core</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.4-SNAPSHOT</version>
         </dependency>
 
         <dependency>

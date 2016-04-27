@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
+import org.adridadou.ethereum.EthereumListenerImpl;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
@@ -20,10 +21,12 @@ public class SolidityContractImpl implements SolidityContract {
     private CompilationResult.ContractMetadata compiled;
     private CallTransaction.Contract contract;
     private final Ethereum ethereum;
+    private final EthereumListenerImpl ethereumListener;
     private final ECKey sender;
 
-    public SolidityContractImpl(CompilationResult.ContractMetadata result, Ethereum ethereum, ECKey sender) {
+    public SolidityContractImpl(CompilationResult.ContractMetadata result, Ethereum ethereum, EthereumListenerImpl ethereumListener, ECKey sender) {
         compiled = result;
+        this.ethereumListener = ethereumListener;
         contract = new CallTransaction.Contract(compiled.abi);
         this.ethereum = ethereum;
         this.sender = sender;
@@ -59,7 +62,11 @@ public class SolidityContractImpl implements SolidityContract {
         CallTransaction.Contract contract = new CallTransaction.Contract(compiled.abi);
         CallTransaction.Function inc = contract.getByName(functionName);
         byte[] functionCallBytes = inc.encode(args);
-        sendTx(address, functionCallBytes);
+        try {
+            sendTx(address, functionCallBytes);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
@@ -117,7 +124,7 @@ public class SolidityContractImpl implements SolidityContract {
         throw new UnsupportedOperationException();
     }
 
-    private void sendTx(byte[] receiveAddress, byte[] data) {
+    private void sendTx(byte[] receiveAddress, byte[] data) throws InterruptedException {
         BigInteger nonce = getRepository().getNonce(sender.getAddress());
         Transaction tx = new Transaction(
                 ByteUtil.bigIntegerToBytes(nonce),
@@ -128,5 +135,6 @@ public class SolidityContractImpl implements SolidityContract {
                 data);
         tx.sign(sender.getPrivKeyBytes());
         ethereum.submitTransaction(tx);
+        ethereumListener.waitForTx(tx.getHash());
     }
 }

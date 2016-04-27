@@ -10,6 +10,8 @@ public interface BlockchainProxy {
     SolidityContract map(final String src, byte[] address);
 
     EthAddress publish(String code);
+
+    boolean isSyncDone();
 }
 
 

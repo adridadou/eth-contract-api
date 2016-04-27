@@ -10,7 +10,7 @@ public class EthAddress {
     public final byte[] address;
 
 
-    public EthAddress(byte[] address) {
+    private EthAddress(byte[] address) {
         this.address = address;
     }
 

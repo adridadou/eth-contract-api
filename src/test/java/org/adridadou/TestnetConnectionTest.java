@@ -2,7 +2,7 @@ package org.adridadou;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.keystore.Keystore;
+import org.bouncycastle.util.encoders.Hex;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.crypto.SHA3Helper;
@@ -10,8 +10,6 @@ import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
-
-import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 
@@ -75,18 +73,18 @@ public class TestnetConnectionTest {
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties();
-            props.overrideParams(ConfigFactory.parseString(mordenConfig.replaceAll("'", "\"")));
+            props.overrideParams(ConfigFactory.parseString(testNetConfig.replaceAll("'", "\"")));
             return props;
         }
     }
 
-    private EthereumProvider getMordenProvider(ECKey sender, TestEthereumListener listener) {
+    private EthereumProvider getMordenProvider(ECKey sender) {
 
         Ethereum ethereum = EthereumFactory.createEthereum(TestNetConfig.class);
-        ethereum.addListener(listener);
+        EthereumListenerImpl ethereumListener = new EthereumListenerImpl(ethereum);
         ethereum.init();
 
-        BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, sender);
+        BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, sender, ethereumListener);
         return new EthereumProvider(new EthereumContractInvocationHandler(proxy), proxy);
     }
 
@@ -99,19 +97,18 @@ public class TestnetConnectionTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}";
         String homeDir = System.getProperty("user.home");
-        TestEthereumListener listener = new TestEthereumListener();
-        EthereumProvider provider = getMordenProvider(ECKey.fromPrivate(SHA3Helper.sha3("cow".getBytes())), listener);
+        EthereumProvider provider = getMordenProvider(ECKey.fromPrivate(SHA3Helper.sha3("cow".getBytes())));
 
-        while (!listener.isSyncDone()) {
+        while (!provider.isSyncDone()) {
             synchronized (this) {
-                System.out.println("waiting for the sync to finish!");
-                wait(20000);
+                wait(200);
             }
         }
 
         EthAddress address = provider.publishContract(contract);
+        System.out.println("contract address:" + Hex.toHexString(address.address));
         MyContract2 myContract = provider.createContractProxy(contract, address, MyContract2.class);
-
+        System.out.println("*** calling contract myMethod");
         myContract.myMethod(45);
         assertEquals(45, myContract.getI1());
     }

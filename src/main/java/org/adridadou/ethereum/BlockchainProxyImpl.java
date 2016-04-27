@@ -2,10 +2,8 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.smartcontract.SolidityContractImpl;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.Transaction;
-import org.ethereum.core.TransactionReceipt;
+import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -15,9 +13,6 @@ import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -27,12 +22,12 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     private final Ethereum ethereum;
     private final ECKey sender;
-    private Map<ByteArrayWrapper, TransactionReceipt> txWaiters =
-            Collections.synchronizedMap(new HashMap<>());
+    private final EthereumListenerImpl ethereumListener;
 
-    public BlockchainProxyImpl(Ethereum ethereum, ECKey sender) {
+    public BlockchainProxyImpl(Ethereum ethereum, ECKey sender, EthereumListenerImpl ethereumListener) {
         this.ethereum = ethereum;
         this.sender = sender;
+        this.ethereumListener = ethereumListener;
     }
 
     @Override
@@ -40,7 +35,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src);
-            SolidityContractImpl sc = new SolidityContractImpl(metadata, ethereum, sender);
+            SolidityContractImpl sc = new SolidityContractImpl(metadata, ethereum, ethereumListener, sender);
             sc.setAddress(address);
             return sc;
         } catch (IOException e) {
@@ -58,6 +53,11 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         }
     }
 
+    @Override
+    public boolean isSyncDone() {
+        return ethereumListener.isSynced();
+    }
+
 
     private SolidityContract createContract(String soliditySrc) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc);
@@ -65,7 +65,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
         byte[] contractAddress = receipt.getTransaction().getContractAddress();
 
-        SolidityContractImpl newContract = new SolidityContractImpl(metadata, ethereum, sender);
+        SolidityContractImpl newContract = new SolidityContractImpl(metadata, ethereum, ethereumListener, sender);
         newContract.setAddress(contractAddress);
         return newContract;
     }
@@ -99,26 +99,6 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         tx.sign(sender.getPrivKeyBytes());
         ethereum.submitTransaction(tx);
 
-        return waitForTx(tx.getHash());
-    }
-
-    private TransactionReceipt waitForTx(byte[] txHash) throws InterruptedException {
-        ByteArrayWrapper txHashW = new ByteArrayWrapper(txHash);
-        txWaiters.put(txHashW, null);
-        long startBlock = ethereum.getBlockchain().getBestBlock().getNumber();
-        while (true) {
-            TransactionReceipt receipt = txWaiters.get(txHashW);
-            if (receipt != null) {
-                return receipt;
-            } else {
-                long curBlock = ethereum.getBlockchain().getBestBlock().getNumber();
-                if (curBlock > startBlock + 16) {
-                    throw new RuntimeException("The transaction was not included during last 16 blocks: " + txHashW.toString().substring(0, 8));
-                }
-            }
-            synchronized (this) {
-                wait(20000);
-            }
-        }
+        return ethereumListener.waitForTx(tx.getHash());
     }
 }

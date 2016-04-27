@@ -77,11 +77,9 @@ public class Keystore {
     }
 
     private static byte[] checkMacScrypt(Keystore keystore, String password) throws Exception {
-
         byte[] part = new byte[16];
         KdfParams params = keystore.getCrypto().getKdfparams();
         byte[] h = scrypt(password.getBytes(), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
-        p(h);
         byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
         System.arraycopy(h, 16, part, 0, 16);
 
@@ -92,14 +90,7 @@ public class Keystore {
             return part;
         }
 
-        p(actual);
-        p(Hex.decode(keystore.getCrypto().getMac()));
-
         throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
-    }
-
-    private static void p(byte[] c) {
-        System.out.println(Hex.toHexString(c));
     }
 
     private static byte[] concat(byte[] a, byte[] b) {

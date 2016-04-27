@@ -24,4 +24,8 @@ public class EthereumProvider {
     public EthAddress publishContract(String code) {
         return blockchainProxy.publish(code);
     }
+
+    public boolean isSyncDone() {
+        return blockchainProxy.isSyncDone();
+    }
 }
