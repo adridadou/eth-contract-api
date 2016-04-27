@@ -58,6 +58,11 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return ethereumListener.isSynced();
     }
 
+    @Override
+    public EthAddress getSenderAddress() {
+        return EthAddress.of(sender.getAddress());
+    }
+
 
     private SolidityContract createContract(String soliditySrc) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc);

@@ -44,5 +44,10 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return true;
     }
 
+    @Override
+    public EthAddress getSenderAddress() {
+        return null;
+    }
+
 
 }

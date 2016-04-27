@@ -12,6 +12,8 @@ public interface BlockchainProxy {
     EthAddress publish(String code);
 
     boolean isSyncDone();
+
+    EthAddress getSenderAddress();
 }
 
 

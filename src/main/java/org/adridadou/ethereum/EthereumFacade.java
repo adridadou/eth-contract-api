@@ -36,4 +36,8 @@ public class EthereumFacade {
             }
         }
     }
+
+    public EthAddress getSenderAddress() {
+        return blockchainProxy.getSenderAddress();
+    }
 }

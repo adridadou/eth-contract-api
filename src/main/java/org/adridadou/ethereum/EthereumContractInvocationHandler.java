@@ -31,7 +31,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 new IntegerHandler(),
                 new LongHandler(),
                 new StringHandler(),
-                new BooleanHandler()
+                new BooleanHandler(),
+                new AddressHandler()
         );
     }
 

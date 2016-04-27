@@ -30,9 +30,14 @@ public class TestnetConnectionTest {
         String contract =
                 "contract myContract2 {" +
                         "  string i1;" +
-                        "  function myMethod(string value) {i1 = value;}" +
+                        "address owner;" +
+                        "  function myMethod(string value) {" +
+                        "i1 = value;" +
+                        "owner = msg.sender;" +
+                        "}" +
                         "  function getI1() constant returns (string) {return i1;}" +
                         "  function getT() constant returns (bool) {return true;}" +
+                        "  function getOwner() constant returns (address) {return owner;}" +
                         "}";
 
         EthereumFacade provider = ethereumFacadeProvider.create(ethereumFacadeProvider.getKey(id, password));
@@ -46,6 +51,7 @@ public class TestnetConnectionTest {
         myContract.myMethod("hello");
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());
+        assertEquals(provider.getSenderAddress(), myContract.getOwner());
     }
 
     private interface MyContract2 {
@@ -54,5 +60,7 @@ public class TestnetConnectionTest {
         String getI1();
 
         boolean getT();
+
+        EthAddress getOwner();
     }
 }
