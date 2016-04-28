@@ -17,11 +17,13 @@ public class EthereumFacade {
     }
 
     public <T> T createContractProxy(String code, EthAddress address, Class<T> contractInterface) throws IOException {
+        waitForSyncDone();
         handler.register(contractInterface, code, address);
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
     public EthAddress publishContract(String code) {
+        waitForSyncDone();
         return blockchainProxy.publish(code);
     }
 
@@ -29,10 +31,14 @@ public class EthereumFacade {
         return blockchainProxy.isSyncDone();
     }
 
-    public void waitForSyncDone() throws InterruptedException {
+    public void waitForSyncDone() {
         while (!isSyncDone()) {
             synchronized (this) {
-                wait(200);
+                try {
+                    wait(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -57,9 +57,9 @@ public class TestnetConnectionTest {
 
         EthereumFacade provider = ethereumFacadeProvider.create(ethereumFacadeProvider.getKey(id, password));
 
-        provider.waitForSyncDone();
+        EthAddress address = EthAddress.of("0d884f3d6ebb5696167687ebe238afcc473d586e");
 
-        EthAddress address = provider.publishContract(contract);
+        //EthAddress address = provider.publishContract(contract);
         System.out.println("contract address:" + Hex.toHexString(address.address));
         MyContract2 myContract = provider.createContractProxy(contract, address, MyContract2.class);
         System.out.println("*** calling contract myMethod");
