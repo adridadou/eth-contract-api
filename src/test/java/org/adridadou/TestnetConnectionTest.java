@@ -5,9 +5,12 @@ import org.adridadou.ethereum.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.provider.MainEthereumFacadeProvider;
 import org.adridadou.ethereum.provider.MordenEthereumFacadeProvider;
 import org.adridadou.ethereum.provider.TestnetEthereumFacadeProvider;
+import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -30,36 +33,12 @@ public class TestnetConnectionTest {
 
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        String contract =
-                "contract myContract2 {" +
-                        "string i1;" +
-                        "address owner;" +
-                        "  function myMethod(string value) {" +
-                        "i1 = value;" +
-                        "owner = msg.sender;" +
-                        "}" +
-                        "  function getI1() constant returns (string) {return i1;}" +
-                        "  function getT() constant returns (bool) {return true;}" +
-                        "  function getOwner() constant returns (address) {return owner;}" +
-                        "  function getArray() constant returns (uint[10] arr) {" +
-                        "arr[0] = 0;" +
-                        "arr[1] = 1;" +
-                        "arr[2] = 2;" +
-                        "arr[3] = 3;" +
-                        "arr[4] = 4;" +
-                        "arr[5] = 5;" +
-                        "arr[6] = 6;" +
-                        "arr[7] = 7;" +
-                        "arr[8] = 8;" +
-                        "arr[9] = 9;" +
-                        "}" +
-                        "}";
 
         EthereumFacade provider = ethereumFacadeProvider.create(ethereumFacadeProvider.getKey(id, password));
 
-        EthAddress address = EthAddress.of("0d884f3d6ebb5696167687ebe238afcc473d586e");
 
-        //EthAddress address = provider.publishContract(contract);
+        String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
+        EthAddress address = provider.publishContract(contract);
         System.out.println("contract address:" + Hex.toHexString(address.address));
         MyContract2 myContract = provider.createContractProxy(contract, address, MyContract2.class);
         System.out.println("*** calling contract myMethod");
@@ -69,6 +48,9 @@ public class TestnetConnectionTest {
         assertEquals(provider.getSenderAddress(), myContract.getOwner());
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
+
+        System.out.println("calling infinite loop !");
+
     }
 
     private interface MyContract2 {
@@ -81,5 +63,6 @@ public class TestnetConnectionTest {
         EthAddress getOwner();
 
         List<Integer> getArray();
+
     }
 }
