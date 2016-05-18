@@ -17,7 +17,8 @@ public class BlockchainProxyTest implements BlockchainProxy {
     private final StandaloneBlockchain blockchain;
 
     public BlockchainProxyTest() {
-        SystemProperties.CONFIG.setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
+
+        SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
             @Override
             public BigInteger getMINIMUM_DIFFICULTY() {
                 return BigInteger.ONE;

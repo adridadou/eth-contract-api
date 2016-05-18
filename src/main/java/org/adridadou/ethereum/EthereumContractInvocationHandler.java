@@ -10,10 +10,7 @@ import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.blockchain.SolidityContract;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,17 +46,34 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             contract.callFunction(methodName, arguments);
             return null;
         } else {
-            return convertResult(contract.callConstFunction(methodName, arguments), method);
+            Object[] result = contract.callConstFunction(methodName, arguments);
+            if (result.length == 1) {
+                return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
+            }
+
+            return convertSpecificType(result, method.getReturnType());
         }
     }
 
-    private Class<?> getCollectionType(Method method) {
-        Class<?> returnType = method.getReturnType();
+    private Object convertSpecificType(Object[] result, Class<?> returnType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+        Object[] params = new Object[result.length];
+
+        Constructor constr = lookForNonEmptyConstructor(returnType, result);
+
+        for (int i = 0; i < result.length; i++) {
+            params[i] = convertResult(result[i], constr.getParameterTypes()[i], constr.getGenericParameterTypes()[i]);
+        }
+
+
+        return constr.newInstance(params);
+    }
+
+    private Class<?> getCollectionType(Class<?> returnType, Type genericType) {
         if (returnType.isArray()) {
             return returnType.getComponentType();
         }
         if (List.class.equals(returnType)) {
-            return (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
+            return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
         }
         return null;
     }
@@ -90,22 +104,36 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
     }
 
-    private Object convertResult(Object[] result, Method method) {
-        Class<?> arrType = getCollectionType(method);
+    private Object convertResult(Object result, Class<?> returnType, Type genericType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Class<?> arrType = getCollectionType(returnType, genericType);
         if (arrType != null) {
-            if (method.getReturnType().isArray()) {
-                return convertArray(arrType, (Object[]) result[0]);
+            if (returnType.isArray()) {
+                return convertArray(arrType, (Object[]) result);
             }
 
-            return convertList(arrType, (Object[]) result[0]);
+            return convertList(arrType, (Object[]) result);
         }
 
         for (TypeHandler<?> handler : handlers) {
-            if (handler.isOfType(method.getReturnType())) {
-                return handler.convert(result[0]);
+            if (handler.isOfType(returnType)) {
+                return handler.convert(result);
             }
         }
-        throw new IllegalArgumentException("no handlers found for the method " + method.toString());
+
+        return convertSpecificType(new Object[]{result}, returnType);
+    }
+
+    private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {
+        for (Constructor constructor : returnType.getConstructors()) {
+            if (constructor.getParameterCount() > 0) {
+                if (constructor.getParameterCount() != result.length) {
+                    throw new IllegalArgumentException("the number of arguments don't match for type " + returnType.getSimpleName() + ". Constructor has " + constructor.getParameterCount() + " and result has " + result.length);
+                }
+                return constructor;
+            }
+        }
+
+        throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
     void register(Class<?> contractInterface, String code, EthAddress address) throws IOException {
