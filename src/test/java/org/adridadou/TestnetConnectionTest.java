@@ -7,6 +7,7 @@ import org.adridadou.ethereum.provider.MordenEthereumFacadeProvider;
 import org.adridadou.ethereum.provider.TestnetEthereumFacadeProvider;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Hex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertTrue;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
+@Ignore
 public class TestnetConnectionTest {
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
     private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
