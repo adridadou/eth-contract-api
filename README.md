@@ -5,7 +5,7 @@ The goal of this project is to ease the integration of Ethereum in a Java projec
 It should be easy to:
 * (OK) - Easy configuration of the network and keypair use
 * (OK) - Create an interface for a smart contract
-* (in progress) - Have type safety in regards of input and output values
+* (OK) - Have type safety in regards of input and output values
 * (OK) - Easy transaction creation
 * (TODO) - Transaction creation returns Future, simple calls returns the value itself
 * (OK) - Easy synchronization when creating a transaction
