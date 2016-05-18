@@ -1,4 +1,7 @@
 # eth-contract-api
+[![CircleCI](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop.svg?style=svg)](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop)
+
+
 EthereumJ native API or how to call contracts easily and in type safely.
 
 If you have any question please read the wiki https://github.com/adridadou/eth-contract-api/wiki
