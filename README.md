@@ -1,6 +1,8 @@
 # eth-contract-api
 EthereumJ native API or how to call contracts easily and in type safely.
 
+If you have any question please read the wiki https://github.com/adridadou/eth-contract-api/wiki
+
 The goal of this project is to ease the integration of Ethereum in a Java project.
 It should be easy to:
 * (OK) - Easy configuration of the network and keypair use
