@@ -8,6 +8,20 @@
     <artifactId>eth-contract-api</artifactId>
     <version>0.1-SNAPSHOT</version>
 
+    <scm>
+        <connection>scm:git:https://github.com/{github-user}/{github-repo}.git</connection>
+        <developerConnection>scm:git:git@github.com:adridadou/eth-contract-api.git</developerConnection>
+        <url>https://github.com/adridadou/eth-contract-api</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/cubefriendly/maven/eth-contract-api</url>
+        </repository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>sonatype-snapshots</id>
