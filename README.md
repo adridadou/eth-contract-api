@@ -12,4 +12,4 @@ It should be easy to:
 * (TODO) - Transaction creation returns Future, simple calls returns the value itself
 * (OK) - Easy synchronization when creating a transaction
 * (TODO) - Data inspection in a smart contract
-* (TODO) - Documentation
+* (in progress) - Documentation
