@@ -1,6 +1,5 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.TestnetConnectionTest;
 import org.adridadou.util.BlockchainProxyTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 /**
  * Created by davidroon on 19.05.16.
@@ -33,6 +31,7 @@ public class EthereumFacadeTest {
         assertTrue(myContract.getT());
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
+        assertArrayEquals(expected, myContract.getArray2());
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
@@ -48,6 +47,8 @@ public class EthereumFacadeTest {
         MyReturnType getM();
 
         List<Integer> getArray();
+
+        Integer[] getArray2();
     }
 
     public static class MyReturnType {
