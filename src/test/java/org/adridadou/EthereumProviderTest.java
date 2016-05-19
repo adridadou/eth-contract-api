@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  * Created by davidroon on 31.03.16.
  * This code is released under Apache 2 license
  */
-public class EthereumProviderSpec {
+public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
     private final EthereumFacade ethereumProvider = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy);
 

@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
  * Created by davidroon on 19.05.16.
  * This code is released under Apache 2 license
  */
-public class EthereumFacadeSpec {
+public class EthereumFacadeTest {
     private BlockchainProxy proxy = new BlockchainProxyTest();
     private EthereumContractInvocationHandler handler = new EthereumContractInvocationHandler(proxy);
     private EthereumFacade ethereum = new EthereumFacade(handler, proxy);
