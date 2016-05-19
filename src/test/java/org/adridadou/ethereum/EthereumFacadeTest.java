@@ -30,7 +30,8 @@ public class EthereumFacadeTest {
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
+        Long[] expected2 = {0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L};
+        assertArrayEquals(expected2, myContract.getArray().toArray(new Long[0]));
         assertArrayEquals(expected, myContract.getArray2());
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
@@ -46,7 +47,7 @@ public class EthereumFacadeTest {
 
         MyReturnType getM();
 
-        List<Integer> getArray();
+        List<Long> getArray();
 
         Integer[] getArray2();
     }
