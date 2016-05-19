@@ -1,6 +1,8 @@
 # eth-contract-api
 [![CircleCI](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop.svg?style=svg)](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop)
 
+[![Coverage Status](https://coveralls.io/repos/github/adridadou/eth-contract-api/badge.svg?branch=develop)](https://coveralls.io/github/adridadou/eth-contract-api?branch=develop)
+
 
 EthereumJ native API or how to call contracts easily and in type safely.
 
