@@ -9,4 +9,10 @@ contract myContract2 {
 			arr[i] = i;
 		}
 	}
+
+	function getArray2() constant returns (uint[10] arr) {
+    		for(uint i = 0; i < 10; i++) {
+    			arr[i] = i;
+    		}
+    	}
 }
