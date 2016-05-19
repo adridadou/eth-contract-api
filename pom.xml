@@ -5,6 +5,10 @@
     <groupId>org.adridadou</groupId>
     <artifactId>eth-contract-api</artifactId>
     <version>0.3-SNAPSHOT</version>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <scm>
         <connection>scm:git:https://github.com/{github-user}/{github-repo}.git</connection>
