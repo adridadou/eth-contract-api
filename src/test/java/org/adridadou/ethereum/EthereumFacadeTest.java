@@ -34,6 +34,8 @@ public class EthereumFacadeTest {
         assertArrayEquals(expected2, myContract.getArray().toArray(new Long[0]));
         assertArrayEquals(expected, myContract.getArray2());
 
+        assertEquals(EthAddress.of("4848594938"), myContract.getOwner());
+
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
     }
@@ -50,6 +52,8 @@ public class EthereumFacadeTest {
         List<Long> getArray();
 
         Integer[] getArray2();
+
+        EthAddress getOwner();
     }
 
     public static class MyReturnType {
