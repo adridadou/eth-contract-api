@@ -107,6 +107,16 @@
                 <version>4.1.0</version>
                 <configuration>
                     <repoToken>${env.COVERALLS_REPO_TOKEN}</repoToken>
+                    <instrumentation>
+                        <ignores>
+                          <ignore>org.adridadou.ethereum.provider.*</ignore>
+                        </ignores>
+                        <excludes>
+                          <exclude>org/adridadou/**/*.class</exclude>
+                          <exclude>org/adridadou/**/*Exception.class</exclude>
+                          <exclude>org/adridadou/**/*Test.class</exclude>
+                        </excludes>
+                      </instrumentation>
                 </configuration>
             </plugin>
             <plugin>
