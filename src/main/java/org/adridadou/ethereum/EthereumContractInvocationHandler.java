@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    final Map<String, SolidityContract> contracts = Maps.newHashMap();
+    private final Map<String, SolidityContract> contracts = Maps.newHashMap();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
 
@@ -154,7 +154,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, address.address));
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, address));
     }
 
     private CompilationResult compile(final String contract) throws IOException {

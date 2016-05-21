@@ -30,8 +30,13 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, byte[] address) {
-        return blockchain.createExistingContractFromSrc(src, address);
+    public SolidityContract map(String src, EthAddress address) {
+        return blockchain.createExistingContractFromSrc(src, address.address);
+    }
+
+    @Override
+    public SolidityContract mapFromAbi(String abi, EthAddress address) {
+        return blockchain.createExistingContractFromABI(abi, address.address);
     }
 
     @Override

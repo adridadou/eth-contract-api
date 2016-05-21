@@ -1,10 +1,10 @@
 package org.adridadou.ethereum.smartcontract;
 
 import org.adridadou.ethereum.EthereumListenerImpl;
+import org.apache.commons.lang3.NotImplementedException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
-import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.SolidityStorage;
@@ -18,16 +18,14 @@ import java.math.BigInteger;
  */
 public class SolidityContractImpl implements SolidityContract {
     private byte[] address;
-    private CompilationResult.ContractMetadata compiled;
     private CallTransaction.Contract contract;
     private final Ethereum ethereum;
     private final EthereumListenerImpl ethereumListener;
     private final ECKey sender;
 
-    public SolidityContractImpl(CompilationResult.ContractMetadata result, Ethereum ethereum, EthereumListenerImpl ethereumListener, ECKey sender) {
-        compiled = result;
+    public SolidityContractImpl(String abi, Ethereum ethereum, EthereumListenerImpl ethereumListener, ECKey sender) {
         this.ethereumListener = ethereumListener;
-        contract = new CallTransaction.Contract(compiled.abi);
+        contract = new CallTransaction.Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
     }
@@ -59,7 +57,6 @@ public class SolidityContractImpl implements SolidityContract {
 
     @Override
     public Object[] callFunction(long value, String functionName, Object... args) {
-        CallTransaction.Contract contract = new CallTransaction.Contract(compiled.abi);
         CallTransaction.Function inc = contract.getByName(functionName);
         byte[] functionCallBytes = inc.encode(args);
         try {
@@ -109,12 +106,12 @@ public class SolidityContractImpl implements SolidityContract {
 
     @Override
     public String getABI() {
-        return compiled.abi;
+        throw new UnsupportedOperationException("ABI is not saved");
     }
 
     @Override
     public String getBinary() {
-        return compiled.bin;
+        throw new UnsupportedOperationException("Binary is not saved");
     }
 
     @Override

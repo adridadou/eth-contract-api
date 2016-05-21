@@ -31,16 +31,22 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, byte[] address) {
+    public SolidityContract map(String src, EthAddress address) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src);
-            SolidityContractImpl sc = new SolidityContractImpl(metadata, ethereum, ethereumListener, sender);
-            sc.setAddress(address);
-            return sc;
+            return mapFromAbi(metadata.abi, address);
+
         } catch (IOException e) {
             throw new EthereumApiException("error while mapping a smart contract");
         }
+    }
+
+    @Override
+    public SolidityContract mapFromAbi(String abi, EthAddress address) {
+        SolidityContractImpl sc = new SolidityContractImpl(abi, ethereum, ethereumListener, sender);
+        sc.setAddress(address.address);
+        return sc;
     }
 
     @Override
@@ -70,7 +76,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
         byte[] contractAddress = receipt.getTransaction().getContractAddress();
 
-        SolidityContractImpl newContract = new SolidityContractImpl(metadata, ethereum, ethereumListener, sender);
+        SolidityContractImpl newContract = new SolidityContractImpl(metadata.abi, ethereum, ethereumListener, sender);
         newContract.setAddress(contractAddress);
         return newContract;
     }
