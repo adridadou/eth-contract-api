@@ -7,7 +7,9 @@ import org.ethereum.util.blockchain.SolidityContract;
  * This code is released under Apache 2 license
  */
 public interface BlockchainProxy {
-    SolidityContract map(final String src, byte[] address);
+    SolidityContract map(final String src, EthAddress address);
+
+    SolidityContract mapFromAbi(final String abi, EthAddress address);
 
     EthAddress publish(String code);
 
