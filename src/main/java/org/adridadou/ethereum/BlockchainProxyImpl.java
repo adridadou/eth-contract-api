@@ -45,7 +45,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     @Override
     public SolidityContract mapFromAbi(String abi, EthAddress address) {
         SolidityContractImpl sc = new SolidityContractImpl(abi, ethereum, ethereumListener, sender);
-        sc.setAddress(address.address);
+        sc.setAddress(address);
         return sc;
     }
 
@@ -74,7 +74,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc);
         TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin));
 
-        byte[] contractAddress = receipt.getTransaction().getContractAddress();
+        EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
         SolidityContractImpl newContract = new SolidityContractImpl(metadata.abi, ethereum, ethereumListener, sender);
         newContract.setAddress(contractAddress);

@@ -1,13 +1,14 @@
 package org.adridadou.ethereum.smartcontract;
 
+import org.adridadou.ethereum.EthAddress;
 import org.adridadou.ethereum.EthereumListenerImpl;
 import org.ethereum.core.*;
+import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.SolidityStorage;
-import org.spongycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 
@@ -16,20 +17,67 @@ import java.math.BigInteger;
  * This code is released under Apache 2 license
  */
 public class SolidityContractImpl implements SolidityContract {
-    private byte[] address;
-    private CallTransaction.Contract contract;
+    private EthAddress address;
+    private Contract contract;
     private final Ethereum ethereum;
     private final EthereumListenerImpl ethereumListener;
     private final ECKey sender;
 
     public SolidityContractImpl(String abi, Ethereum ethereum, EthereumListenerImpl ethereumListener, ECKey sender) {
         this.ethereumListener = ethereumListener;
-        contract = new CallTransaction.Contract(abi);
+        contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
     }
 
-    public void setAddress(byte[] address) {
+    @Override
+    public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
+
+        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
+                address.toString(), 0, contract.getByName(functionName), args);
+        tx.sign(new byte[32]);
+
+        Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
+
+        try {
+            TransactionExecutor executor = new TransactionExecutor
+                    (tx, callBlock.getCoinbase(), repository, getBlockchain().getBlockStore(),
+                            getBlockchain().getProgramInvokeFactory(), callBlock)
+                    .setLocalCall(true);
+
+            executor.init();
+            executor.execute();
+            executor.go();
+            executor.finalization();
+
+            return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
+        } finally {
+            repository.rollback();
+        }
+    }
+
+    @Override
+    public void call(byte[] callData) {
+        // for this we need cleaner separation of EasyBlockchain to
+        // Abstract and Solidity specific
+        throw new UnsupportedOperationException();
+    }
+
+    private void sendTx(EthAddress receiveAddress, byte[] data) throws InterruptedException {
+        BigInteger nonce = getRepository().getNonce(sender.getAddress());
+        Transaction tx = new Transaction(
+                ByteUtil.bigIntegerToBytes(nonce),
+                ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
+                ByteUtil.longToBytesNoLeadZeroes(3_000_000),
+                receiveAddress.address,
+                ByteUtil.longToBytesNoLeadZeroes(1),
+                data);
+        tx.sign(sender.getPrivKeyBytes());
+        ethereum.submitTransaction(tx);
+        ethereumListener.waitForTx(tx.getHash());
+    }
+
+    public void setAddress(EthAddress address) {
         this.address = address;
     }
 
@@ -46,7 +94,7 @@ public class SolidityContractImpl implements SolidityContract {
         if (address == null) {
             throw new RuntimeException("Contract address will be assigned only after block inclusion. Call createBlock() first.");
         }
-        return address;
+        return address.address;
     }
 
     @Override
@@ -73,32 +121,6 @@ public class SolidityContractImpl implements SolidityContract {
     }
 
     @Override
-    public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
-
-        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
-                Hex.toHexString(getAddress()), 0, contract.getByName(functionName), args);
-        tx.sign(new byte[32]);
-
-        Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
-
-        try {
-            TransactionExecutor executor = new TransactionExecutor
-                    (tx, callBlock.getCoinbase(), repository, getBlockchain().getBlockStore(),
-                            getBlockchain().getProgramInvokeFactory(), callBlock)
-                    .setLocalCall(true);
-
-            executor.init();
-            executor.execute();
-            executor.go();
-            executor.finalization();
-
-            return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
-        } finally {
-            repository.rollback();
-        }
-    }
-
-    @Override
     public SolidityStorage getStorage() {
         return new SolidityStorageImpl(getAddress(), getBlockchain());
     }
@@ -111,26 +133,5 @@ public class SolidityContractImpl implements SolidityContract {
     @Override
     public String getBinary() {
         throw new UnsupportedOperationException("Binary is not saved");
-    }
-
-    @Override
-    public void call(byte[] callData) {
-        // for this we need cleaner separation of EasyBlockchain to
-        // Abstract and Solidity specific
-        throw new UnsupportedOperationException();
-    }
-
-    private void sendTx(byte[] receiveAddress, byte[] data) throws InterruptedException {
-        BigInteger nonce = getRepository().getNonce(sender.getAddress());
-        Transaction tx = new Transaction(
-                ByteUtil.bigIntegerToBytes(nonce),
-                ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
-                ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                receiveAddress,
-                ByteUtil.longToBytesNoLeadZeroes(1),
-                data);
-        tx.sign(sender.getPrivKeyBytes());
-        ethereum.submitTransaction(tx);
-        ethereumListener.waitForTx(tx.getHash());
     }
 }
