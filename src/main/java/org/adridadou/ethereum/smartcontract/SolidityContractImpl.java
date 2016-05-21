@@ -1,7 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
 import org.adridadou.ethereum.EthereumListenerImpl;
-import org.apache.commons.lang3.NotImplementedException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
