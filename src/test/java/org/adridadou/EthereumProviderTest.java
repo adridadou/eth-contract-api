@@ -2,7 +2,7 @@ package org.adridadou;
 
 import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthAddress;
-import org.adridadou.util.BlockchainProxyTest;
+import org.adridadou.ethereum.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
 import org.junit.Test;

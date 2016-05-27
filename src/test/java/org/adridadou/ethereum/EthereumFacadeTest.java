@@ -1,6 +1,5 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.util.BlockchainProxyTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
