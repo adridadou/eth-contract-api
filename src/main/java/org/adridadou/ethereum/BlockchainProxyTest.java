@@ -1,4 +1,4 @@
-package org.adridadou.util;
+package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthAddress;
