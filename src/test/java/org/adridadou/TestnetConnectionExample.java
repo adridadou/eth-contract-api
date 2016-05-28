@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  * This code is released under Apache 2 license
  */
 @Ignore
-public class TestnetConnectionTest {
+public class TestnetConnectionExample {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
     private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
