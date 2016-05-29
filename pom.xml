@@ -4,7 +4,7 @@
 
     <groupId>org.adridadou</groupId>
     <artifactId>eth-contract-api</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,6 +20,7 @@
     <distributionManagement>
         <repository>
             <id>bintray</id>
+            <name>Cubefriendly maven repo</name>
             <url>https://api.bintray.com/maven/cubefriendly/maven/eth-contract-api</url>
         </repository>
     </distributionManagement>
