@@ -1,11 +1,11 @@
 package org.adridadou.ethereum.keystore;
 
 import org.adridadou.exception.EthereumApiException;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.codehaus.jackson.annotate.JsonSetter;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.crypto.generators.SCrypt;
+import org.spongycastle.jcajce.provider.digest.Keccak;
 import org.spongycastle.util.encoders.Hex;
 
 import javax.crypto.*;

@@ -4,9 +4,9 @@ import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.crypto.SHA3Helper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.spongycastle.crypto.digests.SHA3Digest;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -56,6 +56,17 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
 
     @Override
     public ECKey getKey(String id, final String password) {
-        return ECKey.fromPrivate(SHA3Helper.sha3(id.getBytes()));
+        return ECKey.fromPrivate(doSha3(id.getBytes()));
+    }
+
+    private static byte[] doSha3(byte[] message) {
+        SHA3Digest digest = new SHA3Digest(256);
+        byte[] hash = new byte[digest.getDigestSize()];
+
+        if (message.length != 0) {
+            digest.update(message, 0, message.length);
+        }
+        digest.doFinal(hash, 0);
+        return hash;
     }
 }

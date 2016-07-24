@@ -17,7 +17,17 @@ public class EthAddress {
     }
 
     public static EthAddress of(byte[] address) {
-        return new EthAddress(address);
+        return new EthAddress(trimLeft(address));
+    }
+
+    private static byte[] trimLeft(byte[] address) {
+        int firstNonZeroPos = 0;
+        while (firstNonZeroPos < address.length && address[firstNonZeroPos] == 0) firstNonZeroPos++;
+
+        byte[] newAddress = new byte[address.length - firstNonZeroPos];
+        System.arraycopy(address, firstNonZeroPos, newAddress, 0, address.length - firstNonZeroPos);
+
+        return newAddress;
     }
 
     public static EthAddress of(final String address) {

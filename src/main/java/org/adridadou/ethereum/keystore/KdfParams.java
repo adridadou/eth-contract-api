@@ -1,7 +1,5 @@
 package org.adridadou.ethereum.keystore;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
