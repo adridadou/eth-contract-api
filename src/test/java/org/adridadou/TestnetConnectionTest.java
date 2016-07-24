@@ -3,9 +3,8 @@ package org.adridadou;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
 import org.apache.commons.io.IOUtils;
-import org.bouncycastle.util.encoders.Hex;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.spongycastle.util.encoders.Hex;
 
 import java.io.File;
 import java.io.FileReader;

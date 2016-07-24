@@ -1,13 +1,13 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.BlockchainProxy;
-import org.adridadou.ethereum.EthAddress;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
+
+import static org.ethereum.config.blockchain.FrontierConfig.*;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -18,7 +18,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     public BlockchainProxyTest() {
 
-        SystemProperties.CONFIG.setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
+        SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConstants() {
             @Override
             public BigInteger getMINIMUM_DIFFICULTY() {
                 return BigInteger.ONE;

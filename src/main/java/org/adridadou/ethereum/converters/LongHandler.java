@@ -18,6 +18,6 @@ public class LongHandler implements TypeHandler<Long> {
         if (obj.getClass().equals(BigInteger.class)) {
             return ((BigInteger) obj).longValue();
         }
-        throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Integer");
+        throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Long");
     }
 }

@@ -1,8 +1,6 @@
 package org.adridadou.ethereum.converters;
 
 import org.adridadou.ethereum.EthAddress;
-
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 
 /**
@@ -24,6 +22,12 @@ public class AddressHandler implements TypeHandler<EthAddress> {
             System.arraycopy(barray, 1, address, 0, address.length);
             return EthAddress.of(address);
         }
-        throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Integer");
+        try {
+            return EthAddress.of((byte[]) obj);
+        } catch (Exception ex) {
+         /*Do nothing, the exception will be thrown afterward*/
+        }
+
+        throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Address");
     }
 }
