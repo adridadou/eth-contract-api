@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.converters;
 
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 
 /**

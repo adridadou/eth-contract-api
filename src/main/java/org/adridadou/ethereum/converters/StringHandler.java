@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.converters;
 
-import java.lang.reflect.Method;
 
 /**
  * Created by davidroon on 27.04.16.
