@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.provider;
 
-import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthereumFacade;
 import org.ethereum.crypto.ECKey;
 
