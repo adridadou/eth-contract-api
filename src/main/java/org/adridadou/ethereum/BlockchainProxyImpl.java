@@ -97,7 +97,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
             throw new RuntimeException("Compilation failed, no contracts returned:\n" + result.errors);
         }
         CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-        if (metadata == null && (metadata.bin == null || metadata.bin.isEmpty())) {
+        if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
             throw new RuntimeException("Compilation failed, no binary returned:\n" + result.errors);
         }
         return metadata;
