@@ -33,6 +33,12 @@
         <repository>
             <id>oss.jfrog.org</id>
             <name>Repository from Bintray</name>
+            <url>http://dl.bintray.com/ethereum/maven</url>
+        </repository>
+
+        <repository>
+            <id>oss.jfrog.org2</id>
+            <name>Repository from Bintray</name>
             <url>http://oss.jfrog.org/oss-snapshot-local</url>
         </repository>
 
