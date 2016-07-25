@@ -30,7 +30,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, EthAddress address) {
+    public SolidityContract map(String src, String contractName, EthAddress address) {
         return blockchain.createExistingContractFromSrc(src, address.address);
     }
 
@@ -40,7 +40,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public EthAddress publish(String code) {
+    public EthAddress publish(String code, String contractName) {
         SolidityContract result = blockchain.submitNewContract(code);
         return EthAddress.of(result.getAddress());
     }
@@ -53,6 +53,11 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public EthAddress getSenderAddress() {
         return null;
+    }
+
+    @Override
+    public long getCurrentBlockNumber() {
+        return 0;
     }
 
 

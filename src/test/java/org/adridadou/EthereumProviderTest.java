@@ -30,9 +30,9 @@ public class EthereumProviderTest {
                         "  }" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract);
+        EthAddress address = ethereumProvider.publishContract(contract, "myContract");
 
-        MyContract proxy = ethereumProvider.createContractProxy(contract, address, MyContract.class);
+        MyContract proxy = ethereumProvider.createContractProxy(contract, "myContract", address, MyContract.class);
 
         assertEquals(23, proxy.myMethod());
     }
@@ -46,9 +46,9 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract);
+        EthAddress address = ethereumProvider.publishContract(contract, "myContract2");
 
-        MyContract2 proxy = ethereumProvider.createContractProxy(contract, address, MyContract2.class);
+        MyContract2 proxy = ethereumProvider.createContractProxy(contract, "myContract2", address, MyContract2.class);
         proxy.myMethod(12);
 
         assertEquals(12, proxy.getI1());

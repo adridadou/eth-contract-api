@@ -23,8 +23,8 @@ public class EthereumFacadeTest {
     @Test
     public void testReturnTypeConverters() throws Throwable {
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract2.sol")));
-        EthAddress address = ethereum.publishContract(contract);
-        MyContract2 myContract = ethereum.createContractProxy(contract, address, MyContract2.class);
+        EthAddress address = ethereum.publishContract(contract, "myContract2");
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());

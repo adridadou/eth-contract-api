@@ -31,10 +31,10 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, EthAddress address) {
+    public SolidityContract map(String src, String contractName, EthAddress address) {
         CompilationResult.ContractMetadata metadata;
         try {
-            metadata = compile(src);
+            metadata = compile(src, contractName);
             return mapFromAbi(metadata.abi, address);
 
         } catch (IOException e) {
@@ -50,9 +50,9 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public EthAddress publish(String code) {
+    public EthAddress publish(String code, String contractName) {
         try {
-            SolidityContract contract = createContract(code);
+            SolidityContract contract = createContract(code, contractName);
             return EthAddress.of(contract.getAddress());
         } catch (IOException | InterruptedException e) {
             throw new EthereumApiException("error while publishing the smart contract");
@@ -69,9 +69,14 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return EthAddress.of(sender.getAddress());
     }
 
+    @Override
+    public long getCurrentBlockNumber() {
+        return ethereum.getBlockchain().getBestBlock().getNumber();
+    }
 
-    private SolidityContract createContract(String soliditySrc) throws IOException, InterruptedException {
-        CompilationResult.ContractMetadata metadata = compile(soliditySrc);
+
+    private SolidityContract createContract(String soliditySrc, String contractName) throws IOException, InterruptedException {
+        CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin));
 
         EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
@@ -81,7 +86,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return newContract;
     }
 
-    private CompilationResult.ContractMetadata compile(String src) throws IOException {
+    private CompilationResult.ContractMetadata compile(String src, String contractName) throws IOException {
         SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
@@ -91,8 +96,8 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         if (res.contracts.isEmpty()) {
             throw new RuntimeException("Compilation failed, no contracts returned:\n" + result.errors);
         }
-        CompilationResult.ContractMetadata metadata = res.contracts.values().iterator().next();
-        if (metadata.bin == null || metadata.bin.isEmpty()) {
+        CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
+        if (metadata == null && (metadata.bin == null || metadata.bin.isEmpty())) {
             throw new RuntimeException("Compilation failed, no binary returned:\n" + result.errors);
         }
         return metadata;
