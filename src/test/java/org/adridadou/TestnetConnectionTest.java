@@ -36,9 +36,9 @@ public class TestnetConnectionTest {
 
 
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
-        EthAddress address = ethereum.publishContract(contract);
+        EthAddress address = ethereum.publishContract(contract, "myContract2");
         System.out.println("contract address:" + Hex.toHexString(address.address));
-        MyContract2 myContract = ethereum.createContractProxy(contract, address, MyContract2.class);
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         myContract.myMethod("hello");
         assertEquals("hello", myContract.getI1());

@@ -16,15 +16,15 @@ public class EthereumFacade {
         this.blockchainProxy = blockchainProxy;
     }
 
-    public <T> T createContractProxy(String code, EthAddress address, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(String code, String contractName, EthAddress address, Class<T> contractInterface) throws IOException {
         waitForSyncDone();
-        handler.register(contractInterface, code, address);
+        handler.register(contractInterface, code, contractName, address);
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
-    public EthAddress publishContract(String code) {
+    public EthAddress publishContract(String code, String contractName) {
         waitForSyncDone();
-        return blockchainProxy.publish(code);
+        return blockchainProxy.publish(code, contractName);
     }
 
     public boolean isSyncDone() {
@@ -41,6 +41,10 @@ public class EthereumFacade {
                 }
             }
         }
+    }
+
+    public long getCurrentBlockNumber() {
+        return blockchainProxy.getCurrentBlockNumber();
     }
 
     public EthAddress getSenderAddress() {

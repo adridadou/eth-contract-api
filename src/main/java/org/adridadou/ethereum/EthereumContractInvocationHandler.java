@@ -136,7 +136,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    void register(Class<?> contractInterface, String code, EthAddress address) throws IOException {
+    void register(Class<?> contractInterface, String code, String contractName, EthAddress address) throws IOException {
         if (contracts.containsKey(contractInterface.getSimpleName())) {
             throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
         }
@@ -154,7 +154,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, address));
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, contractName, address));
     }
 
     private CompilationResult compile(final String contract) throws IOException {
