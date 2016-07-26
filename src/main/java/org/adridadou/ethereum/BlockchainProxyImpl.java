@@ -21,21 +21,19 @@ import java.math.BigInteger;
 public class BlockchainProxyImpl implements BlockchainProxy {
 
     private final Ethereum ethereum;
-    private final ECKey sender;
     private final EthereumListenerImpl ethereumListener;
 
-    public BlockchainProxyImpl(Ethereum ethereum, ECKey sender, EthereumListenerImpl ethereumListener) {
+    public BlockchainProxyImpl(Ethereum ethereum, EthereumListenerImpl ethereumListener) {
         this.ethereum = ethereum;
-        this.sender = sender;
         this.ethereumListener = ethereumListener;
     }
 
     @Override
-    public SolidityContract map(String src, String contractName, EthAddress address) {
+    public SolidityContract map(String src, String contractName, EthAddress address, ECKey sender) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src, contractName);
-            return mapFromAbi(metadata.abi, address);
+            return mapFromAbi(metadata.abi, address, sender);
 
         } catch (IOException e) {
             throw new EthereumApiException("error while mapping a smart contract");
@@ -43,16 +41,16 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract mapFromAbi(String abi, EthAddress address) {
+    public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
         SolidityContractImpl sc = new SolidityContractImpl(abi, ethereum, ethereumListener, sender);
         sc.setAddress(address);
         return sc;
     }
 
     @Override
-    public EthAddress publish(String code, String contractName) {
+    public EthAddress publish(String code, String contractName, ECKey sender) {
         try {
-            SolidityContract contract = createContract(code, contractName);
+            SolidityContract contract = createContract(code, contractName, sender);
             return EthAddress.of(contract.getAddress());
         } catch (IOException | InterruptedException e) {
             throw new EthereumApiException("error while publishing the smart contract");
@@ -65,19 +63,14 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public EthAddress getSenderAddress() {
-        return EthAddress.of(sender.getAddress());
-    }
-
-    @Override
     public long getCurrentBlockNumber() {
         return ethereum.getBlockchain().getBestBlock().getNumber();
     }
 
 
-    private SolidityContract createContract(String soliditySrc, String contractName) throws IOException, InterruptedException {
+    private SolidityContract createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin));
+        TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin), sender);
 
         EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
@@ -103,7 +96,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return metadata;
     }
 
-    private TransactionReceipt sendTxAndWait(byte[] receiveAddress, byte[] data) throws InterruptedException {
+    private TransactionReceipt sendTxAndWait(byte[] receiveAddress, byte[] data, ECKey sender) throws InterruptedException {
         BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
         Transaction tx = new Transaction(
                 ByteUtil.bigIntegerToBytes(nonce),

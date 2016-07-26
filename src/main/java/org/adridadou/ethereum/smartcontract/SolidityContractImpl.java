@@ -7,6 +7,7 @@ import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.util.ByteUtil;
+import org.ethereum.util.blockchain.SolidityCallResult;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.SolidityStorage;
 
@@ -72,7 +73,7 @@ public class SolidityContractImpl implements SolidityContract {
                 receiveAddress.address,
                 ByteUtil.longToBytesNoLeadZeroes(1),
                 data);
-        tx.sign(sender.getPrivKeyBytes());
+        tx.sign(sender);
         ethereum.submitTransaction(tx);
         ethereumListener.waitForTx(tx.getHash());
     }
@@ -98,12 +99,12 @@ public class SolidityContractImpl implements SolidityContract {
     }
 
     @Override
-    public Object[] callFunction(String functionName, Object... args) {
+    public SolidityCallResult callFunction(String functionName, Object... args) {
         return callFunction(0, functionName, args);
     }
 
     @Override
-    public Object[] callFunction(long value, String functionName, Object... args) {
+    public SolidityCallResult callFunction(long value, String functionName, Object... args) {
         CallTransaction.Function inc = contract.getByName(functionName);
         byte[] functionCallBytes = inc.encode(args);
         try {

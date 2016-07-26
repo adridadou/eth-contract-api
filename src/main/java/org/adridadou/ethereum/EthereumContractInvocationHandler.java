@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import org.adridadou.ethereum.converters.*;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.blockchain.SolidityContract;
@@ -136,7 +137,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    void register(Class<?> contractInterface, String code, String contractName, EthAddress address) throws IOException {
+    void register(Class<?> contractInterface, String code, String contractName, EthAddress address, ECKey sender) throws IOException {
         if (contracts.containsKey(contractInterface.getSimpleName())) {
             throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
         }
@@ -154,7 +155,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, contractName, address));
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, contractName, address, sender));
     }
 
     private CompilationResult compile(final String contract) throws IOException {

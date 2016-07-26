@@ -61,12 +61,12 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     @Override
-    public EthereumFacade create(ECKey key) {
+    public EthereumFacade create() {
         Ethereum ethereum = EthereumFactory.createEthereum(TestNetConfig.class);
         EthereumListenerImpl ethereumListener = new EthereumListenerImpl(ethereum);
         ethereum.init();
 
-        BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, key, ethereumListener);
+        BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
         return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
     }
 
