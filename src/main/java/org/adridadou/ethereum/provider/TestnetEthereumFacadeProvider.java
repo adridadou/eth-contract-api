@@ -2,12 +2,16 @@ package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.keystore.SecureKey;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.spongycastle.crypto.digests.SHA3Digest;
 import org.springframework.context.annotation.Bean;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -57,6 +61,11 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public ECKey getKey(String id, final String password) {
         return ECKey.fromPrivate(doSha3(id.getBytes()));
+    }
+
+    @Override
+    public List<SecureKey> listAvailableKeys() {
+        return new ArrayList<>();
     }
 
     private static byte[] doSha3(byte[] message) {
