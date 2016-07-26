@@ -3,6 +3,7 @@ package org.adridadou;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
 import org.apache.commons.io.IOUtils;
+import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 import org.spongycastle.util.encoders.Hex;
 
@@ -32,13 +33,14 @@ public class TestnetConnectionTest {
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
 
-        EthereumFacade ethereum = ethereumFacadeProvider.create(ethereumFacadeProvider.getKey(id, password));
+        ECKey sender = ethereumFacadeProvider.getKey(id, password);
+        EthereumFacade ethereum = ethereumFacadeProvider.create();
 
 
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
-        EthAddress address = ethereum.publishContract(contract, "myContract2");
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender);
         System.out.println("contract address:" + Hex.toHexString(address.address));
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, MyContract2.class);
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         myContract.myMethod("hello");
         assertEquals("hello", myContract.getI1());

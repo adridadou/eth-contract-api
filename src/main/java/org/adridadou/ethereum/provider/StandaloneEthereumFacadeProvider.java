@@ -11,7 +11,7 @@ import org.ethereum.crypto.ECKey;
  */
 public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
-    public EthereumFacade create(ECKey key) {
+    public EthereumFacade create() {
         BlockchainProxyTest proxy = new BlockchainProxyTest();
         return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
     }

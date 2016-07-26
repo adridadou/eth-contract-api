@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
@@ -30,17 +31,17 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, String contractName, EthAddress address) {
+    public SolidityContract map(String src, String contractName, EthAddress address, ECKey sender) {
         return blockchain.createExistingContractFromSrc(src, address.address);
     }
 
     @Override
-    public SolidityContract mapFromAbi(String abi, EthAddress address) {
+    public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
         return blockchain.createExistingContractFromABI(abi, address.address);
     }
 
     @Override
-    public EthAddress publish(String code, String contractName) {
+    public EthAddress publish(String code, String contractName, ECKey sender) {
         SolidityContract result = blockchain.submitNewContract(code);
         return EthAddress.of(result.getAddress());
     }
@@ -48,11 +49,6 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public boolean isSyncDone() {
         return true;
-    }
-
-    @Override
-    public EthAddress getSenderAddress() {
-        return null;
     }
 
     @Override

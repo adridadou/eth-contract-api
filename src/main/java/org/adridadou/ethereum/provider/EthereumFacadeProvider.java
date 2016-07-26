@@ -8,7 +8,7 @@ import org.ethereum.crypto.ECKey;
  * This code is released under Apache 2 license
  */
 public interface EthereumFacadeProvider {
-    EthereumFacade create(final ECKey key);
+    EthereumFacade create();
 
     ECKey getKey(final String id, final String password) throws Exception;
 }

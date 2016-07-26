@@ -5,6 +5,7 @@ import org.adridadou.ethereum.EthAddress;
 import org.adridadou.ethereum.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
+import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
+    private final ECKey sender = null;
     private final EthereumFacade ethereumProvider = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy);
 
     @Test
@@ -30,9 +32,9 @@ public class EthereumProviderTest {
                         "  }" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract, "myContract");
+        EthAddress address = ethereumProvider.publishContract(contract, "myContract", sender);
 
-        MyContract proxy = ethereumProvider.createContractProxy(contract, "myContract", address, MyContract.class);
+        MyContract proxy = ethereumProvider.createContractProxy(contract, "myContract", address, sender, MyContract.class);
 
         assertEquals(23, proxy.myMethod());
     }
@@ -46,9 +48,9 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract, "myContract2");
+        EthAddress address = ethereumProvider.publishContract(contract, "myContract2", sender);
 
-        MyContract2 proxy = ethereumProvider.createContractProxy(contract, "myContract2", address, MyContract2.class);
+        MyContract2 proxy = ethereumProvider.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         proxy.myMethod(12);
 
         assertEquals(12, proxy.getI1());
