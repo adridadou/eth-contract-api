@@ -3,6 +3,7 @@ package org.adridadou.ethereum.provider;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.keystore.Keystore;
+import org.adridadou.ethereum.keystore.SecureKey;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
@@ -10,6 +11,7 @@ import org.ethereum.facade.EthereumFactory;
 import org.springframework.context.annotation.Bean;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -74,5 +76,19 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     public ECKey getKey(final String id, final String password) throws Exception {
         String homeDir = System.getProperty("user.home");
         return Keystore.fromKeystore(new File(homeDir + "/Library/Ethereum/testnet/keystore/" + id), password);
+    }
+
+    private String getKeystoreFolderPath() {
+        String homeDir = System.getProperty("user.home");
+        return homeDir + "/Library/Ethereum/testnet/keystore/";
+    }
+
+    @Override
+    public List<SecureKey> listAvailableKeys() {
+        return javaslang.collection.List
+                .of(new File(getKeystoreFolderPath()).listFiles())
+                .filter(File::isFile)
+                .map(SecureKey::new)
+                .toJavaList();
     }
 }
