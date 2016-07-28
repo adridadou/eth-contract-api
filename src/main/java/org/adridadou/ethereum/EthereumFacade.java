@@ -1,9 +1,12 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.provider.EthereumFacadeProvider;
 import org.ethereum.crypto.ECKey;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -12,10 +15,12 @@ import java.lang.reflect.Proxy;
 public class EthereumFacade {
     private final EthereumContractInvocationHandler handler;
     private final BlockchainProxy blockchainProxy;
+    private final EthereumFacadeProvider provider;
 
-    public EthereumFacade(EthereumContractInvocationHandler handler, BlockchainProxy blockchainProxy) {
+    public EthereumFacade(EthereumContractInvocationHandler handler, BlockchainProxy blockchainProxy, EthereumFacadeProvider provider) {
         this.handler = handler;
         this.blockchainProxy = blockchainProxy;
+        this.provider = provider;
     }
 
     public <T> T createContractProxy(String code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
@@ -47,5 +52,13 @@ public class EthereumFacade {
 
     public long getCurrentBlockNumber() {
         return blockchainProxy.getCurrentBlockNumber();
+    }
+
+    public List<? extends SecureKey> listAvailableKeys() {
+        return provider.listAvailableKeys();
+    }
+
+    public SecureKey getKey(final String id) throws Exception {
+        return provider.getKey(id);
     }
 }

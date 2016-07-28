@@ -2,10 +2,9 @@ package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.keystore.Keystore;
+import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.ethereum.config.SystemProperties;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.springframework.context.annotation.Bean;
@@ -69,13 +68,13 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
         ethereum.init();
 
         BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
     }
 
     @Override
-    public ECKey getKey(final String id, final String password) throws Exception {
+    public SecureKey getKey(final String id) throws Exception {
         String homeDir = System.getProperty("user.home");
-        return Keystore.fromKeystore(new File(homeDir + "/Library/Ethereum/testnet/keystore/" + id), password);
+        return new FileSecureKey(new File(homeDir + "/Library/Ethereum/testnet/keystore/" + id));
     }
 
     private String getKeystoreFolderPath() {
@@ -84,11 +83,11 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     @Override
-    public List<SecureKey> listAvailableKeys() {
+    public List<FileSecureKey> listAvailableKeys() {
         return javaslang.collection.List
                 .of(new File(getKeystoreFolderPath()).listFiles())
                 .filter(File::isFile)
-                .map(SecureKey::new)
+                .map(FileSecureKey::new)
                 .toJavaList();
     }
 }

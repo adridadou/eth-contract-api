@@ -1,9 +1,8 @@
 package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.keystore.Keystore;
+import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 
@@ -23,21 +22,20 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
         ethereum.init();
 
         BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
     }
 
     @Override
-    public ECKey getKey(String id, String password) throws Exception {
-
-        return Keystore.fromKeystore(new File(getKeystoreFolderPath() + id), password);
+    public SecureKey getKey(String id) throws Exception {
+        return new FileSecureKey(new File(getKeystoreFolderPath() + id));
     }
 
     @Override
-    public List<SecureKey> listAvailableKeys() {
+    public List<? extends SecureKey> listAvailableKeys() {
         return javaslang.collection.List
                 .of(new File(getKeystoreFolderPath()).listFiles())
                 .filter(File::isFile)
-                .map(SecureKey::new)
+                .map(FileSecureKey::new)
                 .toJavaList();
     }
 
