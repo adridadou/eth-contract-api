@@ -3,8 +3,9 @@ package org.adridadou.ethereum.provider;
 import org.adridadou.ethereum.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
-import org.ethereum.crypto.ECKey;
+import org.adridadou.ethereum.keystore.StringSecureKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,16 +18,16 @@ public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider 
     @Override
     public EthereumFacade create() {
         BlockchainProxyTest proxy = new BlockchainProxyTest();
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
     }
 
     @Override
-    public ECKey getKey(String id, String password) throws Exception {
-        return new ECKey();
+    public SecureKey getKey(String id) throws Exception {
+        return new StringSecureKey("");
     }
 
     @Override
-    public List<SecureKey> listAvailableKeys() {
+    public List<FileSecureKey> listAvailableKeys() {
         return new ArrayList<>();
     }
 }

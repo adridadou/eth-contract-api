@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 public class EthereumFacadeTest {
     private BlockchainProxy proxy = new BlockchainProxyTest();
     private EthereumContractInvocationHandler handler = new EthereumContractInvocationHandler(proxy);
-    private EthereumFacade ethereum = new EthereumFacade(handler, proxy);
+    private EthereumFacade ethereum = new EthereumFacade(handler, proxy, null);
     private final ECKey sender = null;
 
     @Test

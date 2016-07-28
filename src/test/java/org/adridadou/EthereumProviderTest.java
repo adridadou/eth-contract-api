@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
     private final ECKey sender = null;
-    private final EthereumFacade ethereumProvider = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy);
+    private final EthereumFacade ethereum = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy, null);
 
     @Test
     public void checkSuccessCase() throws IOException {
@@ -32,9 +32,9 @@ public class EthereumProviderTest {
                         "  }" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract, "myContract", sender);
+        EthAddress address = ethereum.publishContract(contract, "myContract", sender);
 
-        MyContract proxy = ethereumProvider.createContractProxy(contract, "myContract", address, sender, MyContract.class);
+        MyContract proxy = ethereum.createContractProxy(contract, "myContract", address, sender, MyContract.class);
 
         assertEquals(23, proxy.myMethod());
     }
@@ -48,9 +48,9 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}";
 
-        EthAddress address = ethereumProvider.publishContract(contract, "myContract2", sender);
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender);
 
-        MyContract2 proxy = ethereumProvider.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
+        MyContract2 proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         proxy.myMethod(12);
 
         assertEquals(12, proxy.getI1());

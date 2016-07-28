@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.ethereum.crypto.ECKey;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public interface EthereumFacadeProvider {
     EthereumFacade create();
 
-    ECKey getKey(final String id, final String password) throws Exception;
+    SecureKey getKey(final String id) throws Exception;
 
-    List<SecureKey> listAvailableKeys();
+    List<? extends SecureKey> listAvailableKeys();
 }

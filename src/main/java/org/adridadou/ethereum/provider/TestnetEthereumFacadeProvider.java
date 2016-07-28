@@ -3,14 +3,12 @@ package org.adridadou.ethereum.provider;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.keystore.StringSecureKey;
 import org.ethereum.config.SystemProperties;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
-import org.spongycastle.crypto.digests.SHA3Digest;
 import org.springframework.context.annotation.Bean;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,27 +53,19 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
         ethereum.init();
 
         BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
     }
 
     @Override
-    public ECKey getKey(String id, final String password) {
-        return ECKey.fromPrivate(doSha3(id.getBytes()));
+    public List<? extends SecureKey> listAvailableKeys() {
+        return javaslang.collection.List.of(
+                getKey("cow"),
+                getKey("david")
+        ).toJavaList();
     }
 
     @Override
-    public List<SecureKey> listAvailableKeys() {
-        return new ArrayList<>();
-    }
-
-    private static byte[] doSha3(byte[] message) {
-        SHA3Digest digest = new SHA3Digest(256);
-        byte[] hash = new byte[digest.getDigestSize()];
-
-        if (message.length != 0) {
-            digest.update(message, 0, message.length);
-        }
-        digest.doFinal(hash, 0);
-        return hash;
+    public SecureKey getKey(String id) {
+        return new StringSecureKey(id);
     }
 }
