@@ -28,6 +28,10 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
 
     @Override
     public void onBlock(Block block, List<TransactionReceipt> receipts) {
+        resolveOnHoldTransactions(receipts);
+    }
+
+    private void resolveOnHoldTransactions(List<TransactionReceipt> receipts) {
         for (TransactionReceipt receipt : receipts) {
             ByteArrayWrapper txHashW = new ByteArrayWrapper(receipt.getTransaction().getHash());
             if (txWaiters.containsKey(txHashW)) {

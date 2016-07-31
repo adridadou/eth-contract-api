@@ -60,7 +60,9 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
     public List<? extends SecureKey> listAvailableKeys() {
         return javaslang.collection.List.of(
                 getKey("cow"),
-                getKey("david")
+                getKey("bull"),
+                getKey("frog"),
+                getKey("lion")
         ).toJavaList();
     }
 
