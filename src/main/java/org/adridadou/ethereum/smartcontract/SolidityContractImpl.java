@@ -36,7 +36,7 @@ public class SolidityContractImpl implements SolidityContract {
 
         Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
                 address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(new byte[32]);
+        tx.sign(ECKey.fromPrivate(new byte[32]));
 
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
 
