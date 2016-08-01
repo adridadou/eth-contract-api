@@ -1,5 +1,6 @@
 package org.adridadou.ethereum;
 
+import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 
 import java.util.Arrays;
@@ -18,6 +19,10 @@ public class EthAddress {
 
     public static EthAddress of(byte[] address) {
         return new EthAddress(trimLeft(address));
+    }
+
+    public static EthAddress of(ECKey key) {
+        return new EthAddress(trimLeft(key.getAddress()));
     }
 
     private static byte[] trimLeft(byte[] address) {
