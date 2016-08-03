@@ -57,7 +57,7 @@ public class EthereumFacade {
     public long getEstimatedLastBlockNumber() {
         long diff = (System.currentTimeMillis()) - blockchainProxy.getCurrentBlockTime();
         long nbBlocksAhead = (diff / blockchainProxy.getAvgBlockTime());
-        System.out.println("number of blocks ahead:" + nbBlocksAhead);
+
         return getCurrentBlockNumber() + nbBlocksAhead;
     }
 

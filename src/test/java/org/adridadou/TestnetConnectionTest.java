@@ -36,7 +36,6 @@ public class TestnetConnectionTest {
         ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
-
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
         EthAddress address = ethereum.publishContract(contract, "myContract2", sender);
         System.out.println("contract address:" + Hex.toHexString(address.address));

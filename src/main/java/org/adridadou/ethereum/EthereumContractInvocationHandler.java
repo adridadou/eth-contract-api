@@ -162,8 +162,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         SolidityCompiler.Result res = SolidityCompiler.compile(
                 contract.getBytes(), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
 
-        System.out.println("Out: '" + res.output + "'");
-        System.out.println("Err: '" + res.errors + "'");
 
         return CompilationResult.parse(res.output);
     }
