@@ -56,5 +56,15 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return 0;
     }
 
+    @Override
+    public long getCurrentBlockTime() {
+        return 0;
+    }
+
+    @Override
+    public long getAvgBlockTime() {
+        return 0;
+    }
+
 
 }

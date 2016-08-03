@@ -4,7 +4,8 @@ import org.adridadou.ethereum.smartcontract.SolidityContractImpl;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.facade.Ethereum;
+import org.ethereum.facade.*;
+import org.ethereum.facade.Blockchain;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
@@ -65,6 +66,26 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     @Override
     public long getCurrentBlockNumber() {
         return ethereum.getBlockchain().getBestBlock().getNumber();
+    }
+
+    @Override
+    public long getCurrentBlockTime() {
+        return ethereum.getBlockchain().getBestBlock().getTimestamp() * 1000;
+    }
+
+    @Override
+    public long getAvgBlockTime() {
+        Blockchain blockchain = ethereum.getBlockchain();
+        Block block = ethereum.getBlockchain().getBestBlock();
+        long blockTime = block.getTimestamp();
+        long sum = 0;
+        for (int i = 0; i < 1000; i++) {
+            block = blockchain.getBlockByHash(block.getParentHash());
+            sum += blockTime - block.getTimestamp();
+            blockTime = block.getTimestamp();
+        }
+
+        return sum;
     }
 
 
