@@ -14,6 +14,7 @@ import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Optional;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -77,12 +78,13 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     public long getAvgBlockTime() {
         Blockchain blockchain = ethereum.getBlockchain();
         Block block = ethereum.getBlockchain().getBestBlock();
-        long blockTime = block.getTimestamp();
+        long blockTime = Optional.ofNullable(block).map(Block::getTimestamp).orElse(Long.MIN_VALUE);
         long sum = 0;
         for (int i = 0; i < 1000; i++) {
             block = blockchain.getBlockByHash(block.getParentHash());
-            sum += blockTime - block.getTimestamp();
-            blockTime = block.getTimestamp();
+            long nextBlockTime = Optional.ofNullable(block).map(Block::getTimestamp).orElse(Long.MAX_VALUE - 10);
+            sum += blockTime - nextBlockTime;
+            blockTime = nextBlockTime;
         }
 
         return sum;
