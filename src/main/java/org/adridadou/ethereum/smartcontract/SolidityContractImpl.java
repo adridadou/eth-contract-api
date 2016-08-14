@@ -124,7 +124,7 @@ public class SolidityContractImpl implements SolidityContract {
 
     @Override
     public SolidityStorage getStorage() {
-        return new SolidityStorageImpl(getAddress(), getBlockchain());
+        return new SolidityStorageImpl(address, getBlockchain());
     }
 
     @Override
