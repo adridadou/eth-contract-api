@@ -3,11 +3,13 @@ package org.adridadou.ethereum.provider;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.exception.EthereumApiException;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -32,8 +34,9 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
 
     @Override
     public List<? extends SecureKey> listAvailableKeys() {
+        File[] files = Optional.ofNullable(new File(getKeystoreFolderPath()).listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + getKeystoreFolderPath()));
         return javaslang.collection.List
-                .of(new File(getKeystoreFolderPath()).listFiles())
+                .of(files)
                 .filter(File::isFile)
                 .map(FileSecureKey::new)
                 .toJavaList();

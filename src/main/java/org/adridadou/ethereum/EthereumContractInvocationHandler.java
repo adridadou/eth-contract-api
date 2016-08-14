@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    private final Map<String, SolidityContract> contracts = Maps.newHashMap();
+    private final Map<String, SolidityContract> contracts = Maps.newConcurrentMap();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
 

@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
+import org.adridadou.ethereum.EthAddress;
 import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.Repository;
 import org.ethereum.util.blockchain.SolidityStorage;
@@ -10,10 +11,10 @@ import org.ethereum.vm.DataWord;
  * This code is released under Apache 2 license
  */
 class SolidityStorageImpl implements SolidityStorage {
-    private final byte[] contractAddr;
+    private final EthAddress contractAddr;
     private final BlockchainImpl blockchain;
 
-    SolidityStorageImpl(byte[] contractAddr, BlockchainImpl blockchain) {
+    SolidityStorageImpl(EthAddress contractAddr, BlockchainImpl blockchain) {
         this.contractAddr = contractAddr;
         this.blockchain = blockchain;
     }
@@ -29,7 +30,7 @@ class SolidityStorageImpl implements SolidityStorage {
 
     @Override
     public byte[] getStorageSlot(byte[] slot) {
-        DataWord ret = getRepository().getContractDetails(contractAddr).get(new DataWord(slot));
+        DataWord ret = getRepository().getContractDetails(contractAddr.address).get(new DataWord(slot));
         return ret.getData();
     }
 }
