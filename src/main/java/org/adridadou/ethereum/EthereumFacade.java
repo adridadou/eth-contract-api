@@ -25,30 +25,16 @@ public class EthereumFacade {
     }
 
     public <T> T createContractProxy(String code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
-        waitForSyncDone();
         handler.register(contractInterface, code, contractName, address, sender);
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
     public CompletableFuture<EthAddress> publishContract(String code, String contractName, ECKey sender) {
-        waitForSyncDone();
         return blockchainProxy.publish(code, contractName, sender);
     }
 
     public boolean isSyncDone() {
         return blockchainProxy.isSyncDone();
-    }
-
-    public void waitForSyncDone() {
-        while (!isSyncDone()) {
-            synchronized (this) {
-                try {
-                    wait(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     public long getCurrentBlockNumber() {

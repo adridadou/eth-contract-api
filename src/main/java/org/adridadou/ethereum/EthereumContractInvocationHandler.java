@@ -45,7 +45,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Object[] arguments = args == null ? new Object[0] : args;
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
-            return null;
+            return Void.TYPE;
         } else {
             Object[] result = contract.callConstFunction(methodName, arguments);
             if (result.length == 1) {

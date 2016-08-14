@@ -12,6 +12,7 @@ import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.SolidityStorage;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -64,7 +65,7 @@ public class SolidityContractImpl implements SolidityContract {
         throw new UnsupportedOperationException();
     }
 
-    private void sendTx(EthAddress receiveAddress, byte[] data) throws InterruptedException {
+    private CompletableFuture<TransactionReceipt> sendTx(EthAddress receiveAddress, byte[] data) throws InterruptedException {
         BigInteger nonce = getRepository().getNonce(sender.getAddress());
         Transaction tx = new Transaction(
                 ByteUtil.bigIntegerToBytes(nonce),
@@ -75,7 +76,7 @@ public class SolidityContractImpl implements SolidityContract {
                 data);
         tx.sign(sender);
         ethereum.submitTransaction(tx);
-        ethereumListener.waitForTx(tx.getHash());
+        return ethereumListener.registerTx(tx.getHash());
     }
 
     public void setAddress(EthAddress address) {

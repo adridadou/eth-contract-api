@@ -133,6 +133,6 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         tx.sign(sender);
         ethereum.submitTransaction(tx);
 
-        return ethereumListener.waitForTx(tx.getHash());
+        return ethereumListener.registerTx(tx.getHash());
     }
 }

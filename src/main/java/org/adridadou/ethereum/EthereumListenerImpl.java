@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -35,9 +34,7 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
             ByteArrayWrapper txHashW = new ByteArrayWrapper(receipt.getTransaction().getHash());
             if (txWaiters.containsKey(txHashW)) {
                 txWaiters.get(txHashW).complete(receipt);
-                synchronized (this) {
-                    notifyAll();
-                }
+                txWaiters.remove(txHashW);
             }
         }
     }
@@ -51,12 +48,9 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
         return synced;
     }
 
-    public CompletableFuture<TransactionReceipt> waitForTx(byte[] txHash) throws InterruptedException {
+    public CompletableFuture<TransactionReceipt> registerTx(byte[] txHash) throws InterruptedException {
         CompletableFuture<TransactionReceipt> futureTx = new CompletableFuture<>();
-
-        ByteArrayWrapper txHashW = new ByteArrayWrapper(txHash);
-        txWaiters.put(txHashW, futureTx);
-
+        txWaiters.put(new ByteArrayWrapper(txHash), futureTx);
         return futureTx;
 
     }
