@@ -18,7 +18,7 @@ public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider 
     @Override
     public EthereumFacade create() {
         BlockchainProxyTest proxy = new BlockchainProxyTest();
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), null, proxy, this);
     }
 
     @Override

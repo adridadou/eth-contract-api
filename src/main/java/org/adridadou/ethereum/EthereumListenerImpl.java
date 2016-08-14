@@ -4,6 +4,8 @@ import org.ethereum.core.*;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.listener.EthereumListenerAdapter;
+import org.ethereum.net.message.Message;
+import org.ethereum.net.server.Channel;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumListenerImpl extends EthereumListenerAdapter {
     private boolean synced;
+    private long bestKnownNumber = 0;
     private Map<ByteArrayWrapper, CompletableFuture<TransactionReceipt>> txWaiters =
             Collections.synchronizedMap(new HashMap<>());
 
@@ -53,6 +56,15 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
         txWaiters.put(new ByteArrayWrapper(txHash), futureTx);
         return futureTx;
 
+    }
+
+    @Override
+    public void onRecvMessage(Channel channel, Message message) {
+        bestKnownNumber = channel.getEthHandler().getBestKnownBlock().getNumber();
+    }
+
+    public long getBestKnownBlockNumber() {
+        return bestKnownNumber;
     }
 }
 

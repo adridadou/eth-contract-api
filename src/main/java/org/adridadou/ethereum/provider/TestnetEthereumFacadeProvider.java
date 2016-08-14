@@ -53,7 +53,7 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
         ethereum.init();
 
         BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), proxy, this);
+        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), ethereumListener, proxy, this);
     }
 
     @Override
