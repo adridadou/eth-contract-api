@@ -7,6 +7,7 @@ import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
 
 import static org.ethereum.config.blockchain.FrontierConfig.*;
 
@@ -41,9 +42,11 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public EthAddress publish(String code, String contractName, ECKey sender) {
+    public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
         SolidityContract result = blockchain.submitNewContract(code);
-        return EthAddress.of(result.getAddress());
+        CompletableFuture<EthAddress> future = new CompletableFuture<>();
+        future.complete(EthAddress.of(result.getAddress()));
+        return future;
     }
 
     @Override

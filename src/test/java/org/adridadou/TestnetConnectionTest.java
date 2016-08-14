@@ -37,7 +37,7 @@ public class TestnetConnectionTest {
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
-        EthAddress address = ethereum.publishContract(contract, "myContract2", sender);
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
         System.out.println("contract address:" + Hex.toHexString(address.address));
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");

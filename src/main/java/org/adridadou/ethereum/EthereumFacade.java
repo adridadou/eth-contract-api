@@ -7,6 +7,7 @@ import org.ethereum.crypto.ECKey;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -29,7 +30,7 @@ public class EthereumFacade {
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
-    public EthAddress publishContract(String code, String contractName, ECKey sender) {
+    public CompletableFuture<EthAddress> publishContract(String code, String contractName, ECKey sender) {
         waitForSyncDone();
         return blockchainProxy.publish(code, contractName, sender);
     }

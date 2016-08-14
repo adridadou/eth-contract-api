@@ -15,6 +15,7 @@ import org.spongycastle.util.encoders.Hex;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -50,10 +51,9 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public EthAddress publish(String code, String contractName, ECKey sender) {
+    public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
         try {
-            SolidityContract contract = createContract(code, contractName, sender);
-            return EthAddress.of(contract.getAddress());
+            return createContract(code, contractName, sender).thenApply(contract -> EthAddress.of(contract.getAddress()));
         } catch (IOException | InterruptedException e) {
             throw new EthereumApiException("error while publishing the smart contract");
         }
@@ -81,8 +81,9 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         long blockTime = Optional.ofNullable(block).map(Block::getTimestamp).orElse(Long.MIN_VALUE);
         long sum = 0;
         for (int i = 0; i < 1000; i++) {
-            block = blockchain.getBlockByHash(block.getParentHash());
-            long nextBlockTime = Optional.ofNullable(block).map(Block::getTimestamp).orElse(Long.MAX_VALUE - 10);
+            Optional<Block> optBlock = Optional.ofNullable(block);
+            optBlock = optBlock.map(b -> blockchain.getBlockByHash(b.getParentHash()));
+            long nextBlockTime = optBlock.map(Block::getTimestamp).orElse(Long.MAX_VALUE - 10);
             sum += blockTime - nextBlockTime;
             blockTime = nextBlockTime;
         }
@@ -91,15 +92,16 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
 
-    private SolidityContract createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
+    private CompletableFuture<SolidityContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        TransactionReceipt receipt = sendTxAndWait(new byte[0], Hex.decode(metadata.bin), sender);
+        return sendTxAndWait(new byte[0], Hex.decode(metadata.bin), sender).thenApply(receipt -> {
+            EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
-        EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
+            SolidityContractImpl newContract = new SolidityContractImpl(metadata.abi, ethereum, ethereumListener, sender);
+            newContract.setAddress(contractAddress);
+            return newContract;
+        });
 
-        SolidityContractImpl newContract = new SolidityContractImpl(metadata.abi, ethereum, ethereumListener, sender);
-        newContract.setAddress(contractAddress);
-        return newContract;
     }
 
     private CompilationResult.ContractMetadata compile(String src, String contractName) throws IOException {
@@ -119,7 +121,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return metadata;
     }
 
-    private TransactionReceipt sendTxAndWait(byte[] receiveAddress, byte[] data, ECKey sender) throws InterruptedException {
+    private CompletableFuture<TransactionReceipt> sendTxAndWait(byte[] receiveAddress, byte[] data, ECKey sender) throws InterruptedException {
         BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
         Transaction tx = new Transaction(
                 ByteUtil.bigIntegerToBytes(nonce),

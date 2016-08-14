@@ -3,7 +3,7 @@ package org.adridadou.ethereum;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.SolidityContract;
 
-import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -14,7 +14,7 @@ public interface BlockchainProxy {
 
     SolidityContract mapFromAbi(final String abi, EthAddress address, ECKey sender);
 
-    EthAddress publish(String code, String contractName, ECKey sender);
+    CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender);
 
     boolean isSyncDone();
 
