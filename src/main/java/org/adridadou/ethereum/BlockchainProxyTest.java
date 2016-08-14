@@ -50,24 +50,8 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public boolean isSyncDone() {
-        return true;
-    }
-
-    @Override
     public long getCurrentBlockNumber() {
         return 0;
     }
-
-    @Override
-    public long getCurrentBlockTime() {
-        return 0;
-    }
-
-    @Override
-    public long getAvgBlockTime() {
-        return 0;
-    }
-
 
 }

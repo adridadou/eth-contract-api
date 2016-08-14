@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
     private final ECKey sender = null;
-    private final EthereumFacade ethereum = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy, null);
+    private final EthereumFacade ethereum = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), null, bcProxy, null);
 
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {

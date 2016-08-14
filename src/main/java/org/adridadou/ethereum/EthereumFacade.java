@@ -15,11 +15,13 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumFacade {
     private final EthereumContractInvocationHandler handler;
+    private EthereumListenerImpl ethereumListener;
     private final BlockchainProxy blockchainProxy;
     private final EthereumFacadeProvider provider;
 
-    public EthereumFacade(EthereumContractInvocationHandler handler, BlockchainProxy blockchainProxy, EthereumFacadeProvider provider) {
+    public EthereumFacade(EthereumContractInvocationHandler handler, EthereumListenerImpl ethereumListener, BlockchainProxy blockchainProxy, EthereumFacadeProvider provider) {
         this.handler = handler;
+        this.ethereumListener = ethereumListener;
         this.blockchainProxy = blockchainProxy;
         this.provider = provider;
     }
@@ -34,7 +36,7 @@ public class EthereumFacade {
     }
 
     public boolean isSyncDone() {
-        return blockchainProxy.isSyncDone();
+        return ethereumListener.isSynced();
     }
 
     public long getCurrentBlockNumber() {
@@ -42,10 +44,7 @@ public class EthereumFacade {
     }
 
     public long getEstimatedLastBlockNumber() {
-        long diff = (System.currentTimeMillis()) - blockchainProxy.getCurrentBlockTime();
-        long nbBlocksAhead = (diff / blockchainProxy.getAvgBlockTime());
-
-        return getCurrentBlockNumber() + nbBlocksAhead;
+        return ethereumListener.getBestKnownBlockNumber();
     }
 
     public List<? extends SecureKey> listAvailableKeys() {

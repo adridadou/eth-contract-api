@@ -5,7 +5,6 @@ import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.*;
-import org.ethereum.facade.Blockchain;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
@@ -14,7 +13,6 @@ import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -60,37 +58,9 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public boolean isSyncDone() {
-        return ethereumListener.isSynced();
-    }
-
-    @Override
     public long getCurrentBlockNumber() {
         return ethereum.getBlockchain().getBestBlock().getNumber();
     }
-
-    @Override
-    public long getCurrentBlockTime() {
-        return ethereum.getBlockchain().getBestBlock().getTimestamp() * 1000;
-    }
-
-    @Override
-    public long getAvgBlockTime() {
-        Blockchain blockchain = ethereum.getBlockchain();
-        Block block = ethereum.getBlockchain().getBestBlock();
-        long blockTime = Optional.ofNullable(block).map(Block::getTimestamp).orElse(Long.MIN_VALUE);
-        long sum = 0;
-        for (int i = 0; i < 1000; i++) {
-            Optional<Block> optBlock = Optional.ofNullable(block);
-            optBlock = optBlock.map(b -> blockchain.getBlockByHash(b.getParentHash()));
-            long nextBlockTime = optBlock.map(Block::getTimestamp).orElse(Long.MAX_VALUE - 10);
-            sum += blockTime - nextBlockTime;
-            blockTime = nextBlockTime;
-        }
-
-        return sum;
-    }
-
 
     private CompletableFuture<SolidityContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);

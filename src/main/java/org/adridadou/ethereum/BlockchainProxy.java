@@ -16,13 +16,7 @@ public interface BlockchainProxy {
 
     CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender);
 
-    boolean isSyncDone();
-
     long getCurrentBlockNumber();
-
-    long getCurrentBlockTime();
-
-    long getAvgBlockTime();
 }
 
 
