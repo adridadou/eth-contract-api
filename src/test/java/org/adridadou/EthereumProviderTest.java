@@ -23,7 +23,7 @@ public class EthereumProviderTest {
     private final EthereumFacade ethereum = new EthereumFacade(new EthereumContractInvocationHandler(bcProxy), bcProxy, null);
 
     @Test
-    public void checkSuccessCase() throws IOException {
+    public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {
         String contract =
                 "contract myContract {" +
                         "  int i1;" +
@@ -32,7 +32,7 @@ public class EthereumProviderTest {
                         "  }" +
                         "}";
 
-        EthAddress address = ethereum.publishContract(contract, "myContract", sender);
+        EthAddress address = ethereum.publishContract(contract, "myContract", sender).get();
 
         MyContract proxy = ethereum.createContractProxy(contract, "myContract", address, sender, MyContract.class);
 
@@ -48,7 +48,7 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}";
 
-        EthAddress address = ethereum.publishContract(contract, "myContract2", sender);
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
 
         MyContract2 proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         proxy.myMethod(12);
