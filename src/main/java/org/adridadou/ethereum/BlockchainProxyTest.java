@@ -1,9 +1,10 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.smartcontract.SolidityContract;
+import org.adridadou.ethereum.smartcontract.SolidityContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.util.blockchain.SolidityContract;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
@@ -33,19 +34,19 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public SolidityContract map(String src, String contractName, EthAddress address, ECKey sender) {
-        return blockchain.createExistingContractFromSrc(src, address.address);
+        return new SolidityContractTest(blockchain.createExistingContractFromSrc(src, address.address));
     }
 
     @Override
     public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        return blockchain.createExistingContractFromABI(abi, address.address);
+        return new SolidityContractTest(blockchain.createExistingContractFromABI(abi, address.address));
     }
 
     @Override
     public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
-        SolidityContract result = blockchain.submitNewContract(code);
+        EthAddress address = EthAddress.of(blockchain.submitNewContract(code).getAddress());
         CompletableFuture<EthAddress> future = new CompletableFuture<>();
-        future.complete(EthAddress.of(result.getAddress()));
+        future.complete(address);
         return future;
     }
 

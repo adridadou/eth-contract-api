@@ -3,12 +3,12 @@ package org.adridadou.ethereum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.adridadou.ethereum.converters.*;
+import org.adridadou.ethereum.smartcontract.SolidityContract;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
-import org.ethereum.util.blockchain.SolidityContract;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    private final Map<String, SolidityContract> contracts = Maps.newConcurrentMap();
+    private final Map<String, SolidityContract> contracts = Maps.newHashMap();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
 

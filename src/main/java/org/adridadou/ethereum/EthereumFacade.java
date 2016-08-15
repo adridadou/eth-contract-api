@@ -43,10 +43,6 @@ public class EthereumFacade {
         return blockchainProxy.getCurrentBlockNumber();
     }
 
-    public long getEstimatedLastBlockNumber() {
-        return ethereumListener.getBestKnownBlockNumber();
-    }
-
     public List<? extends SecureKey> listAvailableKeys() {
         return provider.listAvailableKeys();
     }
