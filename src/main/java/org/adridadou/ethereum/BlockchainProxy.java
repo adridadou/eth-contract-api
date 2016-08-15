@@ -1,7 +1,7 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.smartcontract.SolidityContract;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.util.blockchain.SolidityContract;
 
 import java.util.concurrent.CompletableFuture;
 

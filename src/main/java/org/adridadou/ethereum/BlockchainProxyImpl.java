@@ -1,6 +1,6 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.smartcontract.SolidityContractImpl;
+import org.adridadou.ethereum.smartcontract.SolidityContract;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
@@ -8,7 +8,6 @@ import org.ethereum.facade.*;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
-import org.ethereum.util.blockchain.SolidityContract;
 import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     @Override
     public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        SolidityContractImpl sc = new SolidityContractImpl(abi, ethereum, ethereumListener, sender);
+        SolidityContract sc = new SolidityContract(abi, ethereum, ethereumListener, sender);
         sc.setAddress(address);
         return sc;
     }
@@ -51,7 +50,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     @Override
     public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
         try {
-            return createContract(code, contractName, sender).thenApply(contract -> EthAddress.of(contract.getAddress()));
+            return createContract(code, contractName, sender).thenApply(SolidityContract::getAddress);
         } catch (IOException | InterruptedException e) {
             throw new EthereumApiException("error while publishing the smart contract");
         }
@@ -67,7 +66,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return sendTxAndWait(new byte[0], Hex.decode(metadata.bin), sender).thenApply(receipt -> {
             EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
-            SolidityContractImpl newContract = new SolidityContractImpl(metadata.abi, ethereum, ethereumListener, sender);
+            SolidityContract newContract = new SolidityContract(metadata.abi, ethereum, ethereumListener, sender);
             newContract.setAddress(contractAddress);
             return newContract;
         });
