@@ -14,6 +14,7 @@ public class SolidityContractTest extends SolidityContract {
     private final org.ethereum.util.blockchain.SolidityContract contract;
 
     public SolidityContractTest(org.ethereum.util.blockchain.SolidityContract contract) {
+        super();
         this.contract = contract;
     }
 

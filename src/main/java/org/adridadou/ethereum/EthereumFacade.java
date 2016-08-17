@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.provider.EthereumFacadeProvider;
+import org.adridadou.exception.EthereumApiException;
 import org.ethereum.crypto.ECKey;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class EthereumFacade {
     }
 
     public CompletableFuture<EthAddress> publishContract(String code, String contractName, ECKey sender) {
-        return blockchainProxy.publish(code, contractName, sender);
+        return ethereumListener.futureSyncDone.thenCompose(b -> blockchainProxy.publish(code, contractName, sender));
     }
 
     public boolean isSyncDone() {

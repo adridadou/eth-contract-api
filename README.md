@@ -15,5 +15,5 @@ It should be easy to:
 * (OK) - Easy transaction creation
 * (OK) - Easy synchronization when creating a transaction
 * (in progress) - Documentation
-* (TODO) - Transaction creation returns Future, simple calls returns the value itself
+* (OK) - Transaction creation returns Future, simple calls returns the value itself
 * (TODO) - Data inspection in a smart contract

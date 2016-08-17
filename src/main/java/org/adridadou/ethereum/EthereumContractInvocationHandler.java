@@ -15,6 +15,7 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -47,13 +48,26 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
         } else {
-            Object[] result = contract.callConstFunction(methodName, arguments);
-            if (result.length == 1) {
-                return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
+            if (method.getReturnType().equals(CompletableFuture.class)) {
+                return contract.callFunction(methodName, arguments).thenApply(result -> {
+                    try {
+                        return convertResult(result, method);
+                    } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                        throw new EthereumApiException(e.getMessage());
+                    }
+                });
+            } else {
+                return convertResult(contract.callConstFunction(methodName, arguments), method);
             }
-
-            return convertSpecificType(result, method.getReturnType());
         }
+    }
+
+    private Object convertResult(Object[] result, Method method) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+        if (result.length == 1) {
+            return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
+        }
+
+        return convertSpecificType(result, method.getReturnType());
     }
 
     private Object convertSpecificType(Object[] result, Class<?> returnType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -74,9 +88,13 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return returnType.getComponentType();
         }
         if (List.class.equals(returnType)) {
-            return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+            return getGenericType(genericType);
         }
         return null;
+    }
+
+    private Class<?> getGenericType(Type genericType) {
+        return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
     }
 
     private <T> T[] convertArray(Class<T> cls, Object[] arr) {
@@ -107,6 +125,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private Object convertResult(Object result, Class<?> returnType, Type genericType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         Class<?> arrType = getCollectionType(returnType, genericType);
+        Class<?> actualReturnType = returnType;
         if (arrType != null) {
             if (returnType.isArray()) {
                 return convertArray(arrType, (Object[]) result);
@@ -115,13 +134,26 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return convertList(arrType, (Object[]) result);
         }
 
+        if (returnType.equals(CompletableFuture.class)) {
+            actualReturnType = getGenericType(genericType);
+        }
+
         for (TypeHandler<?> handler : handlers) {
-            if (handler.isOfType(returnType)) {
+            if (handler.isOfType(actualReturnType)) {
+                if (CompletableFuture.class.equals(returnType)) {
+                    return completed(handler.convert(result));
+                }
                 return handler.convert(result);
             }
         }
 
         return convertSpecificType(new Object[]{result}, returnType);
+    }
+
+    private <T> CompletableFuture<T> completed(T result) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        future.complete(result);
+        return future;
     }
 
     private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {

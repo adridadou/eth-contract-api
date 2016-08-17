@@ -42,7 +42,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     @Override
     public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        SolidityContract sc = new SolidityContract(abi, ethereum, ethereumListener, sender);
+        SolidityContract sc = new SolidityContract(abi, ethereum, sender, this);
         sc.setAddress(address);
         return sc;
     }
@@ -63,10 +63,10 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     private CompletableFuture<SolidityContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        return sendTxAndWait(new byte[0], Hex.decode(metadata.bin), sender).thenApply(receipt -> {
+        return sendTx(1, Hex.decode(metadata.bin), sender).thenApply(receipt -> {
             EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
-            SolidityContract newContract = new SolidityContract(metadata.abi, ethereum, ethereumListener, sender);
+            SolidityContract newContract = new SolidityContract(metadata.abi, ethereum, sender, this);
             newContract.setAddress(contractAddress);
             return newContract;
         });
@@ -90,18 +90,20 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return metadata;
     }
 
-    private CompletableFuture<TransactionReceipt> sendTxAndWait(byte[] receiveAddress, byte[] data, ECKey sender) throws InterruptedException {
-        BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
-        Transaction tx = new Transaction(
-                ByteUtil.bigIntegerToBytes(nonce),
-                ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
-                ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                receiveAddress,
-                ByteUtil.longToBytesNoLeadZeroes(1),
-                data);
-        tx.sign(sender);
-        ethereum.submitTransaction(tx);
+    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
+        return ethereumListener.futureSyncDone.thenCompose((b) -> {
+            BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
+            Transaction tx = new Transaction(
+                    ByteUtil.bigIntegerToBytes(nonce),
+                    ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
+                    ByteUtil.longToBytesNoLeadZeroes(3_000_000),
+                    new byte[0],
+                    ByteUtil.longToBytesNoLeadZeroes(value),
+                    data);
+            tx.sign(sender);
+            ethereum.submitTransaction(tx);
 
-        return ethereumListener.registerTx(tx.getHash());
+            return ethereumListener.registerTx(tx);
+        });
     }
 }

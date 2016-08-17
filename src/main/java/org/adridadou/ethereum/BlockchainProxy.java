@@ -1,6 +1,7 @@
 package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.smartcontract.SolidityContract;
+import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +18,8 @@ public interface BlockchainProxy {
     CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender);
 
     long getCurrentBlockNumber();
+
+    CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException;
 }
 
 
