@@ -1,8 +1,10 @@
 package org.adridadou.ethereum;
 
+import com.google.common.collect.Lists;
 import org.ethereum.core.*;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
+import org.ethereum.listener.EthereumListener;
 import org.ethereum.listener.EthereumListenerAdapter;
 
 import java.util.Collections;
@@ -16,9 +18,9 @@ import java.util.concurrent.CompletableFuture;
  * This code is released under Apache 2 license
  */
 public class EthereumListenerImpl extends EthereumListenerAdapter {
-    private boolean synced;
     private Map<ByteArrayWrapper, CompletableFuture<TransactionReceipt>> txWaiters =
             Collections.synchronizedMap(new HashMap<>());
+    CompletableFuture<Boolean> futureSyncDone = new CompletableFuture<>();
 
     public EthereumListenerImpl(Ethereum ethereum) {
         ethereum.addListener(this);
@@ -27,6 +29,11 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
     @Override
     public void onBlock(Block block, List<TransactionReceipt> receipts) {
         resolveOnHoldTransactions(receipts);
+    }
+
+    @Override
+    public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
+        resolveOnHoldTransactions(Lists.newArrayList(txReceipt));
     }
 
     private void resolveOnHoldTransactions(List<TransactionReceipt> receipts) {
@@ -41,18 +48,17 @@ public class EthereumListenerImpl extends EthereumListenerAdapter {
 
     @Override
     public void onSyncDone() {
-        this.synced = true;
+        futureSyncDone.complete(true);
     }
 
     boolean isSynced() {
-        return synced;
+        return futureSyncDone.isDone();
     }
 
-    public CompletableFuture<TransactionReceipt> registerTx(byte[] txHash) throws InterruptedException {
+    public CompletableFuture<TransactionReceipt> registerTx(Transaction txHash) {
         CompletableFuture<TransactionReceipt> futureTx = new CompletableFuture<>();
-        txWaiters.put(new ByteArrayWrapper(txHash), futureTx);
+        txWaiters.put(new ByteArrayWrapper(txHash.getHash()), futureTx);
         return futureTx;
-
     }
 }
 

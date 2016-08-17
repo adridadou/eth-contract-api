@@ -10,6 +10,7 @@ import org.spongycastle.util.encoders.Hex;
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(standalone, "cow", "");
+        run(testnet, "cow", "");
     }
 
 
@@ -41,7 +42,7 @@ public class TestnetConnectionTest {
         System.out.println("contract address:" + Hex.toHexString(address.address));
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
-        myContract.myMethod("hello");
+        assertEquals("this is a test", myContract.myMethod("hello").get());
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());
         //assertEquals(ethereum.getSenderAddress(), myContract.getOwner());
@@ -94,7 +95,7 @@ public class TestnetConnectionTest {
     }
 
     private interface MyContract2 {
-        void myMethod(String value);
+        CompletableFuture<String> myMethod(String value);
 
         String getI1();
 

@@ -1,14 +1,13 @@
 package org.adridadou.ethereum.smartcontract;
 
+import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthAddress;
-import org.adridadou.ethereum.EthereumListenerImpl;
+import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
-import org.ethereum.util.ByteUtil;
 
-import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -19,21 +18,21 @@ public class SolidityContract {
     private EthAddress address;
     private Contract contract;
     private final Ethereum ethereum;
-    private final EthereumListenerImpl ethereumListener;
+    private final BlockchainProxy bcProxy;
     private final ECKey sender;
 
-    protected SolidityContract() {
-        this.ethereumListener = null;
+    SolidityContract() {
         this.contract = null;
         this.ethereum = null;
         this.sender = null;
+        this.bcProxy = null;
     }
 
-    public SolidityContract(String abi, Ethereum ethereum, EthereumListenerImpl ethereumListener, ECKey sender) {
-        this.ethereumListener = ethereumListener;
+    public SolidityContract(String abi, Ethereum ethereum, ECKey sender, BlockchainProxy bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
+        this.bcProxy = bcProxy;
     }
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
@@ -61,20 +60,6 @@ public class SolidityContract {
         }
     }
 
-    private CompletableFuture<TransactionReceipt> sendTx(EthAddress receiveAddress, byte[] data, long value) throws InterruptedException {
-        BigInteger nonce = getRepository().getNonce(sender.getAddress());
-        Transaction tx = new Transaction(
-                ByteUtil.bigIntegerToBytes(nonce),
-                ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
-                ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                receiveAddress.address,
-                ByteUtil.longToBytesNoLeadZeroes(value),
-                data);
-        tx.sign(sender);
-        ethereum.submitTransaction(tx);
-        return ethereumListener.registerTx(tx.getHash());
-    }
-
     public void setAddress(EthAddress address) {
         this.address = address;
     }
@@ -89,19 +74,18 @@ public class SolidityContract {
 
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
-        return callFunction(0, functionName, args);
+        return callFunction(1, functionName, args);
     }
 
     public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
         CallTransaction.Function inc = contract.getByName(functionName);
         byte[] functionCallBytes = inc.encode(args);
         try {
-            return sendTx(address, functionCallBytes, value).thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
+            return bcProxy.sendTx(value, functionCallBytes, sender)
+                    .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new EthereumApiException(e.getMessage());
         }
-
-        return null;
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {
