@@ -43,9 +43,7 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        RealSmartContract sc = new RealSmartContract(abi, ethereum, sender, this);
-        sc.setAddress(address);
-        return sc;
+        return new RealSmartContract(abi, ethereum, sender, address, this);
     }
 
     @Override
@@ -59,14 +57,9 @@ public class BlockchainProxyImpl implements BlockchainProxy {
 
     private Observable<RealSmartContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        return sendTx(1, Hex.decode(metadata.bin), sender).map(receipt -> {
-            EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
-
-            RealSmartContract newContract = new RealSmartContract(metadata.abi, ethereum, sender, this);
-            newContract.setAddress(contractAddress);
-            return newContract;
-        });
-
+        return sendTx(1, Hex.decode(metadata.bin), sender)
+                .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
+                .map(address -> new RealSmartContract(metadata.abi, ethereum, sender, address, this));
     }
 
     private CompilationResult.ContractMetadata compile(String src, String contractName) throws IOException {
