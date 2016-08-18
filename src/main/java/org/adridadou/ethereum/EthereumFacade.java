@@ -1,14 +1,11 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.keystore.SecureKey;
-import org.adridadou.ethereum.provider.EthereumFacadeProvider;
-import org.adridadou.exception.EthereumApiException;
 import org.ethereum.crypto.ECKey;
+import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -16,15 +13,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumFacade {
     private final EthereumContractInvocationHandler handler;
-    private EthereumListenerImpl ethereumListener;
     private final BlockchainProxy blockchainProxy;
-    private final EthereumFacadeProvider provider;
 
-    public EthereumFacade(EthereumContractInvocationHandler handler, EthereumListenerImpl ethereumListener, BlockchainProxy blockchainProxy, EthereumFacadeProvider provider) {
-        this.handler = handler;
-        this.ethereumListener = ethereumListener;
+    public EthereumFacade(BlockchainProxy blockchainProxy) {
+        this.handler = new EthereumContractInvocationHandler(blockchainProxy);
         this.blockchainProxy = blockchainProxy;
-        this.provider = provider;
     }
 
     public <T> T createContractProxy(String code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
@@ -32,23 +25,7 @@ public class EthereumFacade {
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
-    public CompletableFuture<EthAddress> publishContract(String code, String contractName, ECKey sender) {
-        return ethereumListener.futureSyncDone.thenCompose(b -> blockchainProxy.publish(code, contractName, sender));
-    }
-
-    public boolean isSyncDone() {
-        return ethereumListener.isSynced();
-    }
-
-    public long getCurrentBlockNumber() {
-        return blockchainProxy.getCurrentBlockNumber();
-    }
-
-    public List<? extends SecureKey> listAvailableKeys() {
-        return provider.listAvailableKeys();
-    }
-
-    public SecureKey getKey(final String id) throws Exception {
-        return provider.getKey(id);
+    public Observable<EthAddress> publishContract(String code, String contractName, ECKey sender) {
+        return blockchainProxy.publish(code, contractName, sender);
     }
 }

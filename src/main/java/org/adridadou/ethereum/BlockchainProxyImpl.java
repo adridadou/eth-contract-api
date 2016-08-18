@@ -1,6 +1,7 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.smartcontract.SolidityContract;
+import org.adridadou.ethereum.smartcontract.RealSmartContract;
+import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
@@ -9,10 +10,10 @@ import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
+import rx.Observable;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -21,15 +22,15 @@ import java.util.concurrent.CompletableFuture;
 public class BlockchainProxyImpl implements BlockchainProxy {
 
     private final Ethereum ethereum;
-    private final EthereumListenerImpl ethereumListener;
+    private final EthereumEventHandler ethereumListener;
 
-    public BlockchainProxyImpl(Ethereum ethereum, EthereumListenerImpl ethereumListener) {
+    public BlockchainProxyImpl(Ethereum ethereum, EthereumEventHandler ethereumListener) {
         this.ethereum = ethereum;
         this.ethereumListener = ethereumListener;
     }
 
     @Override
-    public SolidityContract map(String src, String contractName, EthAddress address, ECKey sender) {
+    public SmartContract map(String src, String contractName, EthAddress address, ECKey sender) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src, contractName);
@@ -41,32 +42,27 @@ public class BlockchainProxyImpl implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        SolidityContract sc = new SolidityContract(abi, ethereum, sender, this);
+    public SmartContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
+        RealSmartContract sc = new RealSmartContract(abi, ethereum, sender, this);
         sc.setAddress(address);
         return sc;
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
+    public Observable<EthAddress> publish(String code, String contractName, ECKey sender) {
         try {
-            return createContract(code, contractName, sender).thenApply(SolidityContract::getAddress);
+            return createContract(code, contractName, sender).map(RealSmartContract::getAddress);
         } catch (IOException | InterruptedException e) {
             throw new EthereumApiException("error while publishing the smart contract");
         }
     }
 
-    @Override
-    public long getCurrentBlockNumber() {
-        return ethereum.getBlockchain().getBestBlock().getNumber();
-    }
-
-    private CompletableFuture<SolidityContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
+    private Observable<RealSmartContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        return sendTx(1, Hex.decode(metadata.bin), sender).thenApply(receipt -> {
+        return sendTx(1, Hex.decode(metadata.bin), sender).map(receipt -> {
             EthAddress contractAddress = EthAddress.of(receipt.getTransaction().getContractAddress());
 
-            SolidityContract newContract = new SolidityContract(metadata.abi, ethereum, sender, this);
+            RealSmartContract newContract = new RealSmartContract(metadata.abi, ethereum, sender, this);
             newContract.setAddress(contractAddress);
             return newContract;
         });
@@ -90,8 +86,8 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return metadata;
     }
 
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
-        return ethereumListener.futureSyncDone.thenCompose((b) -> {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
+        return ethereumListener.getSync().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),

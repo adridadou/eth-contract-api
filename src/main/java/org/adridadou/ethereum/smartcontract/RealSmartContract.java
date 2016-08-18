@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
+import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxy;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
@@ -7,32 +8,31 @@ import org.ethereum.core.*;
 import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
+import rx.Observable;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class SolidityContract {
+public class RealSmartContract implements SmartContract {
     private EthAddress address;
     private Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxy bcProxy;
     private final ECKey sender;
 
-    SolidityContract() {
-        this.contract = null;
-        this.ethereum = null;
-        this.sender = null;
-        this.bcProxy = null;
-    }
-
-    public SolidityContract(String abi, Ethereum ethereum, ECKey sender, BlockchainProxy bcProxy) {
+    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, BlockchainProxy bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
         this.bcProxy = bcProxy;
+    }
+
+    public List<CallTransaction.Function> getFunctions() {
+        return Lists.newArrayList(contract.functions);
     }
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
@@ -73,19 +73,32 @@ public class SolidityContract {
     }
 
 
-    public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
+    public Observable<Object[]> callFunction(String functionName, Object... args) {
         return callFunction(1, functionName, args);
     }
 
-    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
-        CallTransaction.Function inc = contract.getByName(functionName);
-        byte[] functionCallBytes = inc.encode(args);
+    public Observable<Object[]> callFunction(long value, String functionName, Object... args) {
+        CallTransaction.Function func = contract.getByName(functionName);
+
+        if (func == null) {
+
+            throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
+        }
+        byte[] functionCallBytes = func.encode(args);
         try {
             return bcProxy.sendTx(value, functionCallBytes, sender)
-                    .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
+                    .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
         } catch (InterruptedException e) {
             throw new EthereumApiException(e.getMessage());
         }
+    }
+
+    private String getAvailableFunctions() {
+        List<String> names = new ArrayList<>();
+        for (CallTransaction.Function func : contract.functions) {
+            names.add(func.name);
+        }
+        return names.toString();
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {
