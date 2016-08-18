@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-@Ignore
 public class TestnetConnectionTest {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
@@ -43,7 +42,8 @@ public class TestnetConnectionTest {
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
-        assertEquals("this is a test", BlockingObservable.from(myContract.myMethod("this is a test")).first());
+        Integer result = BlockingObservable.from(myContract.myMethod("this is a test")).first();
+        assertEquals(1, result.intValue());
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());
         //assertEquals(ethereum.getSenderAddress(), myContract.getOwner());
