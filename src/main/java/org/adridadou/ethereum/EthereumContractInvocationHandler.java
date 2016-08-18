@@ -29,7 +29,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
 
-    public EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
+    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
         this.blockchainProxy = blockchainProxy;
         handlers = Lists.newArrayList(
                 new IntegerHandler(),
@@ -51,20 +51,14 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return Void.TYPE;
         } else {
             if (method.getReturnType().equals(Observable.class)) {
-                return contract.callFunction(methodName, arguments).map(result -> {
-                    try {
-                        return convertResult(result, method);
-                    } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                        throw new EthereumApiException(e.getMessage());
-                    }
-                });
+                return contract.callFunction(methodName, arguments).map(result -> convertResult(result, method));
             } else {
                 return convertResult(contract.callConstFunction(methodName, arguments), method);
             }
         }
     }
 
-    private Object convertResult(Object[] result, Method method) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Object convertResult(Object[] result, Method method) {
         if (result.length == 1) {
             return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
         }
@@ -72,7 +66,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         return convertSpecificType(result, method.getReturnType());
     }
 
-    private Object convertSpecificType(Object[] result, Class<?> returnType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Object convertSpecificType(Object[] result, Class<?> returnType) {
         Object[] params = new Object[result.length];
 
         Constructor constr = lookForNonEmptyConstructor(returnType, result);
@@ -82,7 +76,11 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         }
 
 
-        return constr.newInstance(params);
+        try {
+            return constr.newInstance(params);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new EthereumApiException("error while converting to a specific type");
+        }
     }
 
     private Class<?> getCollectionType(Class<?> returnType, Type genericType) {
@@ -125,7 +123,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
     }
 
-    private Object convertResult(Object result, Class<?> returnType, Type genericType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private Object convertResult(Object result, Class<?> returnType, Type genericType) {
         Class<?> arrType = getCollectionType(returnType, genericType);
         Class<?> actualReturnType = returnType;
         if (arrType != null) {
@@ -142,9 +140,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
         for (TypeHandler<?> handler : handlers) {
             if (handler.isOfType(actualReturnType)) {
-                if (Observable.class.equals(returnType)) {
-                    return Observable.just(handler.convert(result));
-                }
                 return handler.convert(result);
             }
         }
