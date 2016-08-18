@@ -24,11 +24,12 @@ public class RealSmartContract implements SmartContract {
     private final BlockchainProxy bcProxy;
     private final ECKey sender;
 
-    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, BlockchainProxy bcProxy) {
+    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxy bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
         this.bcProxy = bcProxy;
+        this.address = address;
     }
 
     public List<CallTransaction.Function> getFunctions() {
@@ -58,10 +59,6 @@ public class RealSmartContract implements SmartContract {
         } finally {
             repository.rollback();
         }
-    }
-
-    public void setAddress(EthAddress address) {
-        this.address = address;
     }
 
     private BlockchainImpl getBlockchain() {
