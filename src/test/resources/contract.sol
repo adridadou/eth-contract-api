@@ -1,10 +1,10 @@
 contract myContract2 {
 	string i1;
 	address owner;
-  	function myMethod(string value) returns (string) {
+  	function myMethod(string value) returns (uint) {
 		i1 = value;
 		owner = msg.sender;
-		return "this is a test";
+		return 12;
 	}
 	function getI1() constant returns (string) {return i1;}
 	function getT() constant returns (bool) {return true;}

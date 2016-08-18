@@ -20,11 +20,10 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public EthereumFacade create() {
         Ethereum ethereum = EthereumFactory.createEthereum();
-        EthereumListenerImpl ethereumListener = new EthereumListenerImpl(ethereum);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
         ethereum.init();
 
-        BlockchainProxy proxy = new BlockchainProxyImpl(ethereum, ethereumListener);
-        return new EthereumFacade(new EthereumContractInvocationHandler(proxy), ethereumListener, proxy, this);
+        return new EthereumFacade(new BlockchainProxyImpl(ethereum, ethereumListener));
     }
 
     @Override

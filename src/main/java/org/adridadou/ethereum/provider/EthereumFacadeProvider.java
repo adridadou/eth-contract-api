@@ -1,9 +1,7 @@
 package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
-import org.ethereum.crypto.ECKey;
 
 import java.util.List;
 

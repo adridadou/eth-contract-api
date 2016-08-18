@@ -3,6 +3,7 @@ package org.adridadou.ethereum;
 import org.apache.commons.io.IOUtils;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
+import rx.observables.BlockingObservable;
 
 import java.io.File;
 import java.io.FileReader;
@@ -18,14 +19,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class EthereumFacadeTest {
     private BlockchainProxy proxy = new BlockchainProxyTest();
-    private EthereumContractInvocationHandler handler = new EthereumContractInvocationHandler(proxy);
-    private EthereumFacade ethereum = new EthereumFacade(handler, null, proxy, null);
+    private EthereumFacade ethereum = new EthereumFacade(proxy);
     private final ECKey sender = null;
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract2.sol")));
-        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
+        EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());
@@ -42,8 +42,6 @@ public class EthereumFacadeTest {
     }
 
     private interface MyContract2 {
-        void myMethod(String value);
-
         String getI1();
 
         boolean getT();

@@ -1,15 +1,16 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.smartcontract.SolidityContract;
-import org.adridadou.ethereum.smartcontract.SolidityContractTest;
+import org.adridadou.ethereum.smartcontract.RealSmartContract;
+import org.adridadou.ethereum.smartcontract.SmartContract;
+import org.adridadou.ethereum.smartcontract.TestSmartContract;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
+import rx.Observable;
 
 import java.math.BigInteger;
-import java.util.concurrent.CompletableFuture;
 
 import static org.ethereum.config.blockchain.FrontierConfig.*;
 
@@ -34,31 +35,23 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SolidityContract map(String src, String contractName, EthAddress address, ECKey sender) {
-        return new SolidityContractTest(blockchain.createExistingContractFromSrc(src, address.address));
+    public SmartContract map(String src, String contractName, EthAddress address, ECKey sender) {
+        return new TestSmartContract(blockchain.createExistingContractFromSrc(src, contractName, address.address));
+
     }
 
     @Override
-    public SolidityContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        return new SolidityContractTest(blockchain.createExistingContractFromABI(abi, address.address));
+    public SmartContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
+        return new TestSmartContract(blockchain.createExistingContractFromABI(abi, address.address));
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(String code, String contractName, ECKey sender) {
-        EthAddress address = EthAddress.of(blockchain.submitNewContract(code).getAddress());
-        CompletableFuture<EthAddress> future = new CompletableFuture<>();
-        future.complete(address);
-        return future;
+    public Observable<EthAddress> publish(String code, String contractName, ECKey sender) {
+        return Observable.just(EthAddress.of(blockchain.submitNewContract(code).getAddress()));
     }
 
     @Override
-    public long getCurrentBlockNumber() {
-        return 0;
-    }
-
-    @Override
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
         return null;
     }
-
 }

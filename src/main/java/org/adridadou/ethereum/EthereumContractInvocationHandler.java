@@ -2,20 +2,22 @@ package org.adridadou.ethereum;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.adridadou.ethereum.converters.*;
-import org.adridadou.ethereum.smartcontract.SolidityContract;
+import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
+import org.ethereum.core.CallTransaction;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
+import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -23,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    private final Map<String, SolidityContract> contracts = Maps.newHashMap();
+    private final Map<String, SmartContract> contracts = Maps.newHashMap();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
 
@@ -42,14 +44,14 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         final String contractName = method.getDeclaringClass().getSimpleName().toLowerCase();
         final String methodName = method.getName();
-        SolidityContract contract = contracts.get(contractName);
+        SmartContract contract = contracts.get(contractName);
         Object[] arguments = args == null ? new Object[0] : args;
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
         } else {
-            if (method.getReturnType().equals(CompletableFuture.class)) {
-                return contract.callFunction(methodName, arguments).thenApply(result -> {
+            if (method.getReturnType().equals(Observable.class)) {
+                return contract.callFunction(methodName, arguments).map(result -> {
                     try {
                         return convertResult(result, method);
                     } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
@@ -134,26 +136,20 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return convertList(arrType, (Object[]) result);
         }
 
-        if (returnType.equals(CompletableFuture.class)) {
+        if (returnType.equals(Observable.class)) {
             actualReturnType = getGenericType(genericType);
         }
 
         for (TypeHandler<?> handler : handlers) {
             if (handler.isOfType(actualReturnType)) {
-                if (CompletableFuture.class.equals(returnType)) {
-                    return completed(handler.convert(result));
+                if (Observable.class.equals(returnType)) {
+                    return Observable.just(handler.convert(result));
                 }
                 return handler.convert(result);
             }
         }
 
         return convertSpecificType(new Object[]{result}, returnType);
-    }
-
-    private <T> CompletableFuture<T> completed(T result) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        future.complete(result);
-        return future;
     }
 
     private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {
@@ -186,8 +182,39 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         if (found == null) {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
+        SmartContract smartContract = blockchainProxy.map(code, contractName, address, sender);
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), blockchainProxy.map(code, contractName, address, sender));
+        verifyContract(smartContract, contractInterface);
+
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), smartContract);
+    }
+
+    private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
+        Set<Method> interfaceMethods = Sets.newHashSet(contractInterface.getMethods());
+        Set<CallTransaction.Function> solidityMethods = Sets.newHashSet(smartContract.getFunctions());
+
+        Set<String> interfaceMethodNames = interfaceMethods.stream().map(Method::getName).collect(Collectors.toSet());
+        Set<String> solidityFuncNames = solidityMethods.stream().map(d -> d.name).collect(Collectors.toSet());
+
+        Sets.SetView<String> superfluous = Sets.difference(interfaceMethodNames, solidityFuncNames);
+        Sets.SetView<String> missing = Sets.difference(solidityFuncNames, interfaceMethodNames);
+
+        if (!superfluous.isEmpty()) {
+            throw new EthereumApiException("superflous function definition in interface " + contractInterface.getName() + ":" + superfluous.toString());
+        }
+
+        if (!missing.isEmpty()) {
+            throw new EthereumApiException("missing function definition in interface " + contractInterface.getName() + ":" + missing.toString());
+        }
+
+        Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
+
+        for (CallTransaction.Function func : solidityMethods) {
+            if (func.inputs.length != methods.get(func.name).getParameterCount()) {
+                throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
+            }
+        }
+
     }
 
     private CompilationResult compile(final String contract) throws IOException {
