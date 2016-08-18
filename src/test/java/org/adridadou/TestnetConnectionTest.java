@@ -4,7 +4,6 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
 import org.apache.commons.io.IOUtils;
 import org.ethereum.crypto.ECKey;
-import org.junit.Ignore;
 import org.junit.Test;
 import rx.Observable;
 import rx.observables.BlockingObservable;
@@ -34,17 +33,19 @@ public class TestnetConnectionTest {
 
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-
         ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
         String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract.sol")));
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
+        assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
-        Integer result = BlockingObservable.from(myContract.myMethod("this is a test")).first();
-        assertEquals(1, result.intValue());
-        assertEquals("hello", myContract.getI1());
+        Observable<Integer> observable = myContract.myMethod("this is a test");
+        BlockingObservable.from(observable).first();
+        Integer result = BlockingObservable.from(observable).first();
+        assertEquals(12, result.intValue());
+        assertEquals("this is a test", myContract.getI1());
         assertTrue(myContract.getT());
         //assertEquals(ethereum.getSenderAddress(), myContract.getOwner());
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
