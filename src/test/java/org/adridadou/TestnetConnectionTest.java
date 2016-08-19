@@ -28,7 +28,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(testnet, "cow", "");
+        run(standalone, "cow", "");
     }
 
 
