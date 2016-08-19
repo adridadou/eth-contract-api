@@ -2,6 +2,7 @@ package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
 import org.ethereum.config.SystemProperties;
@@ -52,7 +53,7 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
         ethereum.init();
 
-        return new EthereumFacade(new BlockchainProxyImpl(ethereum, ethereumListener));
+        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }
 
     @Override

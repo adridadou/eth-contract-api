@@ -1,7 +1,7 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.BlockchainProxy;
+import org.adridadou.ethereum.BlockchainProxyReal;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
@@ -21,10 +21,10 @@ public class RealSmartContract implements SmartContract {
     private EthAddress address;
     private Contract contract;
     private final Ethereum ethereum;
-    private final BlockchainProxy bcProxy;
+    private final BlockchainProxyReal bcProxy;
     private final ECKey sender;
 
-    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxy bcProxy) {
+    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxyReal bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
@@ -78,16 +78,13 @@ public class RealSmartContract implements SmartContract {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
-
             throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
         }
         byte[] functionCallBytes = func.encode(args);
-        try {
-            return bcProxy.sendTx(value, functionCallBytes, sender)
-                    .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
-        } catch (InterruptedException e) {
-            throw new EthereumApiException(e.getMessage());
-        }
+
+        return bcProxy.sendTx(value, functionCallBytes, sender)
+                .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
+
     }
 
     private String getAvailableFunctions() {

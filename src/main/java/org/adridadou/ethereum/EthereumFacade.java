@@ -5,7 +5,6 @@ import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
-import java.util.List;
 
 /**
  * Created by davidroon on 31.03.16.

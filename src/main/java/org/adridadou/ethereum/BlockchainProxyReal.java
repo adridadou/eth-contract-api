@@ -1,10 +1,12 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.RealSmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.crypto.ECKey;
+import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.*;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -14,19 +16,22 @@ import rx.Observable;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class BlockchainProxyImpl implements BlockchainProxy {
+public class BlockchainProxyReal implements BlockchainProxy {
 
+    private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
-    private final EthereumEventHandler ethereumListener;
+    private final EthereumEventHandler eventHandler;
 
-    public BlockchainProxyImpl(Ethereum ethereum, EthereumEventHandler ethereumListener) {
+    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
-        this.ethereumListener = ethereumListener;
+        this.eventHandler = eventHandler;
     }
 
     @Override
@@ -79,8 +84,8 @@ public class BlockchainProxyImpl implements BlockchainProxy {
         return metadata;
     }
 
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException {
-        return ethereumListener.getSync().flatMap((b) -> {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) {
+        return eventHandler.observeSync().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
@@ -92,7 +97,19 @@ public class BlockchainProxyImpl implements BlockchainProxy {
             tx.sign(sender);
             ethereum.submitTransaction(tx);
 
-            return ethereumListener.registerTx(tx);
+            long currentBlock = eventHandler.getCurrentBlockNumber();
+
+            Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
+
+            return eventHandler.observeBlocks()
+                    .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
+                    .map(params -> {
+                        Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
+                        return receipt.map(eventHandler::checkForErrors)
+                                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
+                    }).first();
         });
     }
+
+
 }
