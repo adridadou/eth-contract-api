@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.keystore;
 
+import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.exception.EthereumApiException;
 import org.codehaus.jackson.annotate.JsonSetter;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -79,7 +80,7 @@ public class Keystore {
     private static byte[] checkMacScrypt(Keystore keystore, String password) throws Exception {
         byte[] part = new byte[16];
         KdfParams params = keystore.getCrypto().getKdfparams();
-        byte[] h = scrypt(password.getBytes(), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
+        byte[] h = scrypt(password.getBytes(EthereumFacade.CHARSET), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
         byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
         System.arraycopy(h, 16, part, 0, 16);
 

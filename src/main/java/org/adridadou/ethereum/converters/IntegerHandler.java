@@ -9,7 +9,7 @@ import java.math.BigInteger;
 public class IntegerHandler implements TypeHandler<Integer> {
     @Override
     public boolean isOfType(Class<?> cls) {
-        return Integer.class.equals(cls) || cls.getSimpleName().equals("int");
+        return Integer.class.equals(cls) || "int".equals(cls.getSimpleName());
     }
 
     @Override

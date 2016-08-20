@@ -42,7 +42,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             return mapFromAbi(metadata.abi, address, sender);
 
         } catch (IOException e) {
-            throw new EthereumApiException("error while mapping a smart contract");
+            throw new EthereumApiException("error while mapping a smart contract", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     private CompilationResult.ContractMetadata compile(String src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(), true,
+        SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(EthereumFacade.CHARSET), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
             throw new EthereumApiException("Contract compilation failed:\n" + result.errors);

@@ -6,6 +6,7 @@ import org.junit.Test;
 import rx.observables.BlockingObservable;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class EthereumFacadeTest {
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
-        String contract = IOUtils.toString(new FileReader(new File("src/test/resources/contract2.sol")));
+        String contract = IOUtils.toString(new FileInputStream(new File("src/test/resources/contract2.sol")), EthereumFacade.CHARSET);
         EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");

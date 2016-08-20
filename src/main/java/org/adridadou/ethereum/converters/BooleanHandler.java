@@ -7,7 +7,7 @@ package org.adridadou.ethereum.converters;
 public class BooleanHandler implements TypeHandler<Boolean> {
     @Override
     public boolean isOfType(Class<?> cls) {
-        return Boolean.class.equals(cls) || cls.getSimpleName().equals("boolean");
+        return Boolean.class.equals(cls) || "boolean".equals(cls.getSimpleName());
     }
 
     @Override

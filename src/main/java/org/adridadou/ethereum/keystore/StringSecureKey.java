@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.keystore;
 
+import org.adridadou.ethereum.EthereumFacade;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.crypto.digests.SHA3Digest;
 
@@ -17,7 +18,7 @@ public class StringSecureKey implements SecureKey {
 
     @Override
     public ECKey decode(String password) throws Exception {
-        return ECKey.fromPrivate(doSha3(id.getBytes()));
+        return ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET)));
     }
 
     @Override
