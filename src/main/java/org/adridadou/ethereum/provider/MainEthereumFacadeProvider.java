@@ -1,5 +1,7 @@
 package org.adridadou.ethereum.provider;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
@@ -30,7 +32,12 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
 
     @Override
     public SecureKey getKey(String id) throws Exception {
-        return new FileSecureKey(new File(getKeystoreFolderPath() + id));
+        File[] files = new File(getKeystoreFolderPath()).listFiles();
+
+        return Lists.newArrayList(Preconditions.checkNotNull(files, "the folder " + getKeystoreFolderPath() + " cannot be found"))
+                .stream().filter(file -> id.equals(file.getName()))
+                .findFirst().map(FileSecureKey::new)
+                .orElseThrow(() -> new EthereumApiException("the file " + id + " could not be found"));
     }
 
     @Override

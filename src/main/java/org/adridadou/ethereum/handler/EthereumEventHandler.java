@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumEventHandler extends EthereumListenerAdapter {
     private final CompletableFuture<Boolean> futureSyncDone = new CompletableFuture<>();
-    private final rx.Observable<Boolean> sync = Observable.from(futureSyncDone);
+    private final Observable<Boolean> sync = Observable.from(futureSyncDone);
     private final OnBlockHandler onBlockHandler;
     private long currentBlockNumber;
 
@@ -43,7 +43,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
     @Override
     public void onSyncDone() {
-        futureSyncDone.complete(true);
+        futureSyncDone.complete(Boolean.TRUE);
     }
 
     public Observable<Boolean> observeSync() {

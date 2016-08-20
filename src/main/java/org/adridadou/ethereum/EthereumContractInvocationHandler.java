@@ -214,7 +214,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private CompilationResult compile(final String contract) throws IOException {
         SolidityCompiler.Result res = SolidityCompiler.compile(
-                contract.getBytes(), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
+                contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
 
 
         return CompilationResult.parse(res.output);

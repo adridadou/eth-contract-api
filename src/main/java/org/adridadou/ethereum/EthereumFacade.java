@@ -1,16 +1,19 @@
 package org.adridadou.ethereum;
 
+import com.google.common.base.Charsets;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.Proxy;
+import java.nio.charset.Charset;
 
 /**
  * Created by davidroon on 31.03.16.
  * This code is released under Apache 2 license
  */
 public class EthereumFacade {
+    public final static Charset CHARSET = Charsets.UTF_8;
     private final EthereumContractInvocationHandler handler;
     private final BlockchainProxy blockchainProxy;
 

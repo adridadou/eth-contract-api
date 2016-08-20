@@ -38,7 +38,7 @@ public class TestSmartContract implements SmartContract {
             CallTransaction.Contract innerContract = (CallTransaction.Contract) field.get(contract);
             return Lists.newArrayList(innerContract.functions);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new EthereumApiException("error while getting functions list");
+            throw new EthereumApiException("error while getting functions list", e);
         }
     }
 }

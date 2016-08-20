@@ -9,7 +9,7 @@ import java.math.BigInteger;
 public class LongHandler implements TypeHandler<Long> {
     @Override
     public boolean isOfType(Class<?> cls) {
-        return Long.class.equals(cls) || cls.getSimpleName().equals("long");
+        return Long.class.equals(cls) || "long".equals(cls.getSimpleName());
     }
 
     @Override
