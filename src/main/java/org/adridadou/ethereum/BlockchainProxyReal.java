@@ -55,12 +55,12 @@ public class BlockchainProxyReal implements BlockchainProxy {
     public Observable<EthAddress> publish(String code, String contractName, ECKey sender) {
         try {
             return createContract(code, contractName, sender).map(RealSmartContract::getAddress);
-        } catch (IOException | InterruptedException e) {
-            throw new EthereumApiException("error while publishing the smart contract");
+        } catch (IOException e) {
+            throw new EthereumApiException("error while publishing " + contractName + ":", e);
         }
     }
 
-    private Observable<RealSmartContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException, InterruptedException {
+    private Observable<RealSmartContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         return sendTx(1, Hex.decode(metadata.bin), sender)
                 .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
@@ -71,15 +71,15 @@ public class BlockchainProxyReal implements BlockchainProxy {
         SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
-            throw new RuntimeException("Contract compilation failed:\n" + result.errors);
+            throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
         }
         CompilationResult res = CompilationResult.parse(result.output);
         if (res.contracts.isEmpty()) {
-            throw new RuntimeException("Compilation failed, no contracts returned:\n" + result.errors);
+            throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
         }
         CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
         if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
-            throw new RuntimeException("Compilation failed, no binary returned:\n" + result.errors);
+            throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
         }
         return metadata;
     }

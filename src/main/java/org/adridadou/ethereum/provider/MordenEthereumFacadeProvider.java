@@ -3,6 +3,7 @@ package org.adridadou.ethereum.provider;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.exception.EthereumApiException;
@@ -67,7 +68,7 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public EthereumFacade create() {
         Ethereum ethereum = EthereumFactory.createEthereum(TestNetConfig.class);
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler());
         ethereum.init();
 
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
@@ -76,7 +77,10 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public SecureKey getKey(final String id) throws Exception {
         String homeDir = System.getProperty("user.home");
-        return new FileSecureKey(new File(homeDir + "/Library/Ethereum/testnet/keystore/" + id));
+        return listAvailableKeys().stream().filter(file -> file.getName().equals(id)).findFirst().orElseThrow(() -> {
+            String names = listAvailableKeys().stream().map(file -> file.getName()).reduce((aggregate, name) -> aggregate + "," + name).orElse("");
+            return new EthereumApiException("could not find the keyfile " + id + " available:" + names);
+        });
     }
 
     private String getKeystoreFolderPath() {

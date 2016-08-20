@@ -79,7 +79,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         try {
             return constr.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new EthereumApiException("error while converting to a specific type");
+            throw new EthereumApiException("error while converting to a specific type", e);
         }
     }
 
