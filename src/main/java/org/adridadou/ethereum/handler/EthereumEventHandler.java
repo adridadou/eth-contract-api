@@ -17,11 +17,12 @@ import java.util.concurrent.CompletableFuture;
 public class EthereumEventHandler extends EthereumListenerAdapter {
     private final CompletableFuture<Boolean> futureSyncDone = new CompletableFuture<>();
     private final rx.Observable<Boolean> sync = Observable.from(futureSyncDone);
-    private final OnBlockHandler onBlockHandler = new OnBlockHandler();
+    private final OnBlockHandler onBlockHandler;
     private long currentBlockNumber;
 
-    public EthereumEventHandler(Ethereum ethereum) {
+    public EthereumEventHandler(Ethereum ethereum, OnBlockHandler onBlockHandler) {
         ethereum.addListener(this);
+        this.onBlockHandler = onBlockHandler;
         currentBlockNumber = ethereum.getBlockchain().getBestBlock().getNumber();
     }
 

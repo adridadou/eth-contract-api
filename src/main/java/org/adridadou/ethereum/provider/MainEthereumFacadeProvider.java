@@ -2,6 +2,7 @@ package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.exception.EthereumApiException;
@@ -21,7 +22,7 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public EthereumFacade create() {
         Ethereum ethereum = EthereumFactory.createEthereum();
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler());
         ethereum.init();
 
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));

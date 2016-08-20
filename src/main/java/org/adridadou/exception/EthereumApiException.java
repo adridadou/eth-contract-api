@@ -8,4 +8,8 @@ public class EthereumApiException extends RuntimeException {
     public EthereumApiException(String s) {
         super(s);
     }
+
+    public EthereumApiException(String s, Throwable t) {
+        super(s, t);
+    }
 }

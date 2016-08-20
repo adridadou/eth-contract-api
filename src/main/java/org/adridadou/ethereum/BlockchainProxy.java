@@ -16,7 +16,7 @@ public interface BlockchainProxy {
 
     Observable<EthAddress> publish(String code, String contractName, ECKey sender);
 
-    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) throws InterruptedException;
+    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender);
 }
 
 
