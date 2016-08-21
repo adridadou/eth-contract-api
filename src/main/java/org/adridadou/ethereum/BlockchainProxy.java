@@ -1,5 +1,6 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
@@ -17,6 +18,8 @@ public interface BlockchainProxy {
     Observable<EthAddress> publish(String code, String contractName, ECKey sender);
 
     Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender);
+
+    EthereumEventHandler eventHandler();
 }
 
 

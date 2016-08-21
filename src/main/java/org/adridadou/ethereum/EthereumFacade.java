@@ -1,6 +1,7 @@
 package org.adridadou.ethereum;
 
 import com.google.common.base.Charsets;
+import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
 
@@ -29,5 +30,9 @@ public class EthereumFacade {
 
     public Observable<EthAddress> publishContract(String code, String contractName, ECKey sender) {
         return blockchainProxy.publish(code, contractName, sender);
+    }
+
+    public EthereumEventHandler eventHandler() {
+        return blockchainProxy.eventHandler();
     }
 }
