@@ -111,5 +111,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
         });
     }
 
+    @Override
+    public EthereumEventHandler eventHandler() {
+        return eventHandler;
+    }
+
 
 }

@@ -186,26 +186,21 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
         Set<Method> interfaceMethods = Sets.newHashSet(contractInterface.getMethods());
-        Set<CallTransaction.Function> solidityMethods = Sets.newHashSet(smartContract.getFunctions());
+        Set<CallTransaction.Function> solidityMethods = smartContract.getFunctions().stream().filter(f -> f != null).collect(Collectors.toSet());
 
         Set<String> interfaceMethodNames = interfaceMethods.stream().map(Method::getName).collect(Collectors.toSet());
         Set<String> solidityFuncNames = solidityMethods.stream().map(d -> d.name).collect(Collectors.toSet());
 
         Sets.SetView<String> superfluous = Sets.difference(interfaceMethodNames, solidityFuncNames);
-        Sets.SetView<String> missing = Sets.difference(solidityFuncNames, interfaceMethodNames);
 
         if (!superfluous.isEmpty()) {
             throw new EthereumApiException("superflous function definition in interface " + contractInterface.getName() + ":" + superfluous.toString());
         }
 
-        if (!missing.isEmpty()) {
-            throw new EthereumApiException("missing function definition in interface " + contractInterface.getName() + ":" + missing.toString());
-        }
-
         Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
 
         for (CallTransaction.Function func : solidityMethods) {
-            if (func.inputs.length != methods.get(func.name).getParameterCount()) {
+            if (methods.get(func.name) != null && func.inputs.length != methods.get(func.name).getParameterCount()) {
                 throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
             }
         }

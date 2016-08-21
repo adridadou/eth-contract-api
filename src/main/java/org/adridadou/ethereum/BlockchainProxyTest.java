@@ -1,5 +1,6 @@
 package org.adridadou.ethereum;
 
+import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.RealSmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.TestSmartContract;
@@ -52,6 +53,11 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) {
+        return null;
+    }
+
+    @Override
+    public EthereumEventHandler eventHandler() {
         return null;
     }
 }
