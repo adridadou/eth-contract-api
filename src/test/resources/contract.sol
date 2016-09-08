@@ -1,9 +1,13 @@
 contract myContract2 {
 	string i1;
 	address owner;
+
+	function myContract2() {
+	    owner = msg.sender;
+	}
+
   	function myMethod(string value) returns (uint) {
 		i1 = value;
-		owner = msg.sender;
 		return 12;
 	}
 	function getI1() constant returns (string) {return i1;}
