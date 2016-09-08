@@ -10,7 +10,6 @@ import rx.observables.BlockingObservable;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -29,7 +28,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(standalone, "UTC--2016-02-20T07-56-24.065281620Z--eda29d105f6038aee451cd66331cbb6655a8c690", "");
+        run(standalone, "cow", "");
     }
 
 
@@ -41,9 +40,10 @@ public class TestnetConnectionTest {
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());
+        //assertEquals(EthAddress.of(ethereumFacadeProvider.getKey(id).decode(password).getAddress()), myContract.getOwner());
         System.out.println("*** calling contract myMethod");
         Observable<Integer> observable = myContract.myMethod("this is a test");
-        BlockingObservable.from(observable).first();
+
         Integer result = BlockingObservable.from(observable).first();
         assertEquals(12, result.intValue());
         assertEquals("this is a test", myContract.getI1());
