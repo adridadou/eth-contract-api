@@ -14,6 +14,4 @@ It should be easy to:
 * (OK) - Have type safety in regards of input and output values
 * (OK) - Easy transaction creation
 * (OK) - Easy synchronization when creating a transaction
-* (in progress) - Documentation
 * (OK) - Transaction creation returns Future, simple calls returns the value itself
-* (TODO) - Data inspection in a smart contract
