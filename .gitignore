@@ -16,3 +16,4 @@ buildNumber.properties
 /database
 /sampleDB-1
 /logs
+/eth-contract-api.iml
