@@ -23,16 +23,21 @@ public class EthereumFacade {
         this.blockchainProxy = blockchainProxy;
     }
 
-    public <T> T createContractProxy(String code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
         handler.register(contractInterface, code, contractName, address, sender);
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
-    public Observable<EthAddress> publishContract(String code, String contractName, ECKey sender) {
+    public <T> T createContractProxy(ContractAbi abi, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+        handler.register(contractInterface, abi, address, sender);
+        return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+    }
+
+    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender) {
         return blockchainProxy.publish(code, contractName, sender);
     }
 
-    public EthereumEventHandler eventHandler() {
-        return blockchainProxy.eventHandler();
+    public EthereumEventHandler events() {
+        return blockchainProxy.events();
     }
 }

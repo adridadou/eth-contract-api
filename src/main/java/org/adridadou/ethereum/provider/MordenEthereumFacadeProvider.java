@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.provider;
 
+import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -90,10 +92,9 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public List<FileSecureKey> listAvailableKeys() {
         File[] files = Optional.ofNullable(new File(getKeystoreFolderPath()).listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + getKeystoreFolderPath()));
-        return javaslang.collection.List
-                .of(files)
+        return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
                 .map(FileSecureKey::new)
-                .toJavaList();
+                .collect(Collectors.toList());
     }
 }
