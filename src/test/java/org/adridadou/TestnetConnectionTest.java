@@ -2,14 +2,12 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
-import org.apache.commons.io.IOUtils;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 import rx.Observable;
 import rx.observables.BlockingObservable;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -36,7 +34,8 @@ public class TestnetConnectionTest {
         ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
-        String contract = IOUtils.toString(new FileInputStream(new File("src/test/resources/contract.sol")), EthereumFacade.CHARSET);
+
+        SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract.sol"));
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());

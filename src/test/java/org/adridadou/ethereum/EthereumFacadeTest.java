@@ -25,7 +25,7 @@ public class EthereumFacadeTest {
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
-        String contract = IOUtils.toString(new FileInputStream(new File("src/test/resources/contract2.sol")), EthereumFacade.CHARSET);
+        SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract2.sol"));
         EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");

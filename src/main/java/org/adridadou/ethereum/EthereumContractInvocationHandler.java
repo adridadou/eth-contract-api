@@ -160,11 +160,11 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    void register(Class<?> contractInterface, String code, String contractName, EthAddress address, ECKey sender) throws IOException {
+    void register(Class<?> contractInterface, SoliditySource code, String contractName, EthAddress address, ECKey sender) throws IOException {
         if (contracts.containsKey(contractInterface.getSimpleName())) {
             throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
         }
-        final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code).contracts;
+        final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(contractInterface.getSimpleName())) {
@@ -178,6 +178,18 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
         SmartContract smartContract = blockchainProxy.map(code, contractName, address, sender);
+
+        verifyContract(smartContract, contractInterface);
+
+        contracts.put(contractInterface.getSimpleName().toLowerCase(), smartContract);
+    }
+
+    void register(Class<?> contractInterface, ContractAbi abi, EthAddress address, ECKey sender) throws IOException {
+        if (contracts.containsKey(contractInterface.getSimpleName())) {
+            throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
+        }
+
+        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
 
         verifyContract(smartContract, contractInterface);
 
