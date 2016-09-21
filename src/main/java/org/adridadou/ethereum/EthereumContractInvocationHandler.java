@@ -1,7 +1,6 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.adridadou.ethereum.converters.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -25,9 +24,10 @@ import java.util.stream.Collectors;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    private final Map<String, SmartContract> contracts = Maps.newHashMap();
+    private final Map<EthAddress, Map<ECKey, SmartContract>> contracts = new HashMap<>();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
+    private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
     EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
         this.blockchainProxy = blockchainProxy;
@@ -42,9 +42,9 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        final String contractName = method.getDeclaringClass().getSimpleName().toLowerCase();
         final String methodName = method.getName();
-        SmartContract contract = contracts.get(contractName);
+        SmartContractInfo contractInfo = info.get(new ProxyWrapper(proxy));
+        SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
         Object[] arguments = args == null ? new Object[0] : args;
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
@@ -160,10 +160,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    void register(Class<?> contractInterface, SoliditySource code, String contractName, EthAddress address, ECKey sender) throws IOException {
-        if (contracts.containsKey(contractInterface.getSimpleName())) {
-            throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
-        }
+    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, ECKey sender) throws IOException {
         final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
@@ -180,20 +177,20 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         SmartContract smartContract = blockchainProxy.map(code, contractName, address, sender);
 
         verifyContract(smartContract, contractInterface);
-
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), smartContract);
+        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
+        Map<ECKey, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
+        proxies.put(sender, smartContract);
+        contracts.put(address, proxies);
     }
 
-    void register(Class<?> contractInterface, ContractAbi abi, EthAddress address, ECKey sender) throws IOException {
-        if (contracts.containsKey(contractInterface.getSimpleName())) {
-            throw new EthereumApiException("attempt to register " + contractInterface.getSimpleName() + " twice!");
-        }
-
+    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, ECKey sender) throws IOException {
         SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
-
         verifyContract(smartContract, contractInterface);
 
-        contracts.put(contractInterface.getSimpleName().toLowerCase(), smartContract);
+        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
+        Map<ECKey, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
+        proxies.put(sender, smartContract);
+        contracts.put(address, proxies);
     }
 
     private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
