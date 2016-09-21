@@ -32,7 +32,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
-        eventHandler.onReady().forEach(b -> ethereum.getBlockchain().flush());
+        eventHandler.onReady().doOnCompleted(() -> ethereum.getBlockchain().flush());
     }
 
     @Override

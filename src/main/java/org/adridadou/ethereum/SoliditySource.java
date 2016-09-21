@@ -2,10 +2,7 @@ package org.adridadou.ethereum;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOError;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by davidroon on 18.09.16.
@@ -24,7 +21,15 @@ public class SoliditySource {
 
     public static SoliditySource from(File file) {
         try {
-            return new SoliditySource(IOUtils.toString(new FileInputStream(file), EthereumFacade.CHARSET));
+            return from(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
+    }
+
+    public static SoliditySource from(InputStream file) {
+        try {
+            return new SoliditySource(IOUtils.toString(file, EthereumFacade.CHARSET));
         } catch (IOException e) {
             throw new IOError(e);
         }
