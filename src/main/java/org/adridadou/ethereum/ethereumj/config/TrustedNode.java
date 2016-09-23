@@ -1,5 +1,7 @@
 package org.adridadou.ethereum.ethereumj.config;
 
+import java.util.Optional;
+
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
@@ -24,11 +26,39 @@ public class TrustedNode {
         this.ip = ip;
     }
 
-    public String getNodeId() {
-        return nodeId;
+    @Override
+    public String toString() {
+        Optional<String> optNodeId = Optional.ofNullable(nodeId);
+        Optional<String> optIp = Optional.ofNullable(ip);
+        if (optNodeId.isPresent() || optIp.isPresent()) {
+            return "{" +
+                    Optional.ofNullable(nodeId).map(id -> "\nnodeId='" + nodeId + '\'').orElse("") +
+                    Optional.ofNullable(ip).map(ip -> "\nip='" + ip + '\'').orElse("") +
+                    "\n}";
+        }
+        return "";
     }
 
-    public String getIp() {
-        return ip;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String nodeId;
+        private String ip;
+
+        public Builder nodeId(String nodeId) {
+            this.nodeId = nodeId;
+            return this;
+        }
+
+        public Builder ip(String ip) {
+            this.ip = ip;
+            return this;
+        }
+
+        public TrustedNode build() {
+            return new TrustedNode(nodeId, ip);
+        }
     }
 }

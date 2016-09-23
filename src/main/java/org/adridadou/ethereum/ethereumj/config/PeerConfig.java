@@ -53,17 +53,17 @@ import java.util.Set;
  * }
  */
 public class PeerConfig {
-    private final boolean eip8;
-    private final int framingMaxSize;
-    private final int p2pVersion;
-    private final int networkId;
+    private final Boolean eip8;
+    private final Integer framingMaxSize;
+    private final Integer p2pVersion;
+    private final Integer networkId;
     private final String privateKey;
-    private final int channelReadTimeout;
-    private final int connectionTimeout;
-    private final int port;
+    private final Integer channelReadTimeout;
+    private final Integer connectionTimeout;
+    private final Integer port;
     private final Set<EthereumProtocol> capabilities;
 
-    public PeerConfig(boolean eip8, int framingMaxSize, int p2pVersion, int networkId, String privateKey, int channelReadTimeout, int connectionTimeout, int port, Set<EthereumProtocol> capabilities) {
+    public PeerConfig(Boolean eip8, Integer framingMaxSize, Integer p2pVersion, Integer networkId, String privateKey, Integer channelReadTimeout, Integer connectionTimeout, Integer port, Set<EthereumProtocol> capabilities) {
         this.eip8 = eip8;
         this.framingMaxSize = framingMaxSize;
         this.p2pVersion = p2pVersion;
@@ -74,4 +74,85 @@ public class PeerConfig {
         this.port = port;
         this.capabilities = capabilities;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "eip8=" + eip8 +
+                "framingMaxSize=" + framingMaxSize +
+                "p2pVersion=" + p2pVersion +
+                "networkId=" + networkId +
+                "privateKey='" + privateKey + "'" +
+                "channelReadTimeout=" + channelReadTimeout +
+                "connectionTimeout=" + connectionTimeout +
+                "port=" + port +
+                "capabilities=" + capabilities +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Boolean eip8;
+        private Integer framingMaxSize;
+        private Integer p2pVersion;
+        private Integer networkId;
+        private String privateKey;
+        private Integer channelReadTimeout;
+        private Integer connectionTimeout;
+        private Integer port;
+        private Set<EthereumProtocol> capabilities;
+
+        public Builder eip8(Boolean eip8) {
+            this.eip8 = eip8;
+            return this;
+        }
+
+        public Builder framingMaxSize(Integer framingMaxSize) {
+            this.framingMaxSize = framingMaxSize;
+            return this;
+        }
+
+        public Builder p2pVersion(Integer p2pVersion) {
+            this.p2pVersion = p2pVersion;
+            return this;
+        }
+
+        public Builder networkId(Integer networkId) {
+            this.networkId = networkId;
+            return this;
+        }
+
+        public Builder privateKey(String privateKey) {
+            this.privateKey = privateKey;
+            return this;
+        }
+
+        public Builder channelReadTimeout(Integer channelReadTimeout) {
+            this.channelReadTimeout = channelReadTimeout;
+            return this;
+        }
+
+        public Builder connectionTimeout(Integer connectionTimeout) {
+            this.connectionTimeout = connectionTimeout;
+            return this;
+        }
+
+        public Builder port(Integer port) {
+            this.port = port;
+            return this;
+        }
+
+        public Builder capabilities(Set<EthereumProtocol> capabilities) {
+            this.capabilities = capabilities;
+            return this;
+        }
+
+        public PeerConfig build() {
+            return new PeerConfig(eip8, framingMaxSize, p2pVersion, networkId, privateKey, channelReadTimeout, connectionTimeout, port, capabilities);
+        }
+    }
+
 }

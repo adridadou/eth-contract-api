@@ -82,7 +82,7 @@ public class RealSmartContract implements SmartContract {
         }
         byte[] functionCallBytes = func.encode(args);
 
-        return bcProxy.sendTx(value, functionCallBytes, sender)
+        return bcProxy.sendTx(address, value, functionCallBytes, sender)
                 .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
 
     }

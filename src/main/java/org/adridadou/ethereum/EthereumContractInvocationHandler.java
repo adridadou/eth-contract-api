@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.lang.reflect.Array.newInstance;
+
 /**
  * Created by davidroon on 31.03.16.
  * This code is released under Apache 2 license
@@ -100,7 +102,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     private <T> T[] convertArray(Class<T> cls, Object[] arr) {
         for (TypeHandler<?> handler : handlers) {
             if (handler.isOfType(cls)) {
-                T[] result = (T[]) Array.newInstance(cls, arr.length);
+                T[] result = (T[]) newInstance(cls, arr.length);
                 for (int i = 0; i < arr.length; i++) {
                     result[i] = (T) handler.convert(arr[i]);
                 }
