@@ -25,13 +25,13 @@ package org.adridadou.ethereum.ethereumj.config;
  * }
  */
 public class DumpConfig {
-    private final boolean cleanOnRestart;
+    private final Boolean cleanOnRestart;
     private final VmTraceDumpStyle style;
-    private final int block;
+    private final Integer block;
     private final String dir;
-    private final boolean full;
+    private final Boolean full;
 
-    public DumpConfig(boolean cleanOnRestart, VmTraceDumpStyle style, int block, String dir, boolean full) {
+    public DumpConfig(Boolean cleanOnRestart, VmTraceDumpStyle style, Integer block, String dir, Boolean full) {
         this.cleanOnRestart = cleanOnRestart;
         this.style = style;
         this.block = block;
@@ -39,23 +39,5 @@ public class DumpConfig {
         this.full = full;
     }
 
-    public boolean isCleanOnRestart() {
-        return cleanOnRestart;
-    }
 
-    public VmTraceDumpStyle getStyle() {
-        return style;
-    }
-
-    public int getBlock() {
-        return block;
-    }
-
-    public String getDir() {
-        return dir;
-    }
-
-    public boolean isFull() {
-        return full;
-    }
 }

@@ -63,7 +63,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     private Observable<RealSmartContract> createContract(SoliditySource soliditySrc, String contractName, ECKey sender) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        return sendTx(1, Hex.decode(metadata.bin), sender)
+        return sendTx(EthAddress.of(new byte[0]), 1, Hex.decode(metadata.bin), sender)
                 .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
                 .map(address -> new RealSmartContract(metadata.abi, ethereum, sender, address, this));
     }
@@ -85,14 +85,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) {
+    public Observable<TransactionReceipt> sendTx(EthAddress receiveAddress, long value, byte[] data, ECKey sender) {
         return eventHandler.onReady().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    new byte[0],
+                    receiveAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value),
                     data);
             tx.sign(sender);

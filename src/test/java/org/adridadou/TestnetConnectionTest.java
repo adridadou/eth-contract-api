@@ -26,7 +26,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(standalone, "cow", "");
+        run(testnet, "cow", "");
     }
 
 
@@ -39,7 +39,7 @@ public class TestnetConnectionTest {
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());
-        //assertEquals(EthAddress.of(ethereumFacadeProvider.getKey(id).decode(password).getAddress()), myContract.getOwner());
+        assertEquals(EthAddress.of(ethereumFacadeProvider.getKey(id).decode(password).getAddress()), myContract.getOwner());
         System.out.println("*** calling contract myMethod");
         Observable<Integer> observable = myContract.myMethod("this is a test");
 

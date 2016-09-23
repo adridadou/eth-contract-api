@@ -62,17 +62,17 @@ import java.util.Set;
  * }
  */
 public class PeerDiscoveryConfig {
-    private final boolean includeHomeNode;
+    private final Boolean includeHomeNode;
     private final IpAddress ipAddress;
     private final IpAddress externalIpAddress;
-    private final int touchMaxNodes;
-    private final int touchPeriod;
-    private final boolean persist;
+    private final Integer touchMaxNodes;
+    private final Integer touchPeriod;
+    private final Boolean persist;
     private final Set<HostAddress> peersList;
-    private final int workers;
-    private final boolean enabled;
+    private final Integer workers;
+    private final Boolean enabled;
 
-    public PeerDiscoveryConfig(boolean includeHomeNode, IpAddress ipAddress, IpAddress externalIpAddress, int touchMaxNodes, int touchPeriod, boolean persist, Set<HostAddress> peersList, int workers, boolean enabled) {
+    public PeerDiscoveryConfig(Boolean includeHomeNode, IpAddress ipAddress, IpAddress externalIpAddress, Integer touchMaxNodes, Integer touchPeriod, Boolean persist, Set<HostAddress> peersList, Integer workers, Boolean enabled) {
         this.includeHomeNode = includeHomeNode;
         this.ipAddress = ipAddress;
         this.externalIpAddress = externalIpAddress;
@@ -84,39 +84,84 @@ public class PeerDiscoveryConfig {
         this.enabled = enabled;
     }
 
-    public boolean isIncludeHomeNode() {
-        return includeHomeNode;
+    @Override
+    public String toString() {
+        return "PeerDiscoveryConfig{" +
+                "includeHomeNode=" + includeHomeNode +
+                "ipAddress=" + ipAddress +
+                "externalIpAddress=" + externalIpAddress +
+                "touchMaxNodes=" + touchMaxNodes +
+                "touchPeriod=" + touchPeriod +
+                "persist=" + persist +
+                "peersList=" + peersList +
+                "workers=" + workers +
+                "enabled=" + enabled +
+                '}';
     }
 
-    public IpAddress getIpAddress() {
-        return ipAddress;
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public IpAddress getExternalIpAddress() {
-        return externalIpAddress;
+    public static class Builder {
+        private Boolean includeHomeNode;
+        private IpAddress ipAddress;
+        private IpAddress externalIpAddress;
+        private Integer touchMaxNodes;
+        private Integer touchPeriod;
+        private Boolean persist;
+        private Set<HostAddress> peersList;
+        private Integer workers;
+        private Boolean enabled;
+
+        public Builder includeHomeNode(boolean includeHomeNode) {
+            this.includeHomeNode = includeHomeNode;
+            return this;
+        }
+
+        public Builder ipAddress(IpAddress ipAddress) {
+            this.ipAddress = ipAddress;
+            return this;
+        }
+
+        public Builder externalIpAddress(IpAddress externalIpAddress) {
+            this.externalIpAddress = externalIpAddress;
+            return this;
+        }
+
+        public Builder touchMaxNodes(int touchMaxNodes) {
+            this.touchMaxNodes = touchMaxNodes;
+            return this;
+        }
+
+        public Builder touchPeriod(int touchPeriod) {
+            this.touchPeriod = touchPeriod;
+            return this;
+        }
+
+        public Builder persist(boolean persist) {
+            this.persist = persist;
+            return this;
+        }
+
+        public Builder peersList(Set<HostAddress> peersList) {
+            this.peersList = peersList;
+            return this;
+        }
+
+        public Builder workers(int workers) {
+            this.workers = workers;
+            return this;
+        }
+
+        public Builder enabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public PeerDiscoveryConfig build() {
+            return new PeerDiscoveryConfig(includeHomeNode, ipAddress, externalIpAddress, touchMaxNodes, touchPeriod, persist, peersList, workers, enabled);
+        }
     }
 
-    public int getTouchMaxNodes() {
-        return touchMaxNodes;
-    }
-
-    public int getTouchPeriod() {
-        return touchPeriod;
-    }
-
-    public boolean isPersist() {
-        return persist;
-    }
-
-    public Set<HostAddress> getPeersList() {
-        return peersList;
-    }
-
-    public int getWorkers() {
-        return workers;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
 }
