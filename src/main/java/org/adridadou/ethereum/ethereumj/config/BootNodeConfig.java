@@ -7,7 +7,7 @@ package org.adridadou.ethereum.ethereumj.config;
  * # Boot node list
  * active = [
  * # Sample entries:
- * # { url = "enode://<hex nodeID>@hostname.com:30303" }
+ * # { url = "enode://hex_nodeID@hostname.com:30303" }
  * # {
  * #    ip = hostname.com
  * #    port = 30303
