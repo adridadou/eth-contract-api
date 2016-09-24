@@ -166,7 +166,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(contractInterface.getSimpleName())) {
+            if (entry.getKey().equalsIgnoreCase(contractName)) {
                 if (found != null) {
                     throw new EthereumApiException("more than one Contract found for " + contractInterface.getSimpleName());
                 }

@@ -1,17 +1,12 @@
 package org.adridadou.ethereum;
 
 import java.io.IOException;
-import java.lang.reflect.Proxy;
 import java.nio.charset.Charset;
 
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
-
-import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.nio.charset.Charset;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
 
