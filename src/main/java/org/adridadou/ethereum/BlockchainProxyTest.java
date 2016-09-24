@@ -59,4 +59,9 @@ public class BlockchainProxyTest implements BlockchainProxy {
     public EthereumEventHandler events() {
         return null;
     }
+
+    @Override
+    public boolean addressExists(EthAddress address) {
+        return true;
+    }
 }

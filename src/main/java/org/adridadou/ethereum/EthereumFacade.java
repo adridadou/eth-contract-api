@@ -45,6 +45,12 @@ public class EthereumFacade {
         return blockchainProxy.publish(code, contractName, sender);
     }
 
+    public boolean addressExists(final EthAddress address) {
+        return blockchainProxy.addressExists(address);
+    }
+
+
+
     public EthereumEventHandler events() {
         return blockchainProxy.events();
     }
