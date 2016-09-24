@@ -20,6 +20,8 @@ public interface BlockchainProxy {
     Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
 
     EthereumEventHandler events();
+
+    boolean addressExists(EthAddress address);
 }
 
 

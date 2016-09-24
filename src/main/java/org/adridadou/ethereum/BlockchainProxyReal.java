@@ -125,5 +125,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return eventHandler;
     }
 
+    @Override
+    public boolean addressExists(EthAddress address) {
+        return ethereum.getRepository().isExist(address.address);
+    }
+
 
 }
