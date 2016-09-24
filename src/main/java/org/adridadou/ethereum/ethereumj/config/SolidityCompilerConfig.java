@@ -5,7 +5,7 @@ import java.nio.file.Path;
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
- * <p>
+ *
  * # Solidity options
  * solc {
  * # Full path to solc executable

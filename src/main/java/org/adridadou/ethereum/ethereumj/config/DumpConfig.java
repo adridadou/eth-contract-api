@@ -3,7 +3,7 @@ package org.adridadou.ethereum.ethereumj.config;
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
- * <p>
+ *
  * dump {
  * # for testing purposes
  * # all the state will be dumped
@@ -12,14 +12,14 @@ package org.adridadou.ethereum.ethereumj.config;
  * # possible values [true/false]
  * full = false
  * dir = dmp
- * <p>
+ *
  * # This defines the vmtrace dump
  * # to the console and the style
  * # -1 for no block trace
  * # styles: [pretty/standard+] (default: standard+)
  * block = -1
  * style = pretty
- * <p>
+ *
  * # clean the dump dir each start
  * clean.on.restart = true
  * }
