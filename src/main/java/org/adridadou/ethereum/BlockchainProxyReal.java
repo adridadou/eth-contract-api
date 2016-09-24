@@ -93,14 +93,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, String toAddress) {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
         return eventHandler.onReady().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    toAddress == null ? null : Hex.decode(toAddress),
+                    toAddress == null ? null : toAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value),
                     data);
             tx.sign(sender);

@@ -17,7 +17,7 @@ public interface BlockchainProxy {
 
     Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
 
-    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, String address);
+    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
 
     EthereumEventHandler events();
 }
