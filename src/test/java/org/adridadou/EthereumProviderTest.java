@@ -47,7 +47,7 @@ public class EthereumProviderTest {
 
         EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
 
-        MyContract2 proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
+        BlaBla proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, BlaBla.class);
         proxy.myMethod(12);
 
         assertEquals(12, proxy.getI1());
@@ -57,7 +57,7 @@ public class EthereumProviderTest {
         int myMethod();
     }
 
-    private interface MyContract2 {
+    private interface BlaBla {
         void myMethod(int value);
 
         int getI1();
