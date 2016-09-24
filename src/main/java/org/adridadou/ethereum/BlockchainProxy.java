@@ -15,9 +15,9 @@ public interface BlockchainProxy {
 
     SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, ECKey sender);
 
-    Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender);
+    Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
 
-    Observable<TransactionReceipt> sendTx(EthAddress receiveAddress, long value, byte[] data, ECKey sender);
+    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
 
     EthereumEventHandler events();
 }

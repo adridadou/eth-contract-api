@@ -1,5 +1,9 @@
 package org.adridadou.ethereum;
 
+import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
+
+import java.math.BigInteger;
+
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.TestSmartContract;
@@ -9,10 +13,6 @@ import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 import rx.Observable;
-
-import java.math.BigInteger;
-
-import static org.ethereum.config.blockchain.FrontierConfig.*;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -46,12 +46,12 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender) {
-        return Observable.just(EthAddress.of(blockchain.submitNewContract(code.getSource()).getAddress()));
+    public Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+        return Observable.just(EthAddress.of(blockchain.submitNewContract(code.getSource(), constructorArgs).getAddress()));
     }
 
     @Override
-    public Observable<TransactionReceipt> sendTx(EthAddress receiveAddress, long value, byte[] data, ECKey sender) {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
         return null;
     }
 
