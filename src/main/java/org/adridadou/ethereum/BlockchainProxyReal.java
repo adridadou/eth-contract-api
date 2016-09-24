@@ -1,23 +1,25 @@
 package org.adridadou.ethereum;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.RealSmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.*;
+import org.ethereum.core.CallTransaction;
+import org.ethereum.core.Transaction;
+import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.db.ByteArrayWrapper;
-import org.ethereum.facade.*;
+import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
 import rx.Observable;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -32,15 +34,15 @@ public class BlockchainProxyReal implements BlockchainProxy {
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
-        eventHandler.observeSync().forEach(b -> ethereum.getBlockchain().flush());
+        eventHandler.onReady().doOnCompleted(() -> ethereum.getBlockchain().flush());
     }
 
     @Override
-    public SmartContract map(String src, String contractName, EthAddress address, ECKey sender) {
+    public SmartContract map(SoliditySource src, String contractName, EthAddress address, ECKey sender) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src, contractName);
-            return mapFromAbi(metadata.abi, address, sender);
+            return mapFromAbi(new ContractAbi(metadata.abi), address, sender);
 
         } catch (IOException e) {
             throw new EthereumApiException("error while mapping a smart contract", e);
@@ -48,28 +50,34 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract mapFromAbi(String abi, EthAddress address, ECKey sender) {
-        return new RealSmartContract(abi, ethereum, sender, address, this);
+    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
+        return new RealSmartContract(abi.getAbi(), ethereum, sender, address, this);
     }
 
     @Override
-    public Observable<EthAddress> publish(String code, String contractName, ECKey sender) {
+    public Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender).map(RealSmartContract::getAddress);
+            return createContract(code, contractName, sender, constructorArgs).map(RealSmartContract::getAddress);
         } catch (IOException e) {
             throw new EthereumApiException("error while publishing " + contractName + ":", e);
         }
     }
 
-    private Observable<RealSmartContract> createContract(String soliditySrc, String contractName, ECKey sender) throws IOException {
+    private Observable<RealSmartContract> createContract(SoliditySource soliditySrc, String contractName, ECKey sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        return sendTx(1, Hex.decode(metadata.bin), sender)
+        CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
+        CallTransaction.Function constructor = contract.getConstructor();
+        if (constructor == null && constructorArgs.length > 0) {
+            throw new EthereumApiException("No constructor with params found");
+        }
+        byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
+        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
                 .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
                 .map(address -> new RealSmartContract(metadata.abi, ethereum, sender, address, this));
     }
 
-    private CompilationResult.ContractMetadata compile(String src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(src.getBytes(EthereumFacade.CHARSET), true,
+    private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
+        SolidityCompiler.Result result = SolidityCompiler.compile(src.getSource().getBytes(EthereumFacade.CHARSET), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
             throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
@@ -85,14 +93,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender) {
-        return eventHandler.observeSync().flatMap((b) -> {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
+        return eventHandler.onReady().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    new byte[0],
+                    toAddress == null ? null : toAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value),
                     data);
             tx.sign(sender);
@@ -113,8 +121,13 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public EthereumEventHandler eventHandler() {
+    public EthereumEventHandler events() {
         return eventHandler;
+    }
+
+    @Override
+    public boolean addressExists(EthAddress address) {
+        return ethereum.getRepository().isExist(address.address);
     }
 
 

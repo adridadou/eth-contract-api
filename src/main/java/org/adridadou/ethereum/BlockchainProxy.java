@@ -11,15 +11,17 @@ import rx.Observable;
  * This code is released under Apache 2 license
  */
 public interface BlockchainProxy {
-    SmartContract map(final String src, String contractName, EthAddress address, ECKey sender);
+    SmartContract map(final SoliditySource src, String contractName, EthAddress address, ECKey sender);
 
-    SmartContract mapFromAbi(final String abi, EthAddress address, ECKey sender);
+    SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, ECKey sender);
 
-    Observable<EthAddress> publish(String code, String contractName, ECKey sender);
+    Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
 
-    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender);
+    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
 
-    EthereumEventHandler eventHandler();
+    EthereumEventHandler events();
+
+    boolean addressExists(EthAddress address);
 }
 
 

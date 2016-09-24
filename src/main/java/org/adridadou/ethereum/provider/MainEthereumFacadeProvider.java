@@ -14,6 +14,7 @@ import org.ethereum.facade.EthereumFactory;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -43,11 +44,10 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     @Override
     public List<? extends SecureKey> listAvailableKeys() {
         File[] files = Optional.ofNullable(new File(getKeystoreFolderPath()).listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + getKeystoreFolderPath()));
-        return javaslang.collection.List
-                .of(files)
+        return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
                 .map(FileSecureKey::new)
-                .toJavaList();
+                .collect(Collectors.toList());
     }
 
     private String getKeystoreFolderPath() {

@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.provider;
 
+import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
@@ -59,12 +60,12 @@ public class TestnetEthereumFacadeProvider implements EthereumFacadeProvider {
 
     @Override
     public List<? extends SecureKey> listAvailableKeys() {
-        return javaslang.collection.List.of(
+        return Lists.newArrayList(
                 getKey("cow"),
                 getKey("bull"),
                 getKey("frog"),
                 getKey("lion")
-        ).toJavaList();
+        );
     }
 
     @Override
