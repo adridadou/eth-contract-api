@@ -51,7 +51,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, String address) {
+    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
         return null;
     }
 
