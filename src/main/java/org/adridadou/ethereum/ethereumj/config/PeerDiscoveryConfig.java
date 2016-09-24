@@ -5,20 +5,20 @@ import java.util.Set;
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
- * <p>
+ *
  * * peer.discovery = {
- * <p>
+ *
  * # if peer discovery is off
  * # the peer window will show
  * # only what was retrieved by active
  * # peers [true/false]
  * enabled = true
- * <p>
+ *
  * # number of workers that
  * # test the peers for being
  * # online [1..10]
  * workers = 8
- * <p>
+ *
  * # List of the seed peers to start
  * # the search for online peers
  * # values: [ip:port, ip:port, ip:port ...]
@@ -29,25 +29,25 @@ import java.util.Set;
  * "frontier-3.ether.camp:30303",
  * "frontier-4.ether.camp:30303"
  * ]
- * <p>
+ *
  * # indicates if the discovered nodes and their reputations
  * # are stored in DB and persisted between VM restarts
  * persist = true
- * <p>
+ *
  * # the period in seconds with which the discovery
  * # tries to reconnect to successful nodes
  * # 0 means the nodes are not reconnected
  * touchPeriod = 600
- * <p>
+ *
  * # the maximum nuber of nodes to reconnect to
  * # -1 for unlimited
  * touchMaxNodes = 100
- * <p>
+ *
  * # external IP/hostname which is reported as our host during discovery
  * # if not set, the service http://checkip.amazonaws.com is used
  * # the last resort is to get the peer.bind.ip address
  * external.ip = null
- * <p>
+ *
  * # Local network adapter IP to which
  * # the discovery UDP socket is bound
  * # e.g: 192.168.1.104
@@ -55,7 +55,7 @@ import java.util.Set;
  * # if the value is empty it will be retrieved
  * # by punching to some known address e.g: www.google.com
  * bind.ip = ""
- * <p>
+ *
  * # indicates whether the discovery will include own home node
  * # within the list of neighbor nodes
  * public.home.node = true
