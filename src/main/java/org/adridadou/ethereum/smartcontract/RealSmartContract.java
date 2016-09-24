@@ -1,17 +1,22 @@
 package org.adridadou.ethereum.smartcontract;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxyReal;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.*;
+import org.ethereum.core.Block;
+import org.ethereum.core.BlockchainImpl;
+import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;
+import org.ethereum.core.Repository;
+import org.ethereum.core.Transaction;
+import org.ethereum.core.TransactionExecutor;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 import rx.Observable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -82,7 +87,7 @@ public class RealSmartContract implements SmartContract {
         }
         byte[] functionCallBytes = func.encode(args);
 
-        return bcProxy.sendTx(value, functionCallBytes, sender)
+        return bcProxy.sendTx(value, functionCallBytes, sender, address.toString())
                 .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
 
     }
