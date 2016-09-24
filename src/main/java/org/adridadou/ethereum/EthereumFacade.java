@@ -1,13 +1,14 @@
 package org.adridadou.ethereum;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
 
-import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.nio.charset.Charset;
+import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -23,16 +24,29 @@ public class EthereumFacade {
         this.blockchainProxy = blockchainProxy;
     }
 
-    public <T> T createContractProxy(String code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
-        handler.register(contractInterface, code, contractName, address, sender);
-        return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+        T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+        handler.register(proxy, contractInterface, code, contractName, address, sender);
+        return proxy;
     }
 
-    public Observable<EthAddress> publishContract(String code, String contractName, ECKey sender) {
+    public <T> T createContractProxy(ContractAbi abi, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+        T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+        handler.register(proxy, contractInterface, abi, address, sender);
+        return proxy;
+    }
+
+    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender) {
         return blockchainProxy.publish(code, contractName, sender);
     }
 
-    public EthereumEventHandler eventHandler() {
-        return blockchainProxy.eventHandler();
+    public boolean addressExists(final EthAddress address) {
+        return blockchainProxy.addressExists(address);
+    }
+
+
+
+    public EthereumEventHandler events() {
+        return blockchainProxy.events();
     }
 }
