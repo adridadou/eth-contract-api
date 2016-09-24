@@ -3,11 +3,11 @@ package org.adridadou.ethereum.ethereumj.config;
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
- * <p>
+ *
  * # Boot node list
  * active = [
  * # Sample entries:
- * # { url = "enode://<hex nodeID>@hostname.com:30303" }
+ * # { url = "enode://hex_nodeID@hostname.com:30303" }
  * # {
  * #    ip = hostname.com
  * #    port = 30303

@@ -5,7 +5,7 @@ import java.util.Optional;
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
- * <p>
+ *
  * # structured trace
  * # is the trace being
  * # collected in the
