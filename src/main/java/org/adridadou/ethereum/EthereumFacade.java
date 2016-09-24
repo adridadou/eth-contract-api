@@ -1,13 +1,13 @@
 package org.adridadou.ethereum;
 
+import java.io.IOException;
+import java.lang.reflect.Proxy;
+import java.nio.charset.Charset;
+
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
-
-import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.nio.charset.Charset;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -33,8 +33,8 @@ public class EthereumFacade {
         return (T) Proxy.newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
     }
 
-    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender) {
-        return blockchainProxy.publish(code, contractName, sender);
+    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+        return blockchainProxy.publish(code, contractName, sender, constructorArgs);
     }
 
     public EthereumEventHandler events() {
