@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.smartcontract.TestSmartContract;
+import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.TransactionReceipt;
@@ -36,13 +36,13 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public SmartContract map(SoliditySource src, String contractName, EthAddress address, ECKey sender) {
-        return new TestSmartContract(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
+        return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
 
     }
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
-        return new TestSmartContract(blockchain.createExistingContractFromABI(abi.getAbi(), address.address));
+        return new SmartContractTest(blockchain.createExistingContractFromABI(abi.getAbi(), address.address));
     }
 
     @Override
