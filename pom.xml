@@ -43,6 +43,12 @@
         </repository>
 
         <repository>
+            <id>oss.jfrog.org3</id>
+            <name>Repository from Bintray</name>
+            <url>http://dl.bintray.com/web3j/maven</url>
+        </repository>
+
+        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -76,6 +82,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>0.3.0</version>
         </dependency>
 
         <dependency>

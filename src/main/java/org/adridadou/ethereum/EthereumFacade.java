@@ -36,8 +36,8 @@ public class EthereumFacade {
         return proxy;
     }
 
-    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender) {
-        return blockchainProxy.publish(code, contractName, sender);
+    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+        return blockchainProxy.publish(code, contractName, sender, constructorArgs);
     }
 
     public boolean addressExists(final EthAddress address) {
