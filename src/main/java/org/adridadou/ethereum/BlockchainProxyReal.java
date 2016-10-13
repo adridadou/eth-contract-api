@@ -71,8 +71,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
-                .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
+        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender)
                 .map(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -93,7 +92,15 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
+    public Observable<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
+        return sendTxInternal(value, data, sender, toAddress).map(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
+    }
+
+    public Observable<EthAddress> sendTx(long value, byte[] data, ECKey sender) {
+        return sendTxInternal(value, data, sender, null).map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
+    }
+
+    private Observable<TransactionReceipt> sendTxInternal(long value, byte[] data, ECKey sender, EthAddress toAddress) {
         return eventHandler.onReady().flatMap((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
