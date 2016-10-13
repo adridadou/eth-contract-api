@@ -9,7 +9,6 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
-import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 import rx.Observable;
@@ -51,7 +50,12 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
+    public Observable<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
+        return null;
+    }
+
+    @Override
+    public Observable<EthAddress> sendTx(long value, byte[] data, ECKey sender) {
         return null;
     }
 

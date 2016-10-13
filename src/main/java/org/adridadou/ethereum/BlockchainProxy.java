@@ -2,7 +2,6 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import rx.Observable;
 
@@ -17,7 +16,9 @@ public interface BlockchainProxy {
 
     Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
 
-    Observable<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
+    Observable<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
+
+    Observable<EthAddress> sendTx(long value, byte[] data, ECKey sender);
 
     EthereumEventHandler events();
 
