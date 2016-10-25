@@ -11,6 +11,7 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
+import org.ethereum.jsonrpc.JsonRpc;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 import rx.Observable;
 
@@ -63,5 +64,10 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public boolean addressExists(EthAddress address) {
         return true;
+    }
+
+    @Override
+    public JsonRpc getJsonRpc() {
+        return null;
     }
 }

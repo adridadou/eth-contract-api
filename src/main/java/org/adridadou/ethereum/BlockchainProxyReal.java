@@ -15,6 +15,8 @@ import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
+import org.ethereum.facade.EthereumImpl;
+import org.ethereum.jsonrpc.JsonRpc;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
@@ -128,6 +130,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
     @Override
     public boolean addressExists(EthAddress address) {
         return ethereum.getRepository().isExist(address.address);
+    }
+
+@Override
+    public JsonRpc getJsonRpc() {
+        return ((EthereumImpl)ethereum).getApplicationContext().getBean(JsonRpc.class);
     }
 
 
