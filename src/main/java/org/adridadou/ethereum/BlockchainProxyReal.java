@@ -132,10 +132,4 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return ethereum.getRepository().isExist(address.address);
     }
 
-@Override
-    public JsonRpc getJsonRpc() {
-        return ((EthereumImpl)ethereum).getApplicationContext().getBean(JsonRpc.class);
-    }
-
-
 }

@@ -66,8 +66,4 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return true;
     }
 
-    @Override
-    public JsonRpc getJsonRpc() {
-        return null;
-    }
 }
