@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.jsonrpc.JsonRpc;
 import rx.Observable;
 
 
@@ -44,10 +43,6 @@ public class EthereumFacade {
 
     public boolean addressExists(final EthAddress address) {
         return blockchainProxy.addressExists(address);
-    }
-
-    public JsonRpc getJsonRpc () {
-        return blockchainProxy.getJsonRpc();
     }
 
     public EthereumEventHandler events() {
