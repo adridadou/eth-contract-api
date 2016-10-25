@@ -35,4 +35,9 @@ public class AbstractHandler<T> implements Observable.OnSubscribe<T> {
         subscribers.removeAll(unsubscribed);
     }
 
+    public void onTransaction(final T param) {
+        removeUnSubscribed();
+        subscribers.forEach(subscriber -> subscriber.onNext(param));
+    }
+
 }
