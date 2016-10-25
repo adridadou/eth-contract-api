@@ -4,7 +4,6 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
-import org.ethereum.jsonrpc.JsonRpc;
 import rx.Observable;
 
 /**
@@ -23,8 +22,6 @@ public interface BlockchainProxy {
     EthereumEventHandler events();
 
     boolean addressExists(EthAddress address);
-
-    JsonRpc getJsonRpc();
 }
 
 
