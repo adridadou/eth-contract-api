@@ -34,8 +34,7 @@ public class TestnetConnectionTest {
         ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
-
-        SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract.sol"));
+        SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());
@@ -51,6 +50,13 @@ public class TestnetConnectionTest {
         assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
+
+        assertEquals("", myContract.getI2());
+        System.out.println("*** calling contract myMethod2 async");
+        myContract.myMethod2("async call");
+        System.out.println("*** sleeping for a bit..");
+        Thread.sleep(25000);
+        assertEquals("async call", myContract.getI2());
     }
 
     public static class MyReturnType {
@@ -96,9 +102,13 @@ public class TestnetConnectionTest {
     }
 
     private interface MyContract2 {
-        Observable<Integer> myMethod(String value);
+      Observable<Integer> myMethod(String value);
+
+        void myMethod2(String value);
 
         String getI1();
+
+        String getI2();
 
         boolean getT();
 
