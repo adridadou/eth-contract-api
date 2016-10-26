@@ -54,8 +54,6 @@ public class TestnetConnectionTest {
         assertEquals("", myContract.getI2());
         System.out.println("*** calling contract myMethod2 async");
         myContract.myMethod2("async call");
-        System.out.println("*** sleeping for a bit..");
-        Thread.sleep(25000);
         assertEquals("async call", myContract.getI2());
     }
 
