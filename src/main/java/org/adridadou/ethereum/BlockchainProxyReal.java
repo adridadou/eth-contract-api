@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adridadou.ethereum.handler.EthereumEventHandler;
-import org.adridadou.ethereum.smartcontract.RealSmartContract;
+import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -15,6 +15,8 @@ import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
+import org.ethereum.facade.EthereumImpl;
+import org.ethereum.jsonrpc.JsonRpc;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
@@ -51,19 +53,19 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
-        return new RealSmartContract(abi.getAbi(), ethereum, sender, address, this);
+        return new SmartContractReal(abi.getAbi(), ethereum, sender, address, this);
     }
 
     @Override
     public Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender, constructorArgs).map(RealSmartContract::getAddress);
+            return createContract(code, contractName, sender, constructorArgs).map(SmartContractReal::getAddress);
         } catch (IOException e) {
             throw new EthereumApiException("error while publishing " + contractName + ":", e);
         }
     }
 
-    private Observable<RealSmartContract> createContract(SoliditySource soliditySrc, String contractName, ECKey sender, Object... constructorArgs) throws IOException {
+    private Observable<SmartContractReal> createContract(SoliditySource soliditySrc, String contractName, ECKey sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
         CallTransaction.Function constructor = contract.getConstructor();
@@ -73,7 +75,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
         return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
                 .map(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
-                .map(address -> new RealSmartContract(metadata.abi, ethereum, sender, address, this));
+                .map(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
     private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
@@ -129,6 +131,5 @@ public class BlockchainProxyReal implements BlockchainProxy {
     public boolean addressExists(EthAddress address) {
         return ethereum.getRepository().isExist(address.address);
     }
-
 
 }
