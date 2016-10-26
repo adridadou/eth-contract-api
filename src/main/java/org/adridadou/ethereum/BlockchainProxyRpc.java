@@ -11,12 +11,12 @@ import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.request.EthCall;
-import org.web3j.protocol.core.methods.request.EthSendTransaction;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import rx.Observable;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -102,9 +102,8 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     public Observable<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
         final EthAddress senderAddress = EthAddress.of(sender.getAddress());
-        return Observable.from(web3j.ethEstimateGas(new EthCall(toAddress.toString(), Hex.toHexString(data)))
-                .sendAsync()
-                .thenCompose(gas -> web3j.ethSendTransaction(new EthSendTransaction(senderAddress.toString(), toAddress.toString(), gas.getAmountUsed(), Hex.toHexString(data))).sendAsync())
+        return Observable.from(web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
+                .thenCompose(gas -> web3j.ethSendTransaction(Transaction.createFunctionCallTransaction(senderAddress.toString(), BigInteger.ONE, gas.getAmountUsed(), toAddress.toString(), BigInteger.ZERO, Hex.toHexString(data))).sendAsync())
                 .thenCompose(result -> getTransactionReceipt(result.getTransactionHash()))
                 .thenApply(receipt -> new EthExecutionResult(null))
         );
@@ -113,9 +112,9 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     @Override
     public Observable<EthAddress> sendTx(long value, byte[] data, ECKey sender) {
         final EthAddress senderAddress = EthAddress.of(sender.getAddress());
-        return Observable.from(web3j.ethEstimateGas(new EthCall(null, Hex.toHexString(data)))
+        return Observable.from(web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data)))
                 .sendAsync()
-                .thenCompose(gas -> web3j.ethSendTransaction(new EthSendTransaction(senderAddress.toString(), null, gas.getAmountUsed(), Hex.toHexString(data))).sendAsync())
+                .thenCompose(gas -> web3j.ethSendTransaction(Transaction.createContractTransaction(senderAddress.toString(), BigInteger.ONE, gas.getAmountUsed(), BigInteger.ZERO, Hex.toHexString(data))).sendAsync())
                 .thenCompose(result -> getTransactionReceipt(result.getTransactionHash()))
                 .thenApply(receipt -> EthAddress.of(receipt.getContractAddress().orElse(null)))
         );
