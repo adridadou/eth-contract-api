@@ -23,17 +23,19 @@ public class TestnetConnectionTest {
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
     private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
+    private final RpcEthereumFacadeProvider rpc = new RpcEthereumFacadeProvider();
 
     @Test
     public void run() throws Exception {
-        run(standalone, "cow", "");
+        run(morden, "cow", "I will not forget this one");
     }
 
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
-        EthereumFacade ethereum = ethereumFacadeProvider.create();
-
+        ECKey sender = ethereumFacadeProvider.listAvailableKeys().get(0).decode(password);
+        //EthereumFacade ethereum = ethereumFacadeProvider.create();
+        //EthereumFacade ethereum = rpc.create("https://morden.infura.io/57yGdS5iZEfm7G4MpJAo");
+        EthereumFacade ethereum = rpc.create("http://localhost:8545");
 
         SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract.sol"));
         Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);

@@ -10,7 +10,17 @@ import org.adridadou.exception.EthereumApiException;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
-import java.io.File;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,5 +64,44 @@ public class RpcEthereumFacadeProvider implements EthereumFacadeProvider {
     private String getKeystoreFolderPath() {
         String homeDir = System.getProperty("user.home");
         return homeDir + "/Library/Ethereum/keystore/";
+    }
+
+    protected void setSslCertificate(final String fileName) throws KeyStoreException {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        System.setProperty("javax.net.ssl.trustStore", fileName);
+    }
+
+    public static class ImportCA {
+        public static void importCA(final String certfile, final InputStream is, final String pass, final String alias) throws Exception {
+
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            char[] password = pass.toCharArray();
+            keystore.load(is, password);
+//////
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream certstream = fullStream(certfile);
+            Certificate certs = cf.generateCertificate(certstream);
+            File keystoreFile = new File(certfile);
+// Load the keystore contents
+            FileInputStream in = new FileInputStream(keystoreFile);
+            keystore.load(in, password);
+            in.close();
+
+// Add the certificate
+            keystore.setCertificateEntry(alias, certs);
+
+// Save the new keystore contents
+            FileOutputStream out = new FileOutputStream(keystoreFile);
+            keystore.store(out, password);
+            out.close();
+        }
+
+        private static InputStream fullStream(String fname) throws IOException {
+            FileInputStream fis = new FileInputStream(fname);
+            DataInputStream dis = new DataInputStream(fis);
+            byte[] bytes = new byte[dis.available()];
+            dis.readFully(bytes);
+            return new ByteArrayInputStream(bytes);
+        }
     }
 }

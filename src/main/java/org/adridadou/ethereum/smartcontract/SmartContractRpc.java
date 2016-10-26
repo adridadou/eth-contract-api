@@ -6,11 +6,11 @@ import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.core.CallTransaction.Contract;
+import org.ethereum.core.Transaction;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.methods.request.EthCall;
 import rx.Observable;
 
 import java.io.IOException;
@@ -52,10 +52,10 @@ public class SmartContractRpc implements SmartContract {
 
         try {
             org.web3j.protocol.core.methods.response.EthCall result = web3j
-                    .ethCall(new EthCall(senderAddress.toString(), //from
-                            address.toString(), //to
-                            BigInteger.valueOf(100_000_000_000_000L), //gas limit
+                    .ethCall(org.web3j.protocol.core.methods.request.Transaction.createFunctionCallTransaction(senderAddress.toString(), //from
                             BigInteger.ZERO, //gas price
+                            BigInteger.valueOf(100_000_000_000_000L), //gas limit
+                            address.toString(), //to
                             BigInteger.ZERO, //value
                             Hex.toHexString(tx.getData())), DefaultBlockParameter.valueOf("latest")).send();
             return contract.getByName(functionName).decodeResult(Hex.decode(result.getResult()));
