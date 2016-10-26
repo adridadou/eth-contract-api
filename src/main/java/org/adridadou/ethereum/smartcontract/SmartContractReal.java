@@ -22,14 +22,14 @@ import rx.Observable;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class RealSmartContract implements SmartContract {
+public class SmartContractReal implements SmartContract {
     private EthAddress address;
     private Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
     private final ECKey sender;
 
-    public RealSmartContract(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxyReal bcProxy) {
+    public SmartContractReal(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxyReal bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
@@ -45,7 +45,7 @@ public class RealSmartContract implements SmartContract {
 
         Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
                 address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(ECKey.fromPrivate(new byte[32]));
+        tx.sign(sender);
 
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
 

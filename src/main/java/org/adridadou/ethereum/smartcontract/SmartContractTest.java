@@ -13,10 +13,10 @@ import java.util.List;
  * Created by davidroon on 18.08.16.
  * This code is released under Apache 2 license
  */
-public class TestSmartContract implements SmartContract {
+public class SmartContractTest implements SmartContract {
     private final SolidityContract contract;
 
-    public TestSmartContract(SolidityContract contract) {
+    public SmartContractTest(SolidityContract contract) {
         this.contract = contract;
     }
 
