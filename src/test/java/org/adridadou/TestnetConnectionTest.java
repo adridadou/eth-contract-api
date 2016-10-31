@@ -4,11 +4,11 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
-import rx.Observable;
-import rx.observables.BlockingObservable;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -35,13 +35,13 @@ public class TestnetConnectionTest {
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
+        CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address.get(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
-        Observable<Integer> observable = myContract.myMethod("this is a test");
+        Future<Integer> future = myContract.myMethod("this is a test");
 
-        Integer result = BlockingObservable.from(observable).first();
+        Integer result = future.get();
         assertEquals(12, result.intValue());
         assertEquals("this is a test", myContract.getI1());
         assertTrue(myContract.getT());
@@ -52,9 +52,6 @@ public class TestnetConnectionTest {
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
         assertEquals("", myContract.getI2());
-        System.out.println("*** calling contract myMethod2 async");
-        myContract.myMethod2("async call");
-        assertEquals("async call", myContract.getI2());
     }
 
     public static class MyReturnType {
@@ -100,7 +97,7 @@ public class TestnetConnectionTest {
     }
 
     private interface MyContract2 {
-      Observable<Integer> myMethod(String value);
+        CompletableFuture<Integer> myMethod(String value);
 
         void myMethod2(String value);
 

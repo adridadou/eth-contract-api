@@ -1,13 +1,9 @@
 package org.adridadou.ethereum;
 
-import org.apache.commons.io.IOUtils;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
-import rx.observables.BlockingObservable;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -26,7 +22,7 @@ public class EthereumFacadeTest {
     @Test
     public void testReturnTypeConverters() throws Throwable {
         SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract2.sol"));
-        EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
         MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());

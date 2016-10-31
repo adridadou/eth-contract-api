@@ -3,7 +3,6 @@ package org.adridadou;
 import org.adridadou.ethereum.*;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
-import rx.observables.BlockingObservable;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +28,7 @@ public class EthereumProviderTest {
                         "  }" +
                         "}");
 
-        EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract", sender)).first();
+        EthAddress address = ethereum.publishContract(contract, "myContract", sender).get();
 
         MyContract proxy = ethereum.createContractProxy(contract, "myContract", address, sender, MyContract.class);
 
@@ -45,7 +44,7 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}");
 
-        EthAddress address = BlockingObservable.from(ethereum.publishContract(contract, "myContract2", sender)).first();
+        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
 
         BlaBla proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, BlaBla.class);
         proxy.myMethod(12);

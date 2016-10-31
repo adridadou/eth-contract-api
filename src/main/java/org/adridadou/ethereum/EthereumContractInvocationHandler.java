@@ -15,6 +15,8 @@ import rx.Observable;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,8 +54,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
         } else {
-            if (method.getReturnType().equals(Observable.class)) {
-                return contract.callFunction(methodName, arguments).map(result -> convertResult(result, method));
+            if (method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+                return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
             } else {
                 return convertResult(contract.callConstFunction(methodName, arguments), method);
             }
@@ -136,7 +138,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return convertList(arrType, (Object[]) result);
         }
 
-        if (returnType.equals(Observable.class)) {
+        if (returnType.equals(CompletableFuture.class)) {
             actualReturnType = getGenericType(genericType);
         }
 
