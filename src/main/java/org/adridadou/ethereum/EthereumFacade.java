@@ -4,10 +4,12 @@ import static java.lang.reflect.Proxy.newProxyInstance;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
+import rx.Completable;
 import rx.Observable;
 
 
@@ -37,7 +39,7 @@ public class EthereumFacade {
         return proxy;
     }
 
-    public Observable<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
         return blockchainProxy.publish(code, contractName, sender, constructorArgs);
     }
 
