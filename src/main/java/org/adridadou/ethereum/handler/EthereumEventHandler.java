@@ -17,8 +17,7 @@ import rx.Observable;
  * This code is released under Apache 2 license
  */
 public class EthereumEventHandler extends EthereumListenerAdapter {
-    private final CompletableFuture<Boolean> futureReady = new CompletableFuture<>();
-    private final Observable<Boolean> ready = Observable.from(futureReady);
+    private final CompletableFuture<Boolean> ready = new CompletableFuture<>();
     private final OnBlockHandler onBlockHandler;
     private OnTransactionHandler onTransactionHandler;
     private long currentBlockNumber;
@@ -57,10 +56,10 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
     @Override
     public void onSyncDone() {
-        futureReady.complete(Boolean.TRUE);
+        ready.complete(Boolean.TRUE);
     }
 
-    public Observable<Boolean> onReady() {
+    public CompletableFuture<Boolean> onReady() {
         return ready;
     }
 
