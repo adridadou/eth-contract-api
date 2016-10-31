@@ -5,6 +5,7 @@ import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.SoliditySource;
 import org.adridadou.ethereum.provider.*;
 import org.ethereum.crypto.ECKey;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
+@Ignore
 public class LaunchethTest {
 
 
