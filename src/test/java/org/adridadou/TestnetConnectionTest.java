@@ -52,6 +52,10 @@ public class TestnetConnectionTest {
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
         assertEquals("", myContract.getI2());
+        System.out.println("*** calling contract myMethod2 async");
+        myContract.myMethod2("async call").get();
+
+        assertEquals("async call", myContract.getI2());
     }
 
     public static class MyReturnType {
@@ -99,7 +103,7 @@ public class TestnetConnectionTest {
     private interface MyContract2 {
         CompletableFuture<Integer> myMethod(String value);
 
-        void myMethod2(String value);
+        CompletableFuture<Void> myMethod2(String value);
 
         String getI1();
 

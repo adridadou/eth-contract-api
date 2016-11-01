@@ -10,13 +10,11 @@ import org.ethereum.core.CallTransaction;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
-import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -40,7 +38,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 new LongHandler(),
                 new StringHandler(),
                 new BooleanHandler(),
-                new AddressHandler()
+                new AddressHandler(),
+                new VoidHandler()
         );
     }
 
