@@ -48,7 +48,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         final String methodName = method.getName();
         SmartContractInfo contractInfo = info.get(new ProxyWrapper(proxy));
         SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
-        Object[] arguments = args == null ? new Object[0] : args;
+        Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
@@ -59,6 +59,11 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 return convertResult(contract.callConstFunction(methodName, arguments), method);
             }
         }
+    }
+
+    private Object[] prepareArguments(Object[] args) {
+        //FUTORE_WORK [#19]: convert input parameters if needed
+        return args;
     }
 
     private Object convertResult(Object[] result, Method method) {

@@ -4,7 +4,6 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
-import rx.Observable;
 
 import java.util.concurrent.CompletableFuture;
 

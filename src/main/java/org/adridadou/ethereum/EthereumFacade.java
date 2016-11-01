@@ -9,9 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.ethereum.crypto.ECKey;
-import rx.Completable;
-import rx.Observable;
-
 
 /**
  * Created by davidroon on 31.03.16.
