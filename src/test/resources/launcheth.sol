@@ -48,7 +48,7 @@ contract Launcheth is mortal {
 
 	modifier nameSpaceOwner(string namespace, address owner) {
 		if(contexts.owners[namespace] != owner) throw;
-		_;
+		_
 	}
 
     function getNbNamespaces() constant returns (uint){
