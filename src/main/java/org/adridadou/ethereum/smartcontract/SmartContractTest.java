@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.util.blockchain.SolidityContract;
-import rx.Observable;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 18.08.16.
@@ -21,8 +21,8 @@ public class SmartContractTest implements SmartContract {
     }
 
     @Override
-    public Observable<Object[]> callFunction(String methodName, Object... arguments) {
-        return Observable.just(contract.callFunction(methodName, arguments).getReturnValues());
+    public CompletableFuture<Object[]> callFunction(String methodName, Object... arguments) {
+        return CompletableFuture.completedFuture(contract.callFunction(methodName, arguments).getReturnValues());
     }
 
     @Override

@@ -3,15 +3,16 @@ package org.adridadou.ethereum;
 import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
 
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
+import org.ethereum.core.TransactionReceipt;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
-import rx.Observable;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -45,17 +46,12 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public Observable<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
-        return Observable.just(EthAddress.of(blockchain.submitNewContract(code.getSource(), constructorArgs).getAddress()));
+    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), constructorArgs).getAddress()));
     }
 
     @Override
-    public Observable<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
-        return null;
-    }
-
-    @Override
-    public Observable<EthAddress> sendTx(long value, byte[] data, ECKey sender) {
+    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
         return null;
     }
 
@@ -68,4 +64,5 @@ public class BlockchainProxyTest implements BlockchainProxy {
     public boolean addressExists(EthAddress address) {
         return true;
     }
+
 }

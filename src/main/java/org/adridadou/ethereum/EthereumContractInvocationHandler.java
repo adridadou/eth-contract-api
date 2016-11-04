@@ -10,11 +10,11 @@ import org.ethereum.core.CallTransaction;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
-import rx.Observable;
 
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +38,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 new LongHandler(),
                 new StringHandler(),
                 new BooleanHandler(),
-                new AddressHandler()
+                new AddressHandler(),
+                new VoidHandler()
         );
     }
 
@@ -47,17 +48,22 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         final String methodName = method.getName();
         SmartContractInfo contractInfo = info.get(new ProxyWrapper(proxy));
         SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
-        Object[] arguments = args == null ? new Object[0] : args;
+        Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
         } else {
-            if (method.getReturnType().equals(Observable.class)) {
-                return contract.callFunction(methodName, arguments).map(result -> convertResult(result, method));
+            if (method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+                return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
             } else {
                 return convertResult(contract.callConstFunction(methodName, arguments), method);
             }
         }
+    }
+
+    private Object[] prepareArguments(Object[] args) {
+        //FUTORE_WORK [#19]: convert input parameters if needed
+        return args;
     }
 
     private Object convertResult(Object[] result, Method method) {
@@ -136,7 +142,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return convertList(arrType, (Object[]) result);
         }
 
-        if (returnType.equals(Observable.class)) {
+        if (returnType.equals(CompletableFuture.class)) {
             actualReturnType = getGenericType(genericType);
         }
 

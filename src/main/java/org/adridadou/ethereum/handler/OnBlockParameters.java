@@ -13,4 +13,12 @@ public class OnBlockParameters {
         this.block = block;
         this.receipts = receipts;
     }
+
+    @Override
+    public String toString() {
+        return "OnBlockParameters{" +
+                "block=" + block +
+                ", receipts=" + receipts +
+                '}';
+    }
 }

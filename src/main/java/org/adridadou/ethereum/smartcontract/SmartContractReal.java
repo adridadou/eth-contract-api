@@ -2,6 +2,7 @@ package org.adridadou.ethereum.smartcontract;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxyReal;
@@ -16,7 +17,6 @@ import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutor;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
-import rx.Observable;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -75,11 +75,11 @@ public class SmartContractReal implements SmartContract {
     }
 
 
-    public Observable<Object[]> callFunction(String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
         return callFunction(1, functionName, args);
     }
 
-    public Observable<Object[]> callFunction(long value, String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
@@ -88,7 +88,7 @@ public class SmartContractReal implements SmartContract {
         byte[] functionCallBytes = func.encode(args);
 
         return bcProxy.sendTx(value, functionCallBytes, sender, address)
-                .map(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
+                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
 
     }
 
