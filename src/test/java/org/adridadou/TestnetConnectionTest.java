@@ -4,11 +4,11 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;
-import rx.Observable;
-import rx.observables.BlockingObservable;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -23,28 +23,24 @@ public class TestnetConnectionTest {
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
     private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
-    private final RpcEthereumFacadeProvider rpc = new RpcEthereumFacadeProvider();
 
     @Test
     public void run() throws Exception {
-        run(morden, "cow", "I will not forget this one");
+        run(standalone, "cow", "");
     }
 
-
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        ECKey sender = ethereumFacadeProvider.listAvailableKeys().get(0).decode(password);
-        //EthereumFacade ethereum = ethereumFacadeProvider.create();
-        //EthereumFacade ethereum = rpc.create("https://morden.infura.io/57yGdS5iZEfm7G4MpJAo");
-        EthereumFacade ethereum = rpc.create("http://localhost:8545");
+        ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
+        EthereumFacade ethereum = ethereumFacadeProvider.create();
 
-        SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract.sol"));
-        Observable<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", BlockingObservable.from(address).first(), sender, MyContract2.class);
+        SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
+        CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address.get(), sender, MyContract2.class);
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
-        Observable<Integer> observable = myContract.myMethod("this is a test");
+        Future<Integer> future = myContract.myMethod("this is a test");
 
-        Integer result = BlockingObservable.from(observable).first();
+        Integer result = future.get();
         assertEquals(12, result.intValue());
         assertEquals("this is a test", myContract.getI1());
         assertTrue(myContract.getT());
@@ -53,6 +49,12 @@ public class TestnetConnectionTest {
         assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
+
+        assertEquals("", myContract.getI2());
+        System.out.println("*** calling contract myMethod2 async");
+        myContract.myMethod2("async call").get();
+
+        assertEquals("async call", myContract.getI2());
     }
 
     public static class MyReturnType {
@@ -98,9 +100,13 @@ public class TestnetConnectionTest {
     }
 
     private interface MyContract2 {
-        Observable<Integer> myMethod(String value);
+        CompletableFuture<Integer> myMethod(String value);
+
+        CompletableFuture<Void> myMethod2(String value);
 
         String getI1();
+
+        String getI2();
 
         boolean getT();
 
