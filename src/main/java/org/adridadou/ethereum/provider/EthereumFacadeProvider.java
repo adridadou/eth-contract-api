@@ -14,6 +14,7 @@ import org.adridadou.ethereum.keystore.SecureKey;
 public interface EthereumFacadeProvider {
 
     EthereumFacade create();
+
     EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler);
 
     SecureKey getKey(final String id) throws Exception;
