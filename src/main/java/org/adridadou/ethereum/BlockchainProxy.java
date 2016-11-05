@@ -18,7 +18,7 @@ public interface BlockchainProxy {
 
     CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
 
-    CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
+    CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
 
     EthereumEventHandler events();
 

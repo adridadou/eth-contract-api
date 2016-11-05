@@ -11,6 +11,7 @@ import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.EthCall;
 import rx.Observable;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -51,8 +53,9 @@ public class SmartContractRpc implements SmartContract {
         tx.sign(sender);
 
         try {
-            org.web3j.protocol.core.methods.response.EthCall result = web3j
+            EthCall result = web3j
                     .ethCall(org.web3j.protocol.core.methods.request.Transaction.createFunctionCallTransaction(senderAddress.toString(), //from
+                            BigInteger.ZERO,
                             BigInteger.ZERO, //gas price
                             BigInteger.valueOf(100_000_000_000_000L), //gas limit
                             address.toString(), //to
@@ -65,11 +68,11 @@ public class SmartContractRpc implements SmartContract {
 
     }
 
-    public Observable<Object[]> callFunction(String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
         return callFunction(1, functionName, args);
     }
 
-    public Observable<Object[]> callFunction(long value, String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
@@ -78,7 +81,7 @@ public class SmartContractRpc implements SmartContract {
         byte[] functionCallBytes = func.encode(args);
 
         return bcProxy.sendTx(value, functionCallBytes, sender, address)
-                .map(receipt -> Optional.ofNullable(receipt.getResult())
+                .thenApply(receipt -> Optional.ofNullable(receipt.getResult())
                         .map(result -> contract.getByName(functionName).decodeResult(result)).orElse(null));
 
     }
