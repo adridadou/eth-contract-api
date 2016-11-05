@@ -72,7 +72,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
         return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
-                .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
+                .thenApply(receipt -> EthAddress.of(receipt.getResult()))
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -93,7 +93,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
             Transaction tx = new Transaction(
@@ -117,7 +117,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
-        });
+        }).thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
     @Override
