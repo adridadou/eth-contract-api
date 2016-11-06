@@ -32,8 +32,8 @@ public class TestnetConnectionTest {
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
-
-        EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
+        EthereumFacade ethereum = ethereumFacadeProvider.create();
+        //EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
 
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
         CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
