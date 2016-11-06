@@ -46,7 +46,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), constructorArgs).getAddress()));
+        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), contractName, constructorArgs).getAddress()));
     }
 
     @Override
