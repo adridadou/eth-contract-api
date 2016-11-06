@@ -25,7 +25,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(testnet, "cow", "");
+        run(standalone, "cow", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
