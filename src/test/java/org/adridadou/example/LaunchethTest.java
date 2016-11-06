@@ -5,7 +5,6 @@ import org.adridadou.ethereum.EthAddress;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.SoliditySource;
 import org.adridadou.ethereum.provider.*;
-import org.ethereum.crypto.ECKey;
 import org.junit.Ignore;
 import org.junit.Test;
 

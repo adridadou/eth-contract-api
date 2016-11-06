@@ -3,7 +3,6 @@ package org.adridadou.ethereum;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.crypto.ECKey;
 
 import java.util.concurrent.CompletableFuture;
 
