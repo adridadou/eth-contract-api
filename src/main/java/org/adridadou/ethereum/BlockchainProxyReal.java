@@ -139,10 +139,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.get(sender.getAddress()).subtract(BigInteger.ONE));
+        pendingTransactions.put(sender.getAddress(), pendingTransactions.getOrDefault(sender.getAddress(), BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
     private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.get(sender.getAddress()).add(BigInteger.ONE));
+        pendingTransactions.put(sender.getAddress(), pendingTransactions.getOrDefault(sender.getAddress(), BigInteger.ZERO).add(BigInteger.ONE));
     }
 }
