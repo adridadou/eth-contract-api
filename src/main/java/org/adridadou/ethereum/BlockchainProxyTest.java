@@ -11,7 +11,6 @@ import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 /**
@@ -35,23 +34,23 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, ECKey sender) {
+    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
         return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
 
     }
 
     @Override
-    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
+    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         return new SmartContractTest(blockchain.createExistingContractFromABI(abi.getAbi(), address.address));
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), constructorArgs).getAddress()));
     }
 
     @Override
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress address) {
+    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, EthAccount sender, EthAddress address) {
         return null;
     }
 

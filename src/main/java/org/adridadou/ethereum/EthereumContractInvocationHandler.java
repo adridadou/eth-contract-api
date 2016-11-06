@@ -7,7 +7,6 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 
@@ -26,7 +25,7 @@ import static java.lang.reflect.Array.newInstance;
  */
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
-    private final Map<EthAddress, Map<ECKey, SmartContract>> contracts = new HashMap<>();
+    private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
     private final BlockchainProxy blockchainProxy;
     private final List<TypeHandler<?>> handlers;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
@@ -168,7 +167,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, ECKey sender) throws IOException {
+    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount sender) throws IOException {
         final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
@@ -186,17 +185,17 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
         verifyContract(smartContract, contractInterface);
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
-        Map<ECKey, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
+        Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
         proxies.put(sender, smartContract);
         contracts.put(address, proxies);
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, ECKey sender) throws IOException {
+    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount sender) throws IOException {
         SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
         verifyContract(smartContract, contractInterface);
 
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
-        Map<ECKey, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
+        Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
         proxies.put(sender, smartContract);
         contracts.put(address, proxies);
     }
