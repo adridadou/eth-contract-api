@@ -11,7 +11,6 @@ import java.util.Arrays;
 public class EthData {
     public final byte[] data;
 
-
     private EthData(byte[] data) {
         this.data = data;
     }
@@ -28,7 +27,7 @@ public class EthData {
     }
 
     public String toString() {
-        return Hex.toHexString(data);
+        return "0x" + Hex.toHexString(data);
     }
 
     @Override

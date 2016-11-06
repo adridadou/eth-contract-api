@@ -35,6 +35,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int SLEEP_DURATION = 5000;
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
+    private static BigInteger GAS_LIMIT = BigInteger.valueOf(3_000_000); //Future_work gas estimation does not work well
 
     private final Web3j web3j;
 
@@ -136,23 +137,23 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         return web3j.ethGetTransactionCount(
                 senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync().thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
                 .thenCompose(gas -> web3j.ethGasPrice().sendAsync().thenCompose(price -> {
-                    RawTransaction tx = RawTransaction.createFunctionCallTransaction(nonce.getTransactionCount(), price.getGasPrice(), gas.getAmountUsed().add(BigInteger.valueOf(100000)), toAddress.toString(), BigInteger.valueOf(value), Hex.toHexString(data));
+                    RawTransaction tx = RawTransaction.createFunctionCallTransaction(nonce.getTransactionCount(), price.getGasPrice(), GAS_LIMIT, toAddress.toString(), BigInteger.valueOf(value), Hex.toHexString(data));
                     byte[] signedTx = TransactionEncoder.signMessage(tx, sender.credentials);
                     return web3j.ethSendRawTransaction(Hex.toHexString(signedTx)).sendAsync();
                 }))
-                .thenApply(result -> waitForTransactionReceipt(result.getTransactionHash()))
+                .thenApply(this::handleTransaction)
                 .thenApply(receipt -> new EthExecutionResult(null)));
     }
 
     public CompletableFuture<EthAddress> sendTx(long value, byte[] data, EthAccount sender) {
         final EthAddress senderAddress = sender.getAddress();
-        System.out.println(sender.getAddress().toString());
+        log.info(senderAddress.toString());
         return web3j.ethGetTransactionCount(senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync()
                 .thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
                         .thenCompose(gas -> web3j.ethGasPrice().sendAsync().thenCompose(price -> {
-                            RawTransaction tx = RawTransaction.createContractTransaction(nonce.getTransactionCount(), price.getGasPrice(), gas.getAmountUsed().add(BigInteger.valueOf(100000)), BigInteger.valueOf(value), Hex.toHexString(data));
-                            byte[] signedTx = TransactionEncoder.signMessage(tx, sender.credentials);
-                            return web3j.ethSendRawTransaction(Hex.toHexString(signedTx)).sendAsync();
+                            RawTransaction tx = RawTransaction.createContractTransaction(nonce.getTransactionCount(), price.getGasPrice(), GAS_LIMIT, BigInteger.valueOf(value), Hex.toHexString(data));
+                            EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
+                            return web3j.ethSendRawTransaction(signedTx.toString()).sendAsync();
                         }))
                         .thenApply(this::handleTransaction)
                         .thenApply(receipt -> EthAddress.of(receipt.getContractAddress().orElse(null))));

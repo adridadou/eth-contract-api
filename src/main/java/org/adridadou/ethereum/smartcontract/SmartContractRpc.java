@@ -48,8 +48,7 @@ public class SmartContractRpc implements SmartContract {
 
     public Object[] callConstFunction(String functionName, Object... args) {
 
-        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
-                address.toString(), 0, contract.getByName(functionName), args);
+        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L, address.toString(), 0, contract.getByName(functionName), args);
         tx.sign(sender.key);
 
         try {
@@ -58,9 +57,9 @@ public class SmartContractRpc implements SmartContract {
                             BigInteger.ZERO,
                             BigInteger.ZERO, //gas price
                             BigInteger.valueOf(100_000_000_000_000L), //gas limit
-                            address.toString(), //to
+                            "0x" + address.toString(), //to
                             BigInteger.ZERO, //value
-                            Hex.toHexString(tx.getData())), DefaultBlockParameter.valueOf("latest")).send();
+                            EthData.of(tx.getData()).toString()), DefaultBlockParameter.valueOf("latest")).send();
             return contract.getByName(functionName).decodeResult(EthData.of(result.getResult()).data);
         } catch (IOException e) {
             throw new EthereumApiException("error while const calling a function");
