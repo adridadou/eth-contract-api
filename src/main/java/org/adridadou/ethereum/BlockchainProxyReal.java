@@ -31,7 +31,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
 
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
@@ -139,10 +139,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.getOrDefault(sender.getAddress(), BigInteger.ZERO).subtract(BigInteger.ONE));
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
     private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.getOrDefault(sender.getAddress(), BigInteger.ZERO).add(BigInteger.ONE));
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }
