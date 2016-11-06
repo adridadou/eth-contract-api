@@ -2,17 +2,16 @@ package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxyRpc;
+import org.adridadou.ethereum.EthAccount;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.core.Transaction;
-import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.response.EthCall;
-import rx.Observable;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -30,16 +29,16 @@ public class SmartContractRpc implements SmartContract {
     private Contract contract;
     private final Web3j web3j;
     private final BlockchainProxyRpc bcProxy;
-    private final ECKey sender;
+    private final EthAccount sender;
     private final EthAddress senderAddress;
 
-    public SmartContractRpc(String abi, Web3j web3j, ECKey sender, EthAddress address, BlockchainProxyRpc bcProxy) {
+    public SmartContractRpc(String abi, Web3j web3j, EthAccount sender, EthAddress address, BlockchainProxyRpc bcProxy) {
         this.contract = new Contract(abi);
         this.web3j = web3j;
         this.sender = sender;
         this.bcProxy = bcProxy;
         this.address = address;
-        this.senderAddress = EthAddress.of(sender.getAddress());
+        this.senderAddress = sender.getAddress();
     }
 
     public List<CallTransaction.Function> getFunctions() {
@@ -50,7 +49,7 @@ public class SmartContractRpc implements SmartContract {
 
         Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
                 address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(sender);
+        tx.sign(sender.key);
 
         try {
             EthCall result = web3j

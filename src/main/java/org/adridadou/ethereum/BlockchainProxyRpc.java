@@ -5,13 +5,16 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
+import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -30,6 +33,8 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private static final int SLEEP_DURATION = 5000;
     private static final int ATTEMPTS = 120;
+    private static final BigInteger GAS_LIMIT = BigInteger.valueOf(3000000);
+    private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
 
     private final Web3j web3j;
 
@@ -38,7 +43,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, ECKey sender) {
+    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src, contractName);
@@ -50,12 +55,12 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
+    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         return new SmartContractRpc(abi.getAbi(), web3j, sender, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         try {
             return createContract(code, contractName, sender, constructorArgs).thenApply(SmartContractRpc::getAddress);
         } catch (IOException e) {
@@ -63,7 +68,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         }
     }
 
-    private CompletableFuture<SmartContractRpc> createContract(SoliditySource soliditySrc, String contractName, ECKey sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<SmartContractRpc> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
         CallTransaction.Function constructor = contract.getConstructor();
@@ -126,26 +131,37 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         }
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
-        final EthAddress senderAddress = EthAddress.of(sender.getAddress());
+    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, EthAccount sender, EthAddress toAddress) {
+        final EthAddress senderAddress = sender.getAddress();
         return web3j.ethGetTransactionCount(
-                Hex.toHexString(sender.getAddress()), DefaultBlockParameterName.LATEST).sendAsync().thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
+                senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync().thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
                 .thenCompose(gas -> web3j.ethSendTransaction(Transaction.createFunctionCallTransaction(senderAddress.toString(), nonce.getTransactionCount(), BigInteger.ONE, gas.getAmountUsed(), toAddress.toString(), BigInteger.ZERO, Hex.toHexString(data))).sendAsync())
                 .thenApply(result -> waitForTransactionReceipt(result.getTransactionHash()))
                 .thenApply(receipt -> new EthExecutionResult(null)));
-
     }
 
-    public CompletableFuture<EthAddress> sendTx(long value, byte[] data, ECKey sender) {
-        final EthAddress senderAddress = EthAddress.of(sender.getAddress());
+    public CompletableFuture<EthAddress> sendTx(long value, byte[] data, EthAccount sender) {
+        final EthAddress senderAddress = sender.getAddress();
+        System.out.println(sender.getAddress().toString());
         return web3j.ethGetTransactionCount(
-                Hex.toHexString(sender.getAddress()), DefaultBlockParameterName.LATEST).sendAsync()
+                senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync()
                 .thenCompose(nonce -> web3j
                         .ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
-                        .thenCompose(gas -> web3j.ethSendTransaction(Transaction.createContractTransaction(senderAddress.toString(), nonce.getTransactionCount(), BigInteger.ONE, gas.getAmountUsed(), BigInteger.valueOf(value), Hex.toHexString(data))).sendAsync())
-                        .thenApply(result -> waitForTransactionReceipt(result.getTransactionHash()))
+                        .thenCompose(gas -> {
+                            RawTransaction tx = RawTransaction.createContractTransaction(nonce.getTransactionCount(), gas.getAmountUsed(), GAS_LIMIT, BigInteger.valueOf(value), Hex.toHexString(data));
+                            byte[] signedTx = TransactionEncoder.signMessage(tx, sender.credentials);
+                            return web3j.ethSendRawTransaction(Hex.toHexString(signedTx)).sendAsync();
+                        })
+                        .thenApply(result -> {
+                            if (result.hasError()) {
+                                throw new EthereumApiException(result.getError().getMessage());
+                            }
+                            log.info("transaction " + result.getTransactionHash() + " has been sent by " + sender.credentials.getAddress() + ". Waiting to be mined");
+                            return waitForTransactionReceipt(result.getTransactionHash());
+                        })
                         .thenApply(receipt -> EthAddress.of(receipt.getContractAddress().orElse(null))));
     }
+
 
     @Override
     public EthereumEventHandler events() {

@@ -25,7 +25,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(testnet, "cow", "");
+        run(morden, "UTC--2016-02-20T07-56-24.065281620Z--eda29d105f6038aee451cd66331cbb6655a8c690", "I will not forget this one");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
