@@ -2,6 +2,8 @@ package org.adridadou.ethereum;
 
 
 import org.ethereum.crypto.ECKey;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
 
 /**
  * Created by davidroon on 05.11.16.
@@ -9,9 +11,12 @@ import org.ethereum.crypto.ECKey;
  */
 public class EthAccount {
     public final ECKey key;
+    public final Credentials credentials;
 
     public EthAccount(ECKey key) {
         this.key = key;
+        ECKeyPair keyPair = ECKeyPair.create(key.getPrivKey());
+        this.credentials = Credentials.create(keyPair);
     }
 
     public EthAddress getAddress() {
