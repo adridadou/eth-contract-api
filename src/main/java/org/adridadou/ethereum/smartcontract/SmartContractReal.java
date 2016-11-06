@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxyReal;
+import org.adridadou.ethereum.EthAccount;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
@@ -15,7 +16,6 @@ import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutor;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 
 /**
@@ -27,9 +27,9 @@ public class SmartContractReal implements SmartContract {
     private Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
-    private final ECKey sender;
+    private final EthAccount sender;
 
-    public SmartContractReal(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxyReal bcProxy) {
+    public SmartContractReal(String abi, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
@@ -45,7 +45,7 @@ public class SmartContractReal implements SmartContract {
 
         Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
                 address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(sender);
+        tx.sign(sender.key);
 
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
 

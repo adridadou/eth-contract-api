@@ -1,6 +1,6 @@
 package org.adridadou.ethereum.keystore;
 
-import org.ethereum.crypto.ECKey;
+import org.adridadou.ethereum.EthAccount;
 
 import java.io.File;
 
@@ -15,8 +15,8 @@ public class FileSecureKey implements SecureKey {
         this.keyfile = keyfile;
     }
 
-    public ECKey decode(final String password) throws Exception {
-        return Keystore.fromKeystore(keyfile, password);
+    public EthAccount decode(final String password) throws Exception {
+        return new EthAccount(Keystore.fromKeystore(keyfile, password));
     }
 
     public String getName() {

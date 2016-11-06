@@ -2,7 +2,6 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
-import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,7 +29,7 @@ public class TestnetConnectionTest {
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
+        EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
 
         EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
 
@@ -40,10 +39,11 @@ public class TestnetConnectionTest {
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
+        Future<Integer> future2 = myContract.myMethod("this is a test2");
 
-        Integer result = future.get();
+        Integer result = future2.get();
         assertEquals(12, result.intValue());
-        assertEquals("this is a test", myContract.getI1());
+        assertEquals("this is a test2", myContract.getI1());
         assertTrue(myContract.getT());
 
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
