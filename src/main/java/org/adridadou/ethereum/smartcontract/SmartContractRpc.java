@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.adridadou.ethereum.BlockchainProxyRpc;
 import org.adridadou.ethereum.EthAccount;
 import org.adridadou.ethereum.EthAddress;
+import org.adridadou.ethereum.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.core.CallTransaction.Contract;
@@ -60,7 +61,7 @@ public class SmartContractRpc implements SmartContract {
                             address.toString(), //to
                             BigInteger.ZERO, //value
                             Hex.toHexString(tx.getData())), DefaultBlockParameter.valueOf("latest")).send();
-            return contract.getByName(functionName).decodeResult(Hex.decode(result.getResult()));
+            return contract.getByName(functionName).decodeResult(EthData.of(result.getResult()).data);
         } catch (IOException e) {
             throw new EthereumApiException("error while const calling a function");
         }
