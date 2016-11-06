@@ -27,7 +27,7 @@ public class TestnetConnectionTest {
     @Test
     public void run() throws Exception {
         EthAddress.of("0x1b29529382cca4e6e9a923023114ed7dd22da56c");
-        run(morden, "UTC--2016-02-20T07-56-24.065281620Z--eda29d105f6038aee451cd66331cbb6655a8c690", "I will not forget this one");
+        run(standalone, "cow", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
