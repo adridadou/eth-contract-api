@@ -12,13 +12,13 @@ import java.util.concurrent.CompletableFuture;
  * This code is released under Apache 2 license
  */
 public interface BlockchainProxy {
-    SmartContract map(final SoliditySource src, String contractName, EthAddress address, ECKey sender);
+    SmartContract map(final SoliditySource src, String contractName, EthAddress address, EthAccount sender);
 
-    SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, ECKey sender);
+    SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, EthAccount sender);
 
-    CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs);
+    CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs);
 
-    CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, ECKey sender, EthAddress address);
+    CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, EthAccount sender, EthAddress address);
 
     EthereumEventHandler events();
 

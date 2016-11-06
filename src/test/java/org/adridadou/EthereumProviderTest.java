@@ -1,7 +1,6 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
-    private final ECKey sender = null;
+    private final EthAccount sender = null;
     private final EthereumFacade ethereum = new EthereumFacade(bcProxy);
 
     @Test

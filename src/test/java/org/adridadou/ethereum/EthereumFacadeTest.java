@@ -1,6 +1,5 @@
 package org.adridadou.ethereum;
 
-import org.ethereum.crypto.ECKey;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class EthereumFacadeTest {
     private BlockchainProxy proxy = new BlockchainProxyTest();
     private EthereumFacade ethereum = new EthereumFacade(proxy);
-    private final ECKey sender = null;
+    private final EthAccount sender = null;
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
