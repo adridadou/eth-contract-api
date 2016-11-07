@@ -26,8 +26,12 @@ public class EthData {
         return of(Hex.decode(data));
     }
 
+    public String withLeading0x() {
+        return "0x" + this.toString();
+    }
+
     public String toString() {
-        return "0x" + Hex.toHexString(data);
+        return Hex.toHexString(data);
     }
 
     @Override

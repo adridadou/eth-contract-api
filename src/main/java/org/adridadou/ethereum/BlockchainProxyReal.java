@@ -73,7 +73,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
+        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender, null)
                 .thenApply(receipt -> EthAddress.of(receipt.getResult()))
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
@@ -100,7 +100,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, EthAccount sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(sender);
             Transaction tx = new Transaction(
@@ -108,8 +108,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
                     Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
-                    ByteUtil.longToBytesNoLeadZeroes(value),
-                    data);
+                    ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
+                    data.data);
             tx.sign(sender.key);
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(sender);

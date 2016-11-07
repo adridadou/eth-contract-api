@@ -10,7 +10,6 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
-import org.ethereum.core.TransactionReceipt;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 /**
@@ -50,7 +49,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, EthAccount sender, EthAddress address) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
         return null;
     }
 

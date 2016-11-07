@@ -17,10 +17,4 @@ public class RpcEthereumFacadeProvider {
         Web3j web3j = Web3j.build(new HttpService(url));
         return new EthereumFacade(new BlockchainProxyRpc(web3j));
     }
-
-    public EthereumFacade create(final String url, final OnBlockHandler onBlockHandler, final OnTransactionHandler onTransactionHandler) {
-        Web3j web3j = Web3j.build(new HttpService(url));
-        return new EthereumFacade(new BlockchainProxyRpc(web3j));
-    }
-
 }
