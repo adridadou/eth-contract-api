@@ -8,6 +8,7 @@ import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
+import org.ethereum.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -16,12 +17,11 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.*;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +35,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int SLEEP_DURATION = 5000;
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
-    private static BigInteger GAS_LIMIT = BigInteger.valueOf(3_000_000); //Future_work gas estimation does not work well
+    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
 
     private final Web3j web3j;
 
@@ -77,7 +77,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender)
+        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
                 .thenApply(address -> new SmartContractRpc(metadata.abi, web3j, sender, address, this));
     }
 
@@ -104,7 +104,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(String transactionHash, int sleepDuration, int attempts) {
-
         Optional<TransactionReceipt> receiptOptional =
                 sendTransactionReceiptRequest(transactionHash);
         for (int i = 0; i < attempts; i++) {
@@ -119,7 +118,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 break;
             }
         }
-
         return receiptOptional;
     }
 
@@ -132,31 +130,65 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         }
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(long value, byte[] data, EthAccount sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(final EthValue value, final EthData data, final EthAccount sender, final EthAddress toAddress) {
         final EthAddress senderAddress = sender.getAddress();
-        return web3j.ethGetTransactionCount(
-                senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync().thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
-                .thenCompose(gas -> web3j.ethGasPrice().sendAsync().thenCompose(price -> {
-                    RawTransaction tx = RawTransaction.createFunctionCallTransaction(nonce.getTransactionCount(), price.getGasPrice(), GAS_LIMIT, toAddress.toString(), BigInteger.valueOf(value), Hex.toHexString(data));
-                    byte[] signedTx = TransactionEncoder.signMessage(tx, sender.credentials);
-                    return web3j.ethSendRawTransaction(Hex.toHexString(signedTx)).sendAsync();
-                }))
-                .thenApply(this::handleTransaction)
-                .thenApply(receipt -> new EthExecutionResult(null)));
+        EthGetTransactionCount nonce;
+        EthEstimateGas gas;
+        EthGasPrice gasPrice;
+        try {
+            nonce = web3j.ethGetTransactionCount(senderAddress.withLeading0x(), DefaultBlockParameterName.LATEST).send();
+            gas = web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.withLeading0x(), data.toString())).send();
+            gasPrice = web3j.ethGasPrice().send();
+        } catch (IOException e) {
+            throw new EthereumApiException("error while sending a transaction", e);
+        }
+        increasePendingTransactionCounter(sender);
+
+        org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
+                ByteUtil.bigIntegerToBytes(getNonce(sender, nonce)),
+                ByteUtil.longToBytesNoLeadZeroes(gasPrice.getGasPrice().longValue()),
+                ByteUtil.longToBytesNoLeadZeroes(gas.getAmountUsed().longValue()),
+                Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
+                ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
+                data.data);
+        tx.sign(sender.key);
+
+        return web3j.ethSendRawTransaction(EthData.of(tx.getEncoded()).withLeading0x()).sendAsync().thenApply(this::handleTransaction)
+                .thenApply(receipt -> {
+                    decreasePendingTransactionCounter(sender);
+                    return new EthExecutionResult(new byte[0]);
+                });
     }
 
-    public CompletableFuture<EthAddress> sendTx(long value, byte[] data, EthAccount sender) {
+    private BigInteger getNonce(final EthAccount account, final EthGetTransactionCount nonce) {
+        return nonce.getTransactionCount().add(pendingTransactions.getOrDefault(account, BigInteger.ZERO)).subtract(BigInteger.ONE);
+    }
+
+    public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
         final EthAddress senderAddress = sender.getAddress();
-        log.info(senderAddress.toString());
-        return web3j.ethGetTransactionCount(senderAddress.toString(), DefaultBlockParameterName.LATEST).sendAsync()
-                .thenCompose(nonce -> web3j.ethEstimateGas(Transaction.createEthCallTransaction(senderAddress.toString(), Hex.toHexString(data))).sendAsync()
-                        .thenCompose(gas -> web3j.ethGasPrice().sendAsync().thenCompose(price -> {
-                            RawTransaction tx = RawTransaction.createContractTransaction(nonce.getTransactionCount(), price.getGasPrice(), GAS_LIMIT, BigInteger.valueOf(value), Hex.toHexString(data));
-                            EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
-                            return web3j.ethSendRawTransaction(signedTx.toString()).sendAsync();
-                        }))
-                        .thenApply(this::handleTransaction)
-                        .thenApply(receipt -> EthAddress.of(receipt.getContractAddress().orElse(null))));
+        EthGetTransactionCount nonce;
+        try {
+            nonce = web3j.ethGetTransactionCount(senderAddress.withLeading0x(), DefaultBlockParameterName.LATEST).send();
+        } catch (IOException e) {
+            throw new EthereumApiException("error while getting the nonce", e);
+        }
+        increasePendingTransactionCounter(sender);
+        return web3j.ethEstimateGas(Transaction.createContractTransaction(senderAddress.withLeading0x(), nonce.getTransactionCount(), BigInteger.ZERO, data.toString())).sendAsync()
+                .thenCompose(gas -> web3j.ethGasPrice().sendAsync().thenCompose(price -> {
+                    RawTransaction tx = RawTransaction.createContractTransaction(
+                            getNonce(sender, nonce),
+                            price.getGasPrice(),
+                            gas.getAmountUsed(),
+                            ethValue.inWei(),
+                            data.toString());
+                    EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
+                    return web3j.ethSendRawTransaction(signedTx.toString()).sendAsync();
+                }))
+                .thenApply(this::handleTransaction)
+                .thenApply(receipt -> {
+                    decreasePendingTransactionCounter(sender);
+                    return EthAddress.of(receipt.getContractAddress().orElse(null));
+                });
     }
 
     private TransactionReceipt handleTransaction(final EthSendTransaction result) {
@@ -169,7 +201,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     @Override
     public EthereumEventHandler events() {
-        return null;
+        throw new EthereumApiException("event handling is not yet implemented for RPC");
     }
 
     @Override
@@ -177,5 +209,13 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         throw new EthereumApiException("addressExists is not implemented for RPC");
     }
 
+    private void decreasePendingTransactionCounter(EthAccount sender) {
+        log.info("decreasing pending tx");
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
+    }
 
+    private void increasePendingTransactionCounter(EthAccount sender) {
+        log.info("increasing pending tx");
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
+    }
 }

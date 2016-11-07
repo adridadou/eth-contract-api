@@ -46,6 +46,10 @@ public class EthAddress {
         return Hex.toHexString(address);
     }
 
+    public String withLeading0x() {
+        return "0x" + this.toString();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

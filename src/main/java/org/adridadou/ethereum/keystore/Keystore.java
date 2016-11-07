@@ -114,7 +114,7 @@ public class Keystore {
         return skf.generateSecret(spec).getEncoded();
     }
 
-    private static byte[] sha3(byte[] h) throws NoSuchAlgorithmException {
+    public static byte[] sha3(byte[] h) throws NoSuchAlgorithmException {
         MessageDigest KECCAK = new Keccak.Digest256();
         KECCAK.reset();
         KECCAK.update(h);

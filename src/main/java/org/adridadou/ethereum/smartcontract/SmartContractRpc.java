@@ -1,17 +1,15 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.BlockchainProxyRpc;
-import org.adridadou.ethereum.EthAccount;
-import org.adridadou.ethereum.EthAddress;
-import org.adridadou.ethereum.EthData;
+import org.adridadou.ethereum.*;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.*;
+import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;
-import org.ethereum.core.Transaction;
+import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthCall;
 
 import java.io.IOException;
@@ -48,41 +46,38 @@ public class SmartContractRpc implements SmartContract {
 
     public Object[] callConstFunction(String functionName, Object... args) {
 
-        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L, address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(sender.key);
+        return Optional.ofNullable(contract.getByName(functionName))
+                .map(func -> {
+                    try {
+                        EthCall result = web3j.ethCall(new Transaction(
+                                senderAddress.withLeading0x(),
+                                BigInteger.ZERO,
+                                BigInteger.ZERO,
+                                BigInteger.valueOf(1_000_000_000),
+                                address.withLeading0x(), BigInteger.ZERO,
+                                EthData.of(func.encode(args)).toString()
+                        ), DefaultBlockParameter.valueOf("latest")).send();
 
-        try {
-            EthCall result = web3j
-                    .ethCall(org.web3j.protocol.core.methods.request.Transaction.createFunctionCallTransaction(senderAddress.toString(), //from
-                            BigInteger.ZERO,
-                            BigInteger.ZERO, //gas price
-                            BigInteger.valueOf(100_000_000_000_000L), //gas limit
-                            "0x" + address.toString(), //to
-                            BigInteger.ZERO, //value
-                            EthData.of(tx.getData()).toString()), DefaultBlockParameter.valueOf("latest")).send();
-            return contract.getByName(functionName).decodeResult(EthData.of(result.getResult()).data);
-        } catch (IOException e) {
-            throw new EthereumApiException("error while const calling a function");
-        }
-
+                        if (result.hasError()) {
+                            throw new EthereumApiException(result.getError().getMessage());
+                        }
+                        return func.decodeResult(EthData.of(result.getValue()).data);
+                    } catch (IOException e) {
+                        throw new EthereumApiException("error while calling a constant function");
+                    }
+                }).orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
-        return callFunction(1, functionName, args);
+        return callFunction(EthValue.wei(0), functionName, args);
     }
 
-    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
-        CallTransaction.Function func = contract.getByName(functionName);
-
-        if (func == null) {
-            throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
-        }
-        byte[] functionCallBytes = func.encode(args);
-
-        return bcProxy.sendTx(value, functionCallBytes, sender, address)
+    public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
+        return Optional.ofNullable(contract.getByName(functionName))
+                .map(func -> bcProxy.sendTx(value, EthData.of(func.encode(args)), sender, address)
                 .thenApply(receipt -> Optional.ofNullable(receipt.getResult())
-                        .map(result -> contract.getByName(functionName).decodeResult(result)).orElse(null));
-
+                        .map(result -> contract.getByName(functionName).decodeResult(result)).orElse(null)))
+                .orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 
     private String getAvailableFunctions() {
