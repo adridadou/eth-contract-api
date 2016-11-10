@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Charsets;
+import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 
 /**

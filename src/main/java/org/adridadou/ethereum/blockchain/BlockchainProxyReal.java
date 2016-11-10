@@ -1,4 +1,4 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.blockchain;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;

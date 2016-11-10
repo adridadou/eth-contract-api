@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.converters.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.ContractNotFoundException;
