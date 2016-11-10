@@ -2,7 +2,6 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
-import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,14 +25,12 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        EthAddress.of("0x1b29529382cca4e6e9a923023114ed7dd22da56c");
         run(standalone, "cow", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
-        //EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
 
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
         CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
@@ -58,6 +55,8 @@ public class TestnetConnectionTest {
         myContract.myMethod2("async call").get();
 
         assertEquals("async call", myContract.getI2());
+
+        assertEquals(EnumTest.VAL2, myContract.getEnumValue());
     }
 
     public static class MyReturnType {
@@ -102,10 +101,16 @@ public class TestnetConnectionTest {
         }
     }
 
+    private enum EnumTest {
+        VAL1, VAL2, VAL3
+    }
+
     private interface MyContract2 {
         CompletableFuture<Integer> myMethod(String value);
 
         CompletableFuture<Void> myMethod2(String value);
+
+        EnumTest getEnumValue();
 
         String getI1();
 

@@ -14,7 +14,7 @@ public class AddressHandler implements TypeHandler<EthAddress> {
     }
 
     @Override
-    public EthAddress convert(Object obj) {
+    public EthAddress convert(Object obj, Class<?> cls) {
         if (obj.getClass().equals(BigInteger.class)) {
             BigInteger bint = (BigInteger) obj;
             byte[] barray = bint.toByteArray();

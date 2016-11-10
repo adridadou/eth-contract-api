@@ -13,7 +13,7 @@ public class IntegerHandler implements TypeHandler<Integer> {
     }
 
     @Override
-    public Integer convert(Object obj) {
+    public Integer convert(Object obj, Class<?> cls) {
         if (obj.getClass().equals(BigInteger.class)) {
             return ((BigInteger) obj).intValue();
         }
