@@ -8,10 +8,6 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
-import org.ethereum.crypto.ECKey;
-import rx.Completable;
-import rx.Observable;
-
 
 /**
  * Created by davidroon on 31.03.16.
@@ -27,19 +23,19 @@ public class EthereumFacade {
         this.blockchainProxy = blockchainProxy;
     }
 
-    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount sender, Class<T> contractInterface) throws IOException {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, code, contractName, address, sender);
         return proxy;
     }
 
-    public <T> T createContractProxy(ContractAbi abi, EthAddress address, ECKey sender, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount sender, Class<T> contractInterface) throws IOException {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, abi, address, sender);
         return proxy;
     }
 
-    public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         return blockchainProxy.publish(code, contractName, sender, constructorArgs);
     }
 

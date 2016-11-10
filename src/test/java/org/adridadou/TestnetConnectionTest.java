@@ -2,7 +2,7 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
-import org.ethereum.crypto.ECKey;
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,13 +26,14 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
+        EthAddress.of("0x1b29529382cca4e6e9a923023114ed7dd22da56c");
         run(standalone, "cow", "");
     }
 
-
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        ECKey sender = ethereumFacadeProvider.getKey(id).decode(password);
+        EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
+        //EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
 
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
         CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
@@ -40,10 +41,11 @@ public class TestnetConnectionTest {
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
+        Future<Integer> future2 = myContract.myMethod("this is a test2");
 
-        Integer result = future.get();
+        Integer result = future2.get();
         assertEquals(12, result.intValue());
-        assertEquals("this is a test", myContract.getI1());
+        assertEquals("this is a test2", myContract.getI1());
         assertTrue(myContract.getT());
 
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -52,6 +54,10 @@ public class TestnetConnectionTest {
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
         assertEquals("", myContract.getI2());
+        System.out.println("*** calling contract myMethod2 async");
+        myContract.myMethod2("async call").get();
+
+        assertEquals("async call", myContract.getI2());
     }
 
     public static class MyReturnType {
@@ -99,7 +105,7 @@ public class TestnetConnectionTest {
     private interface MyContract2 {
         CompletableFuture<Integer> myMethod(String value);
 
-        void myMethod2(String value);
+        CompletableFuture<Void> myMethod2(String value);
 
         String getI1();
 

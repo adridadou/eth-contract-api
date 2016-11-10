@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -13,12 +14,12 @@ import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
+import org.ethereum.util.CopyOnWriteMap;
 import org.spongycastle.util.encoders.Hex;
 
 /**
@@ -30,6 +31,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
+    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
 
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
@@ -38,7 +40,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, ECKey sender) {
+    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
         CompilationResult.ContractMetadata metadata;
         try {
             metadata = compile(src, contractName);
@@ -50,12 +52,12 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, ECKey sender) {
+    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         return new SmartContractReal(abi.getAbi(), ethereum, sender, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, ECKey sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         try {
             return createContract(code, contractName, sender, constructorArgs).thenApply(SmartContractReal::getAddress);
         } catch (IOException e) {
@@ -63,7 +65,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         }
     }
 
-    private CompletableFuture<SmartContractReal> createContract(SoliditySource soliditySrc, String contractName, ECKey sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<SmartContractReal> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
         CallTransaction.Function constructor = contract.getConstructor();
@@ -71,8 +73,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
-                .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
+        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender, null)
+                .thenApply(receipt -> EthAddress.of(receipt.getResult()))
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -93,19 +95,24 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, ECKey sender, EthAddress toAddress) {
+    private BigInteger getNonce(final EthAccount account) {
+        BigInteger nonce = ethereum.getRepository().getNonce(account.getAddress().address);
+        return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
+    }
+
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
-            BigInteger nonce = ethereum.getRepository().getNonce(sender.getAddress());
+            BigInteger nonce = getNonce(sender);
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    toAddress == null ? null : toAddress.address,
-                    ByteUtil.longToBytesNoLeadZeroes(value),
-                    data);
-            tx.sign(sender);
+                    Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
+                    ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
+                    data.data);
+            tx.sign(sender.key);
             ethereum.submitTransaction(tx);
-
+            increasePendingTransactionCounter(sender);
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
             Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
@@ -114,10 +121,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
                     .map(params -> {
                         Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
+                        decreasePendingTransactionCounter(sender);
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
-        });
+        }).thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
     @Override
@@ -130,4 +138,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return ethereum.getRepository().isExist(address.address);
     }
 
+    private void decreasePendingTransactionCounter(EthAccount sender) {
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
+    }
+
+    private void increasePendingTransactionCounter(EthAccount sender) {
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
+    }
 }

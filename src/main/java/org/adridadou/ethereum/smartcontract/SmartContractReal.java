@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.BlockchainProxyReal;
-import org.adridadou.ethereum.EthAddress;
+import org.adridadou.ethereum.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
@@ -15,7 +14,6 @@ import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutor;
-import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 
 /**
@@ -27,9 +25,9 @@ public class SmartContractReal implements SmartContract {
     private Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
-    private final ECKey sender;
+    private final EthAccount sender;
 
-    public SmartContractReal(String abi, Ethereum ethereum, ECKey sender, EthAddress address, BlockchainProxyReal bcProxy) {
+    public SmartContractReal(String abi, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
         this.contract = new Contract(abi);
         this.ethereum = ethereum;
         this.sender = sender;
@@ -45,7 +43,7 @@ public class SmartContractReal implements SmartContract {
 
         Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
                 address.toString(), 0, contract.getByName(functionName), args);
-        tx.sign(sender);
+        tx.sign(sender.key);
 
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
 
@@ -76,19 +74,19 @@ public class SmartContractReal implements SmartContract {
 
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
-        return callFunction(1, functionName, args);
+        return callFunction(EthValue.wei(1), functionName, args);
     }
 
-    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
             throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
         }
-        byte[] functionCallBytes = func.encode(args);
+        EthData functionCallBytes = EthData.of(func.encode(args));
 
         return bcProxy.sendTx(value, functionCallBytes, sender, address)
-                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
+                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
 
     }
 
