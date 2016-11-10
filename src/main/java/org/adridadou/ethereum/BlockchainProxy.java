@@ -4,6 +4,7 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
 
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -22,6 +23,8 @@ public interface BlockchainProxy {
     EthereumEventHandler events();
 
     boolean addressExists(EthAddress address);
+
+    EthValue getBalance(EthAddress address);
 }
 
 

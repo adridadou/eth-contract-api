@@ -138,6 +138,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return ethereum.getRepository().isExist(address.address);
     }
 
+    @Override
+    public EthValue getBalance(EthAddress address) {
+        return EthValue.wei(ethereum.getRepository().getBalance(address.address));
+    }
+
     private void decreasePendingTransactionCounter(EthAccount sender) {
         pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
     }

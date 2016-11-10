@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.request.Transaction;
@@ -207,6 +208,19 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     @Override
     public boolean addressExists(EthAddress address) {
         throw new EthereumApiException("addressExists is not implemented for RPC");
+    }
+
+    @Override
+    public EthValue getBalance(EthAddress address) {
+        try {
+            EthGetBalance result = web3j.ethGetBalance(address.withLeading0x(), DefaultBlockParameter.valueOf("latest")).send();
+            if (result.hasError()) {
+                throw new EthereumApiException(result.getError().getMessage());
+            }
+            return EthValue.wei(result.getBalance());
+        } catch (IOException e) {
+            throw new EthereumApiException("error while getting the balance", e);
+        }
     }
 
     private void decreasePendingTransactionCounter(EthAccount sender) {
