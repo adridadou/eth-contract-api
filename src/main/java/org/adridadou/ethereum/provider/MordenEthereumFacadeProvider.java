@@ -19,6 +19,7 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.springframework.context.annotation.Bean;
+import org.web3j.crypto.WalletUtils;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -92,8 +93,7 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     private String getKeystoreFolderPath() {
-        String homeDir = System.getProperty("user.home");
-        return homeDir + "/Library/Ethereum/testnet/keystore/";
+        return WalletUtils.getTestnetKeyDirectory();
     }
 
     @Override
