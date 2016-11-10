@@ -178,7 +178,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                     RawTransaction tx = RawTransaction.createContractTransaction(
                             getNonce(sender, nonce),
                             price.getGasPrice(),
-                            gas.getAmountUsed(),
+                            gas.getAmountUsed().add(BigInteger.valueOf(100_000)),
                             ethValue.inWei(),
                             data.toString());
                     EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
@@ -210,12 +210,10 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     private void decreasePendingTransactionCounter(EthAccount sender) {
-        log.info("decreasing pending tx");
         pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
     private void increasePendingTransactionCounter(EthAccount sender) {
-        log.info("increasing pending tx");
         pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }
