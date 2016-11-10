@@ -36,11 +36,18 @@ public class EthAddress {
     }
 
     public static EthAddress of(final String address) {
+        if (address != null && address.startsWith("0x")) {
+            return of(Hex.decode(address.substring(2)));
+        }
         return of(Hex.decode(address));
     }
 
     public String toString() {
         return Hex.toHexString(address);
+    }
+
+    public String withLeading0x() {
+        return "0x" + this.toString();
     }
 
     @Override

@@ -1,16 +1,14 @@
 package org.adridadou.ethereum;
 
-import org.ethereum.crypto.ECKey;
-
 /**
  * Created by davidroon on 21.09.16.
  * This code is released under Apache 2 license
  */
 public class SmartContractInfo {
     private final EthAddress address;
-    private final ECKey sender;
+    private final EthAccount sender;
 
-    public SmartContractInfo(EthAddress address, ECKey sender) {
+    public SmartContractInfo(EthAddress address, EthAccount sender) {
         this.address = address;
         this.sender = sender;
     }
@@ -19,7 +17,7 @@ public class SmartContractInfo {
         return address;
     }
 
-    public ECKey getSender() {
+    public EthAccount getSender() {
         return sender;
     }
 

@@ -35,7 +35,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
         currentBlockNumber = block.getNumber();
     }
 
-   @Override
+    @Override
     public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
         onTransactionHandler.onTransaction(new OnTransactionParameters(txReceipt.getTransaction(), state));
     }

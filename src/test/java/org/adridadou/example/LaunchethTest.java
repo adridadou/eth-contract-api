@@ -1,10 +1,10 @@
 package org.adridadou.example;
 
+import org.adridadou.ethereum.EthAccount;
 import org.adridadou.ethereum.EthAddress;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.SoliditySource;
 import org.adridadou.ethereum.provider.*;
-import org.ethereum.crypto.ECKey;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -22,7 +22,7 @@ public class LaunchethTest {
     @Test
     public void run() throws Exception {
         EthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
-        ECKey sender = testnet.getKey("cow").decode("");
+        EthAccount sender = testnet.getKey("cow").decode("");
         EthereumFacade ethereum = testnet.create();
 
         File contractSrc = new File(this.getClass().getResource("/launcheth.sol").toURI());
