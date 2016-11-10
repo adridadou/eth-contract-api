@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.BlockchainProxyReal;
-import org.adridadou.ethereum.EthAccount;
-import org.adridadou.ethereum.EthAddress;
+import org.adridadou.ethereum.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
@@ -76,19 +74,19 @@ public class SmartContractReal implements SmartContract {
 
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
-        return callFunction(1, functionName, args);
+        return callFunction(EthValue.wei(1), functionName, args);
     }
 
-    public CompletableFuture<Object[]> callFunction(long value, String functionName, Object... args) {
+    public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
             throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
         }
-        byte[] functionCallBytes = func.encode(args);
+        EthData functionCallBytes = EthData.of(func.encode(args));
 
         return bcProxy.sendTx(value, functionCallBytes, sender, address)
-                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getExecutionResult()));
+                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
 
     }
 
