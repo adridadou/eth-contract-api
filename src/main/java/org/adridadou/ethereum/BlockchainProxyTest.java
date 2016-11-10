@@ -63,4 +63,9 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return true;
     }
 
+    @Override
+    public EthValue getBalance(EthAddress address) {
+        return EthValue.wei(0);
+    }
+
 }
