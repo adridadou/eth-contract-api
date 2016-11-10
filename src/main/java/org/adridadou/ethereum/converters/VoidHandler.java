@@ -11,7 +11,7 @@ public class VoidHandler implements TypeHandler<Void> {
     }
 
     @Override
-    public Void convert(Object obj) {
+    public Void convert(Object obj, Class<?> cls) {
         return null;
     }
 }

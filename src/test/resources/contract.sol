@@ -17,6 +17,7 @@ contract myContract2 {
           return true;
         }
 
+    function getEnumValue() constant returns (uint) {return 1;}
 	function getI1() constant returns (string) {return i1;}
 	function getI2() constant returns (string) {return i2;}
 	function getT() constant returns (bool) {return true;}

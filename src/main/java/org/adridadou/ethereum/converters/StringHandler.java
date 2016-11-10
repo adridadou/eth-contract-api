@@ -12,7 +12,7 @@ public class StringHandler implements TypeHandler<String> {
     }
 
     @Override
-    public String convert(Object obj) {
+    public String convert(Object obj, Class<?> cls) {
         return obj.toString();
 
     }
