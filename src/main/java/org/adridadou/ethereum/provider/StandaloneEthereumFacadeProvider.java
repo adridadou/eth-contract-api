@@ -3,7 +3,7 @@ package org.adridadou.ethereum.provider;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adridadou.ethereum.BlockchainProxyTest;
+import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;

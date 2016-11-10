@@ -1,10 +1,11 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.blockchain;
 
 import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;

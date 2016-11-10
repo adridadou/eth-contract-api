@@ -1,9 +1,7 @@
 package org.adridadou.ethereum.provider;
 
-import org.adridadou.ethereum.BlockchainProxyRpc;
+import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.handler.OnBlockHandler;
-import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 

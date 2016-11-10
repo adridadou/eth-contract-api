@@ -1,5 +1,6 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.blockchain;
 
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;

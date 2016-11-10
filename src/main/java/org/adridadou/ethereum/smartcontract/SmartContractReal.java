@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;

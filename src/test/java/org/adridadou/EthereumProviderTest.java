@@ -1,6 +1,8 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.BlockchainProxy;
+import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.junit.Test;
 
 import java.io.IOException;
