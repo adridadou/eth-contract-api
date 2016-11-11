@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.converters.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.exception.ContractNotFoundException;
@@ -38,7 +39,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 new StringHandler(),
                 new BooleanHandler(),
                 new AddressHandler(),
-                new VoidHandler()
+                new VoidHandler(),
+                new EnumHandler()
         );
     }
 
@@ -109,7 +111,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             if (handler.isOfType(cls)) {
                 T[] result = (T[]) newInstance(cls, arr.length);
                 for (int i = 0; i < arr.length; i++) {
-                    result[i] = (T) handler.convert(arr[i]);
+                    result[i] = (T) handler.convert(arr[i], cls);
                 }
                 return result;
             }
@@ -122,7 +124,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             if (handler.isOfType(cls)) {
                 List<T> result = new ArrayList<>();
                 for (Object obj : arr) {
-                    result.add((T) handler.convert(obj));
+                    result.add((T) handler.convert(obj, cls));
                 }
                 return result;
             }
@@ -147,7 +149,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
         for (TypeHandler<?> handler : handlers) {
             if (handler.isOfType(actualReturnType)) {
-                return handler.convert(result);
+                return handler.convert(result, actualReturnType);
             }
         }
 

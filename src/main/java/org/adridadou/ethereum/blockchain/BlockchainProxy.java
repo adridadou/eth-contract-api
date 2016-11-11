@@ -1,10 +1,11 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.blockchain;
 
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.crypto.ECKey;
 
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,11 +19,13 @@ public interface BlockchainProxy {
 
     CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs);
 
-    CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, EthAccount sender, EthAddress address);
+    CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address);
 
     EthereumEventHandler events();
 
     boolean addressExists(EthAddress address);
+
+    EthValue getBalance(EthAddress address);
 }
 
 

@@ -1,4 +1,4 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.blockchain;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -31,7 +32,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
 
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
@@ -73,8 +74,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(1, ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded), sender, null)
-                .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()))
+        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender, null)
+                .thenApply(receipt -> EthAddress.of(receipt.getResult()))
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -100,7 +101,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
     }
 
-    public CompletableFuture<TransactionReceipt> sendTx(long value, byte[] data, EthAccount sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(sender);
             Transaction tx = new Transaction(
@@ -108,8 +109,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
                     Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
-                    ByteUtil.longToBytesNoLeadZeroes(value),
-                    data);
+                    ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
+                    data.data);
             tx.sign(sender.key);
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(sender);
@@ -125,7 +126,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
-        });
+        }).thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
     @Override
@@ -138,11 +139,16 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return ethereum.getRepository().isExist(address.address);
     }
 
+    @Override
+    public EthValue getBalance(EthAddress address) {
+        return EthValue.wei(ethereum.getRepository().getBalance(address.address));
+    }
+
     private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.get(sender.getAddress()).subtract(BigInteger.ONE));
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
     private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender.getAddress(), pendingTransactions.get(sender.getAddress()).add(BigInteger.ONE));
+        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }

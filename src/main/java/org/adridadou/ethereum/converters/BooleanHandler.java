@@ -11,7 +11,7 @@ public class BooleanHandler implements TypeHandler<Boolean> {
     }
 
     @Override
-    public Boolean convert(Object obj) {
+    public Boolean convert(Object obj, Class<?> cls) {
         return (Boolean) obj;
     }
 }

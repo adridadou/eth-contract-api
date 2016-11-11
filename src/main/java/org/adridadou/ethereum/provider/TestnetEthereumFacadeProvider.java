@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
-import org.adridadou.ethereum.BlockchainProxyReal;
+import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;

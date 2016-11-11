@@ -55,6 +55,8 @@ public class TestnetConnectionTest {
         myContract.myMethod2("async call").get();
 
         assertEquals("async call", myContract.getI2());
+
+        assertEquals(EnumTest.VAL2, myContract.getEnumValue());
     }
 
     public static class MyReturnType {
@@ -99,10 +101,16 @@ public class TestnetConnectionTest {
         }
     }
 
+    private enum EnumTest {
+        VAL1, VAL2, VAL3
+    }
+
     private interface MyContract2 {
         CompletableFuture<Integer> myMethod(String value);
 
         CompletableFuture<Void> myMethod2(String value);
+
+        EnumTest getEnumValue();
 
         String getI1();
 

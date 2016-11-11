@@ -7,5 +7,5 @@ package org.adridadou.ethereum.converters;
 public interface TypeHandler<T> {
     boolean isOfType(Class<?> cls);
 
-    T convert(Object obj);
+    T convert(Object obj, Class<?> cls);
 }

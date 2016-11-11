@@ -13,7 +13,7 @@ public class LongHandler implements TypeHandler<Long> {
     }
 
     @Override
-    public Long convert(Object obj) {
+    public Long convert(Object obj, Class<?> cls) {
         if (obj.getClass().equals(BigInteger.class)) {
             return ((BigInteger) obj).longValue();
         }

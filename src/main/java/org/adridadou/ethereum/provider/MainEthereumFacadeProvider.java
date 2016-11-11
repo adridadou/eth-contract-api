@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.BlockchainProxyReal;
+import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
@@ -17,6 +17,7 @@ import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.web3j.crypto.WalletUtils;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -58,7 +59,6 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     private String getKeystoreFolderPath() {
-        String homeDir = System.getProperty("user.home");
-        return homeDir + "/Library/Ethereum/keystore/";
+        return WalletUtils.getMainnetKeyDirectory();
     }
 }
