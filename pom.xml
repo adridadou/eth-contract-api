@@ -140,6 +140,7 @@
                         <exclude>**/*Test.*</exclude>
                         <exclude>**/*Exception.*</exclude>
                         <exclude>**/SolidityContractImpl.*</exclude>
+                        <exclude>**/values/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
