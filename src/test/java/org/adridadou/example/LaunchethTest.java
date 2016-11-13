@@ -1,9 +1,9 @@
 package org.adridadou.example;
 
-import org.adridadou.ethereum.EthAccount;
-import org.adridadou.ethereum.EthAddress;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.SoliditySource;
+import org.adridadou.ethereum.values.SoliditySource;
 import org.adridadou.ethereum.provider.*;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -2,7 +2,9 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
-import org.bouncycastle.util.encoders.Hex;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,25 +28,26 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        EthAddress.of("0x1b29529382cca4e6e9a923023114ed7dd22da56c");
         run(standalone, "cow", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
-        //EthereumFacade ethereum = new RpcEthereumFacadeProvider().create("http://localhost:8545");
+
+        System.out.println(ethereum.getBalance(sender).inEth() + " ETH");
 
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address.get(), sender, MyContract2.class);
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
+        EthAddress address = futureAddress.get();
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
         Future<Integer> future2 = myContract.myMethod("this is a test2");
-
         Integer result = future2.get();
-        assertEquals(12, result.intValue());
+        assertEquals(12, future.get().intValue());
+        assertEquals(12, future2.get().intValue());
         assertEquals("this is a test2", myContract.getI1());
         assertTrue(myContract.getT());
 
@@ -58,6 +61,8 @@ public class TestnetConnectionTest {
         myContract.myMethod2("async call").get();
 
         assertEquals("async call", myContract.getI2());
+
+        assertEquals(EnumTest.VAL2, myContract.getEnumValue());
     }
 
     public static class MyReturnType {
@@ -102,10 +107,16 @@ public class TestnetConnectionTest {
         }
     }
 
+    private enum EnumTest {
+        VAL1, VAL2, VAL3
+    }
+
     private interface MyContract2 {
         CompletableFuture<Integer> myMethod(String value);
 
         CompletableFuture<Void> myMethod2(String value);
+
+        EnumTest getEnumValue();
 
         String getI1();
 

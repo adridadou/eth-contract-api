@@ -1,12 +1,14 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;
-import org.ethereum.util.ByteUtil;
-import org.spongycastle.util.encoders.Hex;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.methods.request.Transaction;

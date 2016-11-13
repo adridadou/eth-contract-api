@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;

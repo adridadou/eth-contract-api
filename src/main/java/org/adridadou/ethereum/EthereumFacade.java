@@ -7,7 +7,9 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Charsets;
+import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.values.*;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -41,6 +43,14 @@ public class EthereumFacade {
 
     public boolean addressExists(final EthAddress address) {
         return blockchainProxy.addressExists(address);
+    }
+
+    public EthValue getBalance(final EthAddress addr) {
+        return blockchainProxy.getBalance(addr);
+    }
+
+    public EthValue getBalance(final EthAccount account) {
+        return blockchainProxy.getBalance(account.getAddress());
     }
 
     public EthereumEventHandler events() {
