@@ -2,6 +2,9 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
 import java.io.File;

@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.converters.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
+import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;

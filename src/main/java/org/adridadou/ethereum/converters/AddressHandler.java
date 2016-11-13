@@ -1,6 +1,6 @@
 package org.adridadou.ethereum.converters;
 
-import org.adridadou.ethereum.EthAddress;
+import org.adridadou.ethereum.values.EthAddress;
 import java.math.BigInteger;
 
 /**
