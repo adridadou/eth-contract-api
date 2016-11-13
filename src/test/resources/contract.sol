@@ -13,9 +13,9 @@ contract myContract2 {
 	}
 
 	function myMethod2(string value) returns (bool success) {
-          i2 = value;
-          return true;
-        }
+      i2 = value;
+      return true;
+    }
 
     function getEnumValue() constant returns (uint) {return 1;}
 	function getI1() constant returns (string) {return i1;}

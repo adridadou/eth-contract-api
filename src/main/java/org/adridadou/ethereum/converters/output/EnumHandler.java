@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.converters;
+package org.adridadou.ethereum.converters.output;
 
 import java.math.BigInteger;
 
@@ -6,7 +6,7 @@ import java.math.BigInteger;
  * Created by davidroon on 11.11.16.
  * This code is released under Apache 2 license
  */
-public class EnumHandler implements TypeHandler<Enum> {
+public class EnumHandler implements OutputTypeHandler<Enum> {
     @Override
     public boolean isOfType(Class<?> cls) {
         return cls.isEnum();
