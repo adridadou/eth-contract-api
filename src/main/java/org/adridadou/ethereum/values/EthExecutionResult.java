@@ -1,4 +1,4 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
 
 /**
  * Created by davidroon on 13.10.16.

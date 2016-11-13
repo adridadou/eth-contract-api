@@ -1,4 +1,5 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
+
 
 import java.math.BigInteger;
 
@@ -6,7 +7,7 @@ import java.math.BigInteger;
  * Created by davidroon on 06.11.16.
  * This code is released under Apache 2 license
  */
-public class EthValue {
+public class EthValue implements Comparable<EthValue> {
     private final BigInteger value;
     private static final BigInteger ETHER_CONVERSION = BigInteger.valueOf(1_000_000_000_000_000_000L);
 
@@ -28,5 +29,10 @@ public class EthValue {
 
     public BigInteger inWei() {
         return value;
+    }
+
+    @Override
+    public int compareTo(EthValue o) {
+        return value.compareTo(o.value);
     }
 }

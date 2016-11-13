@@ -1,5 +1,6 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
 
+import org.adridadou.ethereum.EthereumFacade;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;

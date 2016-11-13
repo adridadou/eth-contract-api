@@ -9,6 +9,10 @@ import java.util.concurrent.CompletableFuture;
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.values.ContractAbi;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.SoliditySource;
 
 /**
  * Created by davidroon on 31.03.16.

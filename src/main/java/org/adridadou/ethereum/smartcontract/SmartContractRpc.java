@@ -1,8 +1,11 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;

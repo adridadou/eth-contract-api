@@ -1,6 +1,6 @@
 package org.adridadou.ethereum.keystore;
 
-import org.adridadou.ethereum.EthAccount;
+import org.adridadou.ethereum.values.EthAccount;
 
 import java.io.File;
 
