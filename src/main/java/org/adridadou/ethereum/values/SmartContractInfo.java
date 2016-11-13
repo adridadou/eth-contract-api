@@ -39,4 +39,12 @@ public class SmartContractInfo {
         result = 31 * result + (sender != null ? sender.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "SmartContractInfo{" +
+                "address=" + address.withLeading0x() +
+                ", sender=" + sender.getAddress().withLeading0x() +
+                '}';
+    }
 }
