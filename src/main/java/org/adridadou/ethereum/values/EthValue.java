@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.values;
 
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
@@ -8,15 +9,15 @@ import java.math.BigInteger;
  * This code is released under Apache 2 license
  */
 public class EthValue implements Comparable<EthValue> {
-    private final BigInteger value;
-    private static final BigInteger ETHER_CONVERSION = BigInteger.valueOf(1_000_000_000_000_000_000L);
+    private final BigDecimal value;
+    private static final BigDecimal ETHER_CONVERSION = BigDecimal.valueOf(1_000_000_000_000_000_000L);
 
     public EthValue(BigInteger value) {
-        this.value = value;
+        this.value = new BigDecimal(value);
     }
 
     public static EthValue ether(final BigInteger value) {
-        return new EthValue(value.multiply(ETHER_CONVERSION));
+        return new EthValue(value.multiply(ETHER_CONVERSION.toBigInteger()));
     }
 
     public static EthValue wei(final int value) {
@@ -28,7 +29,12 @@ public class EthValue implements Comparable<EthValue> {
     }
 
     public BigInteger inWei() {
-        return value;
+        return value.toBigInteger();
+    }
+
+    public BigDecimal inEth() {
+        return value
+                .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
     }
 
     @Override

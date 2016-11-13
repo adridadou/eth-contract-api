@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.values;
 
+import com.google.common.base.Preconditions;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.util.encoders.Hex;
 
@@ -14,6 +15,7 @@ public class EthAddress {
 
 
     private EthAddress(byte[] address) {
+        Preconditions.checkArgument(address.length <= 32, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
         this.address = address;
     }
 
@@ -64,5 +66,9 @@ public class EthAddress {
     @Override
     public int hashCode() {
         return Arrays.hashCode(address);
+    }
+
+    public static EthAddress empty() {
+        return EthAddress.of(new byte[0]);
     }
 }
