@@ -5,10 +5,10 @@ import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
+import org.adridadou.ethereum.values.*;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
@@ -52,6 +52,11 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
         return null;
+    }
+
+    @Override
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
+        return this.sendTx(ethValue, data, sender, null).thenApply(result -> EthAddress.of(result.getResult()));
     }
 
     @Override

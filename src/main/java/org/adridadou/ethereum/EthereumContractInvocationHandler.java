@@ -3,8 +3,10 @@ package org.adridadou.ethereum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
-import org.adridadou.ethereum.converters.*;
+import org.adridadou.ethereum.converters.input.*;
+import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
+import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -28,12 +30,13 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
     private final BlockchainProxy blockchainProxy;
-    private final List<TypeHandler<?>> handlers;
+    private final List<OutputTypeHandler<?>> outputHandlers;
+    private final List<InputTypeHandler<? extends Object>> inputHandlers;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
     EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
         this.blockchainProxy = blockchainProxy;
-        handlers = Lists.newArrayList(
+        outputHandlers = Lists.newArrayList(
                 new IntegerHandler(),
                 new LongHandler(),
                 new StringHandler(),
@@ -41,6 +44,13 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 new AddressHandler(),
                 new VoidHandler(),
                 new EnumHandler()
+        );
+
+        inputHandlers = Lists.newArrayList(
+                new EthAddressHandler(),
+                new EthAccountHandler(),
+                new EthDataHandler(),
+                new EthValueHandler()
         );
     }
 
@@ -63,8 +73,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private Object[] prepareArguments(Object[] args) {
-        //FUTORE_WORK [#19]: convert input parameters if needed
-        return args;
+        return Arrays.stream(args).map(arg -> inputHandlers.stream()
+                .filter(handler -> handler.isOfType(arg.getClass()))
+                .findFirst()
+                .map(handler -> handler.convert(arg)).orElse(arg)).toArray();
     }
 
     private Object convertResult(Object[] result, Method method) {
@@ -107,7 +119,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private <T> T[] convertArray(Class<T> cls, Object[] arr) {
-        for (TypeHandler<?> handler : handlers) {
+        for (OutputTypeHandler<?> handler : outputHandlers) {
             if (handler.isOfType(cls)) {
                 T[] result = (T[]) newInstance(cls, arr.length);
                 for (int i = 0; i < arr.length; i++) {
@@ -120,7 +132,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private <T> List<T> convertList(Class<T> cls, Object[] arr) {
-        for (TypeHandler<?> handler : handlers) {
+        for (OutputTypeHandler<?> handler : outputHandlers) {
             if (handler.isOfType(cls)) {
                 List<T> result = new ArrayList<>();
                 for (Object obj : arr) {
@@ -147,7 +159,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             actualReturnType = getGenericType(genericType);
         }
 
-        for (TypeHandler<?> handler : handlers) {
+        for (OutputTypeHandler<?> handler : outputHandlers) {
             if (handler.isOfType(actualReturnType)) {
                 return handler.convert(result, actualReturnType);
             }

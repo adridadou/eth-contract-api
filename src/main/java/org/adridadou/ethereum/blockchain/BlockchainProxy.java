@@ -1,11 +1,10 @@
 package org.adridadou.ethereum.blockchain;
 
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.ethereum.core.TransactionReceipt;
+import org.adridadou.ethereum.values.*;
+import org.adridadou.exception.EthereumApiException;
 
-import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -21,11 +20,19 @@ public interface BlockchainProxy {
 
     CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address);
 
+    CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender);
+
     EthereumEventHandler events();
 
     boolean addressExists(EthAddress address);
 
     EthValue getBalance(EthAddress address);
+
+    default void hasEnoughFund(EthAddress address, EthValue requiredFund) {
+        if (getBalance(address).compareTo(requiredFund) < 0) {
+            throw new EthereumApiException("not enough fund for " + address.withLeading0x());
+        }
+    }
 }
 
 

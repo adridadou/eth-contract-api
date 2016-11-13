@@ -45,7 +45,6 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
         onTransactionHandler.onTransaction(new OnTransactionParameters(summary.getTransaction(), PendingTransactionState.INCLUDED));
     }
 
-
     public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
         if (receipt.isSuccessful() && receipt.isValid()) {
             return receipt;

@@ -11,6 +11,7 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
+import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.Transaction;
@@ -74,8 +75,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender, null)
-                .thenApply(receipt -> EthAddress.of(receipt.getResult()))
+        return sendTx(EthValue.wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -101,14 +101,27 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
+    @Override
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
+        return this.sendTxInternal(ethValue, data, sender, EthAddress.empty())
+                .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
+    }
+
+    @Override
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
+        return this.sendTxInternal(value, data, sender, address)
+                .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
+    }
+
+
+    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(sender);
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
+                    toAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                     data.data);
             tx.sign(sender.key);
@@ -126,7 +139,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
-        }).thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
+        });
     }
 
     @Override

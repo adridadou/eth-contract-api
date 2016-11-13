@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.converters;
+package org.adridadou.ethereum.converters.output;
 
 import java.math.BigInteger;
 
@@ -6,7 +6,7 @@ import java.math.BigInteger;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class LongHandler implements TypeHandler<Long> {
+public class LongHandler implements OutputTypeHandler<Long> {
     @Override
     public boolean isOfType(Class<?> cls) {
         return Long.class.equals(cls) || "long".equals(cls.getSimpleName());

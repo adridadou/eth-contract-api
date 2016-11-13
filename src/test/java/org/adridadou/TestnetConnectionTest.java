@@ -2,6 +2,9 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.provider.*;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,16 +35,19 @@ public class TestnetConnectionTest {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
+        System.out.println(ethereum.getBalance(sender).inEth() + " ETH");
+
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address.get(), sender, MyContract2.class);
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
+        EthAddress address = futureAddress.get();
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
         Future<Integer> future2 = myContract.myMethod("this is a test2");
-
         Integer result = future2.get();
-        assertEquals(12, result.intValue());
+        assertEquals(12, future.get().intValue());
+        assertEquals(12, future2.get().intValue());
         assertEquals("this is a test2", myContract.getI1());
         assertTrue(myContract.getT());
 
