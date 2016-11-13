@@ -1,4 +1,4 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
 
 
 import org.ethereum.crypto.ECKey;
@@ -37,5 +37,11 @@ public class EthAccount {
     @Override
     public int hashCode() {
         return key != null ? key.hashCode() : 0;
+    }
+
+
+    @Override
+    public String toString() {
+        return "account address:" + getAddress().withLeading0x();
     }
 }

@@ -1,4 +1,4 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
 
 /**
  * Created by davidroon on 21.09.16.
@@ -38,5 +38,13 @@ public class SmartContractInfo {
         int result = address != null ? address.hashCode() : 0;
         result = 31 * result + (sender != null ? sender.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "SmartContractInfo{" +
+                "address=" + address.withLeading0x() +
+                ", sender=" + sender.getAddress().withLeading0x() +
+                '}';
     }
 }

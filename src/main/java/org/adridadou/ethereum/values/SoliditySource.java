@@ -1,5 +1,6 @@
-package org.adridadou.ethereum;
+package org.adridadou.ethereum.values;
 
+import org.adridadou.ethereum.EthereumFacade;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -33,5 +34,26 @@ public class SoliditySource {
         } catch (IOException e) {
             throw new IOError(e);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SoliditySource that = (SoliditySource) o;
+
+        return source != null ? source.equals(that.source) : that.source == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return source != null ? source.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "source:" + source;
     }
 }
