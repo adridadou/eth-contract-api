@@ -28,16 +28,20 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        run(standalone, "cow", "");
+        //run(morden, "UTC--2016-02-20T07-56-24.065281620Z--eda29d105f6038aee451cd66331cbb6655a8c690", "I will not forget this one");
+        run(testnet, "cow", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
         EthereumFacade ethereum = ethereumFacadeProvider.create();
 
+        System.out.println(ethereum.getBalance(sender).inEth() + " ETH");
+
         SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        CompletableFuture<EthAddress> address = ethereum.publishContract(contract, "myContract2", sender);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address.get(), sender, MyContract2.class);
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
+        EthAddress address = futureAddress.get();
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");

@@ -20,6 +20,8 @@ public interface BlockchainProxy {
 
     CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address);
 
+    CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender);
+
     EthereumEventHandler events();
 
     boolean addressExists(EthAddress address);
