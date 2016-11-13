@@ -28,7 +28,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void run() throws Exception {
-        //run(morden, "UTC--2016-02-20T07-56-24.065281620Z--eda29d105f6038aee451cd66331cbb6655a8c690", "I will not forget this one");
+
         run(testnet, "cow", "");
     }
 
