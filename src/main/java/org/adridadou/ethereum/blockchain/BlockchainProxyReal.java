@@ -109,7 +109,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
-        return this.sendTxInternal(value, data, sender, EthAddress.empty())
+        return this.sendTxInternal(value, data, sender, address)
                 .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
