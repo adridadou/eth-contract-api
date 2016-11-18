@@ -26,7 +26,11 @@ public class OutputTypeHandler {
 
     public OutputTypeHandler() {
         addConverters(JAVA_OUTPUT_CONVERTERS);
-        addConverters(new ListConverter(this), new ArrayConverter(this), new CompletableFutureConverter(this));
+        addConverters(
+                new ListConverter(this),
+                new ArrayConverter(this),
+                new CompletableFutureConverter(this),
+                new SetConverter(this));
     }
 
     private final List<OutputTypeConverter> outputConverters = new ArrayList<>();
