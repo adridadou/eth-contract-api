@@ -1,6 +1,5 @@
 package org.adridadou.ethereum;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.converters.input.*;
@@ -13,6 +12,8 @@ import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 
+import static java.lang.reflect.Array.newInstance;
+
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
@@ -20,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.reflect.Array.newInstance;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -30,28 +30,15 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
     private final BlockchainProxy blockchainProxy;
-    private final List<OutputTypeHandler<?>> outputHandlers;
-    private final List<InputTypeHandler<? extends Object>> inputHandlers;
+    private final InputTypeHandler inputTypeHandler;
+    private final OutputTypeHandler outputTypeHandler;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
-    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy) {
-        this.blockchainProxy = blockchainProxy;
-        outputHandlers = Lists.newArrayList(
-                new IntegerHandler(),
-                new LongHandler(),
-                new StringHandler(),
-                new BooleanHandler(),
-                new AddressHandler(),
-                new VoidHandler(),
-                new EnumHandler()
-        );
 
-        inputHandlers = Lists.newArrayList(
-                new EthAddressHandler(),
-                new EthAccountHandler(),
-                new EthDataHandler(),
-                new EthValueHandler()
-        );
+    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+        this.blockchainProxy = blockchainProxy;
+        this.inputTypeHandler = inputTypeHandler;
+        this.outputTypeHandler = outputTypeHandler;
     }
 
     @Override
@@ -64,7 +51,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
         } else {
-            if (method.getReturnType().isAssignableFrom(CompletableFuture.class)) {
+            if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
             } else {
                 return convertResult(contract.callConstFunction(methodName, arguments), method);
@@ -73,10 +60,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private Object[] prepareArguments(Object[] args) {
-        return Arrays.stream(args).map(arg -> inputHandlers.stream()
-                .filter(handler -> handler.isOfType(arg.getClass()))
-                .findFirst()
-                .map(handler -> handler.convert(arg)).orElse(arg)).toArray();
+
+        return Arrays.stream(args)
+                .map(inputTypeHandler::convert)
+                .toArray();
     }
 
     private Object convertResult(Object[] result, Method method) {
@@ -96,7 +83,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             params[i] = convertResult(result[i], constr.getParameterTypes()[i], constr.getGenericParameterTypes()[i]);
         }
 
-
         try {
             return constr.newInstance(params);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -104,68 +90,48 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         }
     }
 
-    private Class<?> getCollectionType(Class<?> returnType, Type genericType) {
+    private Optional<Class<?>> getCollectionType(Class<?> returnType, Type genericType) {
         if (returnType.isArray()) {
-            return returnType.getComponentType();
+            return Optional.of(returnType.getComponentType());
         }
         if (List.class.equals(returnType)) {
-            return getGenericType(genericType);
+            return Optional.ofNullable(getGenericType(genericType));
         }
-        return null;
+        return Optional.empty();
     }
 
     private Class<?> getGenericType(Type genericType) {
         return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
     }
 
-    private <T> T[] convertArray(Class<T> cls, Object[] arr) {
-        for (OutputTypeHandler<?> handler : outputHandlers) {
-            if (handler.isOfType(cls)) {
-                T[] result = (T[]) newInstance(cls, arr.length);
-                for (int i = 0; i < arr.length; i++) {
-                    result[i] = (T) handler.convert(arr[i], cls);
-                }
-                return result;
-            }
-        }
-        throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
+    private <T> Object[] convertArray(Class<T> cls, Object[] arr) {
+        return outputTypeHandler.getConverter(cls)
+                .map(converter -> Arrays.stream(arr)
+                        .map(obj -> converter.convert(obj, cls)).collect(Collectors.toList()))
+                .orElseThrow(() -> new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName()))
+                .toArray((T[]) newInstance(cls, arr.length));
+
     }
 
-    private <T> List<T> convertList(Class<T> cls, Object[] arr) {
-        for (OutputTypeHandler<?> handler : outputHandlers) {
-            if (handler.isOfType(cls)) {
-                List<T> result = new ArrayList<>();
-                for (Object obj : arr) {
-                    result.add((T) handler.convert(obj, cls));
-                }
-                return result;
-            }
-        }
-        throw new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName());
+    private List<?> convertList(Class<?> cls, Object[] arr) {
+        return outputTypeHandler.getConverter(cls).map(converter -> Arrays.stream(arr)
+                .map(obj -> converter.convert(obj, cls))
+                .collect(Collectors.toList())).orElseThrow(() -> new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName()));
     }
 
     private Object convertResult(Object result, Class<?> returnType, Type genericType) {
-        Class<?> arrType = getCollectionType(returnType, genericType);
-        Class<?> actualReturnType = returnType;
-        if (arrType != null) {
+        return getCollectionType(returnType, genericType).map(arrType -> {
             if (returnType.isArray()) {
                 return convertArray(arrType, (Object[]) result);
             }
-
             return convertList(arrType, (Object[]) result);
-        }
+        }).orElseGet(() -> {
+            final Class<?> actualReturnType = returnType.equals(CompletableFuture.class) ? getGenericType(genericType) : returnType;
+            return outputTypeHandler.getConverter(actualReturnType)
+                    .map(converter -> converter.convert(result, actualReturnType))
+                    .orElseGet(() -> convertSpecificType(new Object[]{result}, actualReturnType));
+        });
 
-        if (returnType.equals(CompletableFuture.class)) {
-            actualReturnType = getGenericType(genericType);
-        }
-
-        for (OutputTypeHandler<?> handler : outputHandlers) {
-            if (handler.isOfType(actualReturnType)) {
-                return handler.convert(result, actualReturnType);
-            }
-        }
-
-        return convertSpecificType(new Object[]{result}, returnType);
     }
 
     private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {

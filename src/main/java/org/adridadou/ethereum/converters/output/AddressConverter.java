@@ -7,7 +7,7 @@ import java.math.BigInteger;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class AddressHandler implements OutputTypeHandler<EthAddress> {
+public class AddressConverter implements OutputTypeConverter<EthAddress> {
     @Override
     public boolean isOfType(Class<?> cls) {
         return EthAddress.class.equals(cls);
