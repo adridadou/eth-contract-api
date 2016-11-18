@@ -2,9 +2,12 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -22,6 +25,12 @@ public class EthereumFacadeTest {
     private BlockchainProxy proxy = new BlockchainProxyTest();
     private EthereumFacade ethereum = new EthereumFacade(proxy);
     private final EthAccount sender = null;
+
+    @Before
+    public void before() {
+        ethereum.addInputHandlers(InputTypeHandler.JAVA_INPUT_CONVERTERS);
+        ethereum.addOutputHandlers(OutputTypeHandler.JAVA_OUTPUT_CONVERTERS);
+    }
 
     @Test
     public void testReturnTypeConverters() throws Throwable {

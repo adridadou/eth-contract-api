@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
@@ -81,7 +83,12 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
         ethereum.init();
 
-        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+
+        facade.addInputHandlers(InputTypeHandler.JAVA_INPUT_CONVERTERS);
+        facade.addOutputHandlers(OutputTypeHandler.JAVA_OUTPUT_CONVERTERS);
+
+        return facade;
     }
 
     @Override
