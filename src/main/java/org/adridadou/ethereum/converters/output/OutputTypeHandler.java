@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public class OutputTypeHandler {
 
-    public static final List<OutputTypeConverter<?>> JAVA_OUTPUT_CONVERTERS = ImmutableList.<OutputTypeConverter<?>>builder().add(
+    public static final List<OutputTypeConverter> JAVA_OUTPUT_CONVERTERS = ImmutableList.<OutputTypeConverter>builder().add(
             new IntegerConverter(),
             new LongConverter(),
             new StringConverter(),
@@ -24,21 +24,22 @@ public class OutputTypeHandler {
             new EnumConverter()
     ).build();
 
-    private final List<OutputTypeConverter<? extends Object>> outputConverters = new ArrayList<>();
+    public OutputTypeHandler() {
+        addConverters(JAVA_OUTPUT_CONVERTERS);
+        addConverters(new ListConverter(this), new ArrayConverter(this), new CompletableFutureConverter(this));
+    }
 
-    public void addConverters(final OutputTypeConverter<?>... converters) {
+    private final List<OutputTypeConverter> outputConverters = new ArrayList<>();
+
+    public void addConverters(final OutputTypeConverter... converters) {
         addConverters(Lists.newArrayList(converters));
     }
 
-    public void addConverters(final Collection<OutputTypeConverter<?>> converters) {
+    public void addConverters(final Collection<OutputTypeConverter> converters) {
         outputConverters.addAll(converters);
     }
 
-    public Optional<OutputTypeConverter<?>> getConverter(final Class<?> cls) {
+    public Optional<OutputTypeConverter> getConverter(final Class<?> cls) {
         return outputConverters.stream().filter(converter -> converter.isOfType(cls)).findFirst();
-    }
-
-    public Object convert(final Object arg) {
-        return getConverter(arg.getClass()).map(converter -> converter.convert(arg, arg.getClass())).orElse(null);
     }
 }
