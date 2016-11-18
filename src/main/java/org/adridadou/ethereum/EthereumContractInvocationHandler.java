@@ -66,7 +66,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         if (result.length == 1) {
             return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
         }
-
         return convertSpecificType(result, method.getReturnType());
     }
 
@@ -90,8 +89,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         return outputTypeHandler.getConverter(returnType)
                 .map(converter -> converter.convert(result, returnType.isArray() ? returnType.getComponentType() : genericType))
                 .orElseGet(() -> convertSpecificType(new Object[]{result}, returnType));
-
-
     }
 
     private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {
@@ -103,7 +100,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 return constructor;
             }
         }
-
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
@@ -160,14 +156,11 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
             }
         }
-
     }
 
     private CompilationResult compile(final String contract) throws IOException {
         SolidityCompiler.Result res = SolidityCompiler.compile(
                 contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
-
-
         return CompilationResult.parse(res.output);
     }
 }
