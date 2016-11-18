@@ -39,7 +39,7 @@ public class EthereumFacade {
         return this;
     }
 
-    public EthereumFacade addOutputHandlers(final List<OutputTypeConverter<?>> handlers) {
+    public EthereumFacade addOutputHandlers(final List<OutputTypeConverter> handlers) {
         outputTypeHandler.addConverters(handlers);
         return this;
     }

@@ -12,8 +12,6 @@ import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 
-import static java.lang.reflect.Array.newInstance;
-
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
@@ -50,12 +48,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         if (method.getReturnType().equals(Void.TYPE)) {
             contract.callFunction(methodName, arguments);
             return Void.TYPE;
-        } else {
-            if (method.getReturnType().equals(CompletableFuture.class)) {
+        } else if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
-            } else {
-                return convertResult(contract.callConstFunction(methodName, arguments), method);
-            }
+        } else {
+            return convertResult(contract.callConstFunction(methodName, arguments), method);
         }
     }
 
@@ -90,47 +86,11 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         }
     }
 
-    private Optional<Class<?>> getCollectionType(Class<?> returnType, Type genericType) {
-        if (returnType.isArray()) {
-            return Optional.of(returnType.getComponentType());
-        }
-        if (List.class.equals(returnType)) {
-            return Optional.ofNullable(getGenericType(genericType));
-        }
-        return Optional.empty();
-    }
-
-    private Class<?> getGenericType(Type genericType) {
-        return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
-    }
-
-    private <T> Object[] convertArray(Class<T> cls, Object[] arr) {
-        return outputTypeHandler.getConverter(cls)
-                .map(converter -> Arrays.stream(arr)
-                        .map(obj -> converter.convert(obj, cls)).collect(Collectors.toList()))
-                .orElseThrow(() -> new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName()))
-                .toArray((T[]) newInstance(cls, arr.length));
-
-    }
-
-    private List<?> convertList(Class<?> cls, Object[] arr) {
-        return outputTypeHandler.getConverter(cls).map(converter -> Arrays.stream(arr)
-                .map(obj -> converter.convert(obj, cls))
-                .collect(Collectors.toList())).orElseThrow(() -> new IllegalArgumentException("no handler founds to convert " + cls.getSimpleName()));
-    }
-
     private Object convertResult(Object result, Class<?> returnType, Type genericType) {
-        return getCollectionType(returnType, genericType).map(arrType -> {
-            if (returnType.isArray()) {
-                return convertArray(arrType, (Object[]) result);
-            }
-            return convertList(arrType, (Object[]) result);
-        }).orElseGet(() -> {
-            final Class<?> actualReturnType = returnType.equals(CompletableFuture.class) ? getGenericType(genericType) : returnType;
-            return outputTypeHandler.getConverter(actualReturnType)
-                    .map(converter -> converter.convert(result, actualReturnType))
-                    .orElseGet(() -> convertSpecificType(new Object[]{result}, actualReturnType));
-        });
+        return outputTypeHandler.getConverter(returnType)
+                .map(converter -> converter.convert(result, returnType.isArray() ? returnType.getComponentType() : genericType))
+                .orElseGet(() -> convertSpecificType(new Object[]{result}, returnType));
+
 
     }
 

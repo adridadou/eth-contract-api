@@ -2,6 +2,7 @@ package org.adridadou.ethereum.converters.input;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.adridadou.ethereum.converters.output.ListConverter;
 import org.adridadou.exception.EthereumApiException;
 
 import java.util.ArrayList;
@@ -20,6 +21,11 @@ public class InputTypeHandler {
             new EthDataConverter(),
             new EthValueConverter()
     ).build();
+
+
+    public InputTypeHandler() {
+        addConverters(JAVA_INPUT_CONVERTERS);
+    }
 
     private final List<InputTypeConverter<? extends Object>> inputConverters = new ArrayList<>();
 
