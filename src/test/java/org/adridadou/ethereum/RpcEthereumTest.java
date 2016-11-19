@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -46,12 +47,17 @@ public class RpcEthereumTest {
         when(web3j.getTransactionCount(account)).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);
         when(web3j.estimateGas(eq(account), any(EthData.class))).thenReturn(BigInteger.TEN);
+        when(web3j.constantCall(eq(account), eq(address), any(EthData.class))).thenReturn(EthData.of(new byte[0]));
         Contract service = ethereum.createContractProxy(contract, "myContract2", address, account, Contract.class);
 
         service.myMethod(23).get();
+
+        assertEquals(0, service.getI1().intValue());
     }
 
     private interface Contract {
         CompletableFuture<Void> myMethod(Integer value);
+
+        Integer getI1();
     }
 }
