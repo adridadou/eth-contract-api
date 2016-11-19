@@ -45,7 +45,6 @@ public class TestnetConnectionTest {
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
         Future<Integer> future2 = myContract.myMethod("this is a test2");
-        Integer result = future2.get();
         assertEquals(12, future.get().intValue());
         assertEquals(12, future2.get().intValue());
         assertEquals("this is a test2", myContract.getI1());
@@ -66,9 +65,9 @@ public class TestnetConnectionTest {
     }
 
     public static class MyReturnType {
-        private Boolean val1;
-        private String val2;
-        private Integer val3;
+        private final Boolean val1;
+        private final String val2;
+        private final Integer val3;
 
         public MyReturnType(Boolean val1, String val2, Integer val3) {
             this.val1 = val1;

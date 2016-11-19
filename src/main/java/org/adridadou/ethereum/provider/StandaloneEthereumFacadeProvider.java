@@ -24,8 +24,7 @@ public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider 
 
     @Override
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
-        EthereumFacade facade = new EthereumFacade(new BlockchainProxyTest());
-        return facade;
+        return new EthereumFacade(new BlockchainProxyTest());
     }
 
     @Override

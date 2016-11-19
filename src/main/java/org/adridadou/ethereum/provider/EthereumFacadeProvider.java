@@ -17,7 +17,7 @@ public interface EthereumFacadeProvider {
 
     EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler);
 
-    SecureKey getKey(final String id) throws Exception;
+    SecureKey getKey(final String id);
 
     List<? extends SecureKey> listAvailableKeys();
 }
