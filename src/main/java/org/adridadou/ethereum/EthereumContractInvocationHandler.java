@@ -129,7 +129,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         contracts.put(address, proxies);
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount sender) throws IOException {
+    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount sender) {
         SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
         verifyContract(smartContract, contractInterface);
 

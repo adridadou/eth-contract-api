@@ -21,8 +21,8 @@ import java.util.concurrent.CompletableFuture;
  * This code is released under Apache 2 license
  */
 public class SmartContractRpc implements SmartContract {
-    private EthAddress address;
-    private Contract contract;
+    private final EthAddress address;
+    private final Contract contract;
     private final Web3JFacade web3j;
     private final BlockchainProxyRpc bcProxy;
     private final EthAccount sender;
