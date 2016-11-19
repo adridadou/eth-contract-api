@@ -49,7 +49,7 @@ public class EthValue implements Comparable<EthValue> {
 
         EthValue ethValue = (EthValue) o;
 
-        return value != null ? value.equals(ethValue.value) : ethValue.value == null;
+        return value.equals(ethValue.value);
 
     }
 

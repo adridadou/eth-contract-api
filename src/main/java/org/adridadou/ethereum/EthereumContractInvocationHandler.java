@@ -63,6 +63,9 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private Object convertResult(Object[] result, Method method) {
+        if (result.length == 0) {
+            return convertResult(null, method.getReturnType(), method.getGenericReturnType());
+        }
         if (result.length == 1) {
             return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
         }

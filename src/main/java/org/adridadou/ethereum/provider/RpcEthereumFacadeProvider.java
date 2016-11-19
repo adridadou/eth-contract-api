@@ -2,8 +2,7 @@ package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.converters.input.InputTypeHandler;
-import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
@@ -14,13 +13,10 @@ import org.web3j.protocol.http.HttpService;
 public class RpcEthereumFacadeProvider {
 
     public EthereumFacade create(final String url) {
-        Web3j web3j = Web3j.build(new HttpService(url));
+        return create(new Web3JFacade(Web3j.build(new HttpService(url))));
+    }
 
-        EthereumFacade facade = new EthereumFacade(new BlockchainProxyRpc(web3j));
-
-        facade.addInputHandlers(InputTypeHandler.JAVA_INPUT_CONVERTERS);
-        facade.addOutputHandlers(OutputTypeHandler.JAVA_OUTPUT_CONVERTERS);
-
-        return facade;
+    public EthereumFacade create(final Web3JFacade web3j) {
+        return new EthereumFacade(new BlockchainProxyRpc(web3j));
     }
 }

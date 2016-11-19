@@ -2,6 +2,7 @@ package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
+import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
@@ -9,13 +10,7 @@ import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.EthCall;
 
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,18 +23,16 @@ import java.util.concurrent.CompletableFuture;
 public class SmartContractRpc implements SmartContract {
     private EthAddress address;
     private Contract contract;
-    private final Web3j web3j;
+    private final Web3JFacade web3j;
     private final BlockchainProxyRpc bcProxy;
     private final EthAccount sender;
-    private final EthAddress senderAddress;
 
-    public SmartContractRpc(String abi, Web3j web3j, EthAccount sender, EthAddress address, BlockchainProxyRpc bcProxy) {
+    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, BlockchainProxyRpc bcProxy) {
         this.contract = new Contract(abi);
         this.web3j = web3j;
         this.sender = sender;
         this.bcProxy = bcProxy;
         this.address = address;
-        this.senderAddress = sender.getAddress();
     }
 
     public List<CallTransaction.Function> getFunctions() {
@@ -50,23 +43,8 @@ public class SmartContractRpc implements SmartContract {
 
         return Optional.ofNullable(contract.getByName(functionName))
                 .map(func -> {
-                    try {
-                        EthCall result = web3j.ethCall(new Transaction(
-                                senderAddress.withLeading0x(),
-                                BigInteger.ZERO,
-                                BigInteger.ZERO,
-                                BigInteger.valueOf(1_000_000_000),
-                                address.withLeading0x(), BigInteger.ZERO,
-                                EthData.of(func.encode(args)).toString()
-                        ), DefaultBlockParameter.valueOf("latest")).send();
-
-                        if (result.hasError()) {
-                            throw new EthereumApiException(result.getError().getMessage());
-                        }
-                        return func.decodeResult(EthData.of(result.getValue()).data);
-                    } catch (IOException e) {
-                        throw new EthereumApiException("error while calling a constant function");
-                    }
+                    EthData result = web3j.constantCall(sender, address, EthData.of(func.encode(args)));
+                    return func.decodeResult(result.data);
                 }).orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 

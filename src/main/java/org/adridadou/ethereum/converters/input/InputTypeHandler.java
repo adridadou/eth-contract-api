@@ -2,8 +2,6 @@ package org.adridadou.ethereum.converters.input;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.converters.output.ListConverter;
-import org.adridadou.exception.EthereumApiException;
 
 import java.util.ArrayList;
 import java.util.Collection;
