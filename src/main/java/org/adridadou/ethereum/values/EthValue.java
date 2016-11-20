@@ -48,9 +48,7 @@ public class EthValue implements Comparable<EthValue> {
         if (o == null || getClass() != o.getClass()) return false;
 
         EthValue ethValue = (EthValue) o;
-
         return value.equals(ethValue.value);
-
     }
 
     @Override

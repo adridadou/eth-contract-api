@@ -49,4 +49,8 @@ public class EthData {
     public int hashCode() {
         return Arrays.hashCode(data);
     }
+
+    public static EthData empty() {
+        return EthData.of(new byte[0]);
+    }
 }

@@ -1,13 +1,17 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.integration.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.integration.PrivateNetworkConfig;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -25,15 +29,19 @@ public class TestnetConnectionTest {
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
     private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
+    private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
 
     @Test
     public void run() throws Exception {
-        run(standalone, "cow", "");
+        run(standalone, "bull", "");
     }
 
     private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
         EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
-        EthereumFacade ethereum = ethereumFacadeProvider.create();
+        //EthereumFacade ethereum = ethereumFacadeProvider.create();
+        EthereumFacade ethereum = privateNetwork.create(PrivateNetworkConfig.config()
+                .initialBalance(sender, EthValue.ether(BigInteger.TEN))
+        );
 
         System.out.println(ethereum.getBalance(sender).inEth() + " ETH");
 

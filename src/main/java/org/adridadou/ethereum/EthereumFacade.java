@@ -76,4 +76,7 @@ public class EthereumFacade {
         return blockchainProxy.events();
     }
 
+    public CompletableFuture<EthExecutionResult> sendEther(EthAccount mainAccount, EthAccount account, EthValue value) {
+        return blockchainProxy.sendTx(value, EthData.empty(), mainAccount, account.getAddress());
+    }
 }

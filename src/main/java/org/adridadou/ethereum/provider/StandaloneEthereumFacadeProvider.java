@@ -28,7 +28,7 @@ public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider 
     }
 
     @Override
-    public SecureKey getKey(String id) throws Exception {
+    public SecureKey getKey(String id) {
         return new StringSecureKey("");
     }
 
