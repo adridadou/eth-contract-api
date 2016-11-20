@@ -8,5 +8,5 @@ test:
       - mvn clean test
           timeout: 7200
     post:
-        - mvn clean test jacoco:report coveralls:report
-            timeout: 7200
+      - mvn clean test jacoco:report coveralls:report
+          timeout: 7200
