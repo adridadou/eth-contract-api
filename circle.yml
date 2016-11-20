@@ -3,10 +3,10 @@ machine:
         version: oraclejdk8
 
 test:
-  override:
-    - mvn clean test
-        timeout: 7200
+    override:
+        - mvn clean test
+            timeout: 7200
 
-  post:
-    - mvn clean test jacoco:report coveralls:report
-        timeout: 7200
+    post:
+        - mvn clean test jacoco:report coveralls:report
+            timeout: 7200
