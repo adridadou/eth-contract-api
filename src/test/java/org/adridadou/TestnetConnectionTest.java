@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -55,7 +56,9 @@ public class TestnetConnectionTest {
         assertTrue(myContract.getT());
 
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        assertArrayEquals(expected, myContract.getArray().toArray(new Integer[0]));
+        assertArrayEquals(expected, myContract.getArray().toArray(new Integer[10]));
+
+        assertArrayEquals(expected, myContract.getSet().toArray(new Integer[10]));
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
@@ -130,6 +133,8 @@ public class TestnetConnectionTest {
         MyReturnType getM();
 
         List<Integer> getArray();
+
+        Set<Integer> getSet();
 
     }
 }
