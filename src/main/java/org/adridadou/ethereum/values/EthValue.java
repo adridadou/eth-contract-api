@@ -48,14 +48,12 @@ public class EthValue implements Comparable<EthValue> {
         if (o == null || getClass() != o.getClass()) return false;
 
         EthValue ethValue = (EthValue) o;
-
-        return value != null ? value.equals(ethValue.value) : ethValue.value == null;
-
+        return value.equals(ethValue.value);
     }
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return value.hashCode();
     }
 
     @Override

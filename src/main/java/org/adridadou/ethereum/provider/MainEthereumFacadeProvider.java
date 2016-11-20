@@ -40,7 +40,7 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     @Override
-    public SecureKey getKey(String id) throws Exception {
+    public SecureKey getKey(String id) {
         File[] files = new File(getKeystoreFolderPath()).listFiles();
 
         return Lists.newArrayList(Preconditions.checkNotNull(files, "the folder " + getKeystoreFolderPath() + " cannot be found"))

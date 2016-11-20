@@ -25,8 +25,8 @@ import org.ethereum.facade.Ethereum;
  * This code is released under Apache 2 license
  */
 public class SmartContractReal implements SmartContract {
-    private EthAddress address;
-    private Contract contract;
+    private final EthAddress address;
+    private final Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
     private final EthAccount sender;

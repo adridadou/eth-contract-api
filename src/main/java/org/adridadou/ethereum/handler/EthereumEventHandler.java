@@ -19,7 +19,7 @@ import rx.Observable;
 public class EthereumEventHandler extends EthereumListenerAdapter {
     private final CompletableFuture<Boolean> ready = new CompletableFuture<>();
     private final OnBlockHandler onBlockHandler;
-    private OnTransactionHandler onTransactionHandler;
+    private final OnTransactionHandler onTransactionHandler;
     private long currentBlockNumber;
 
     public EthereumEventHandler(Ethereum ethereum, OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {

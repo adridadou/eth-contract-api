@@ -85,7 +85,7 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
     }
 
     @Override
-    public SecureKey getKey(final String id) throws Exception {
+    public SecureKey getKey(final String id) {
         return listAvailableKeys().stream().filter(file -> file.getName().equals(id)).findFirst().orElseThrow(() -> {
             String names = listAvailableKeys().stream().map(FileSecureKey::getName).reduce((aggregate, name) -> aggregate + "," + name).orElse("");
             return new EthereumApiException("could not find the keyfile " + id + " available:" + names);
