@@ -31,14 +31,10 @@ public class TestnetConnectionTest {
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
 
-    @Test
-    public void run() throws Exception {
-        run(standalone, "bull", "");
-    }
 
-    private void run(EthereumFacadeProvider ethereumFacadeProvider, final String id, final String password) throws Exception {
-        EthAccount sender = ethereumFacadeProvider.getKey(id).decode(password);
-        //EthereumFacade ethereum = ethereumFacadeProvider.create();
+    @Test
+    public void main_example_how_the_lib_works() throws Exception {
+        EthAccount sender = standalone.getKey("cow").decode("");
         EthereumFacade ethereum = privateNetwork.create(PrivateNetworkConfig.config()
                 .initialBalance(sender, EthValue.ether(BigInteger.TEN))
         );
