@@ -46,7 +46,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
         Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
-            contract.callFunction(methodName, arguments);
+            contract.callFunction(methodName, arguments).get();
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
