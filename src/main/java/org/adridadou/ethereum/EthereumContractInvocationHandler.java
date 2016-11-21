@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,13 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
         Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
-            contract.callFunction(methodName, arguments).get();
+            try {
+                contract.callFunction(methodName, arguments).get();
+            }
+            catch (ExecutionException e) {
+                throw e.getCause();
+            }
+
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
