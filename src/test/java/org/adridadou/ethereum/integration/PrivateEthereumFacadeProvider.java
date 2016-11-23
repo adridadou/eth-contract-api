@@ -38,28 +38,31 @@ public class PrivateEthereumFacadeProvider {
      */
     private static class MinerConfig {
 
-        private final String config =
-                // no need for discovery in that small network
-                "peer.discovery.enabled = false \n" +
-                        "peer.listen.port = 30335 \n" +
-                        // need to have different nodeId's for the peers
-                        "peer.privateKey = 6ef8da380c27cea8fdf7448340ea99e8e2268fc2950d79ed47cbf6f85dc977ec \n" +
-                        // our private net ID
-                        "peer.networkId = 555 \n" +
-                        // we have no peers to sync with
-                        "sync.enabled = false \n" +
-                        // genesis with a lower initial difficulty and some predefined known funded accounts
-                        "genesis = private-genesis.json \n" +
-                        // two peers need to have separate database dirs
-                        "database.dir = sampleDB-1 \n" +
-                        // when more than 1 miner exist on the network extraData helps to identify the block creator
-                        "mine.extraDataHex = cccccccccccccccccccc \n" +
-                        "mine.cpuMineThreads = 2 \n" +
-                        "cache.flush.blocks = 1";
+        public static String dbName = "sampleDB";
+
+        public static String config() {
+            // no need for discovery in that small network
+            return "peer.discovery.enabled = false \n" +
+                    "peer.listen.port = 30335 \n" +
+                    // need to have different nodeId's for the peers
+                    "peer.privateKey = 6ef8da380c27cea8fdf7448340ea99e8e2268fc2950d79ed47cbf6f85dc977ec \n" +
+                    // our private net ID
+                    "peer.networkId = 555 \n" +
+                    // we have no peers to sync with
+                    "sync.enabled = false \n" +
+                    // genesis with a lower initial difficulty and some predefined known funded accounts
+                    "genesis = private-genesis.json \n" +
+                    // two peers need to have separate database dirs
+                    "database.dir = " + dbName + " \n" +
+                    // when more than 1 miner exist on the network extraData helps to identify the block creator
+                    "mine.extraDataHex = cccccccccccccccccccc \n" +
+                    "mine.cpuMineThreads = 2 \n" +
+                    "cache.flush.blocks = 1";
+        }
 
         @Bean
-        public PrivateEthereumFacadeProvider.MinerNode node() {
-            return new PrivateEthereumFacadeProvider.MinerNode();
+        public MinerNode node() {
+            return new MinerNode();
         }
 
         /**
@@ -70,7 +73,7 @@ public class PrivateEthereumFacadeProvider {
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties(ConfigFactory.empty(), PrivateEthereumFacadeProvider.class.getClassLoader());
-            props.overrideParams(ConfigFactory.parseString(config.replaceAll("'", "\"")));
+            props.overrideParams(ConfigFactory.parseString(config().replaceAll("'", "\"")));
             return props;
         }
     }
@@ -156,14 +159,19 @@ public class PrivateEthereumFacadeProvider {
 
     public EthereumFacade create(final PrivateNetworkConfig config) throws Exception {
         final boolean dagCached = getClass().getClassLoader().getResourceAsStream("cachedDag/mine-dag.dat") != null;
+        if (config.isResetPrivateBlockchain()) {
+            deleteFolder(new File(config.getDbName()), true);
+        }
 
         if (dagCached) {
-            deleteFolder(new File("sampleDB-1"), true);
+            new File(config.getDbName()).mkdirs();
             InputStream mineDag = getClass().getClassLoader().getResourceAsStream("cachedDag/mine-dag.dat");
             InputStream mineDagLight = getClass().getClassLoader().getResourceAsStream("cachedDag/mine-dag-light.dat");
-            IOUtils.copy(mineDag, new FileOutputStream(new File("sampleDB-1/mine-dag.dat")));
-            IOUtils.copy(mineDagLight, new FileOutputStream(new File("sampleDB-1/mine-dag-light.dat")));
+            IOUtils.copy(mineDag, new FileOutputStream(new File(config.getDbName() + "/mine-dag.dat")));
+            IOUtils.copy(mineDagLight, new FileOutputStream(new File(config.getDbName() + "/mine-dag-light.dat")));
         }
+
+        MinerConfig.dbName = config.getDbName();
 
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
         ethereum.init();
@@ -173,8 +181,8 @@ public class PrivateEthereumFacadeProvider {
         }
 
         if (!dagCached) {
-            FileUtils.copyFile(new File("sampleDB-1/mine-dag.dat"), new File("src/test/resources/cachedDag/mine-dag.dat"));
-            FileUtils.copyFile(new File("sampleDB-1/mine-dag-light.dat"), new File("src/test/resources/cachedDag/mine-dag-light.dat"));
+            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("src/test/resources/cachedDag/mine-dag.dat"));
+            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("src/test/resources/cachedDag/mine-dag-light.dat"));
         }
 
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
@@ -192,7 +200,6 @@ public class PrivateEthereumFacadeProvider {
                     }
                 })
         );
-
         return facade;
     }
 }
