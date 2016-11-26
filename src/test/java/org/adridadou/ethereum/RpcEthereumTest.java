@@ -2,7 +2,6 @@ package org.adridadou.ethereum;
 
 
 import org.adridadou.ethereum.blockchain.Web3JFacade;
-import org.adridadou.ethereum.keystore.Keystore;
 import org.adridadou.ethereum.provider.RpcEthereumFacadeProvider;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -42,7 +41,7 @@ public class RpcEthereumTest {
 
     @Test
     public void test() throws IOException, ExecutionException, InterruptedException {
-        EthereumFacade ethereum = provider.create(web3j);
+        EthereumFacade ethereum = provider.create(web3j, (byte) 2);
 
         when(web3j.getTransactionCount(account)).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);

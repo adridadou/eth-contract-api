@@ -2,12 +2,10 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.integration.PrivateEthereumFacadeProvider;
-import org.adridadou.ethereum.integration.PrivateNetworkConfig;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 
-import static org.adridadou.ethereum.values.EthValue.*;
 import static org.junit.Assert.*;
 
 import org.adridadou.ethereum.values.SoliditySource;
@@ -28,7 +26,7 @@ import java.util.concurrent.Future;
 public class TestnetConnectionTest {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
     private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
-    private final MordenEthereumFacadeProvider morden = new MordenEthereumFacadeProvider();
+    private final RopstenEthereumFacadeProvider ropsten = new RopstenEthereumFacadeProvider();
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
 
@@ -37,7 +35,7 @@ public class TestnetConnectionTest {
 
     private void init() throws Exception {
         sender = privateNetwork.getKey("cow").decode("");
-        ethereum = standalone.create();
+        ethereum = ropsten.create();
         //privateNetwork.create(PrivateNetworkConfig.config()
         //.initialBalance(sender, ether(10)));
     }

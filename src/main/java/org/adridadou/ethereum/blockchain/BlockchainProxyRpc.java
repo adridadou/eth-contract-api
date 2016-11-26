@@ -34,11 +34,13 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
     private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Byte chainId;
 
     private final Web3JFacade web3JFacade;
 
-    public BlockchainProxyRpc(Web3JFacade web3jFacade) {
+    public BlockchainProxyRpc(Web3JFacade web3jFacade, Byte chainId) {
         this.web3JFacade = web3jFacade;
+        this.chainId = chainId;
     }
 
     @Override
@@ -136,7 +138,8 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                data.data);
+                data.data,
+                chainId);
         tx.sign(sender.key);
 
         return CompletableFuture.supplyAsync(() -> {

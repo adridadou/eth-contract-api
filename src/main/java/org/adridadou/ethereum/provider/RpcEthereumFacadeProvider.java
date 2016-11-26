@@ -12,11 +12,11 @@ import org.web3j.protocol.http.HttpService;
  */
 public class RpcEthereumFacadeProvider {
 
-    public EthereumFacade create(final String url) {
-        return create(new Web3JFacade(Web3j.build(new HttpService(url))));
+    public EthereumFacade create(final String url, final Byte chainId) {
+        return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
     }
 
-    public EthereumFacade create(final Web3JFacade web3j) {
-        return new EthereumFacade(new BlockchainProxyRpc(web3j));
+    public EthereumFacade create(final Web3JFacade web3j, final Byte chainId) {
+        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId));
     }
 }

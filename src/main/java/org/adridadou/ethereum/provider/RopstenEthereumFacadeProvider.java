@@ -25,10 +25,10 @@ import org.web3j.crypto.WalletUtils;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
+public class RopstenEthereumFacadeProvider implements EthereumFacadeProvider {
 
     private static class TestNetConfig {
-        private final String mordenConfig =
+        private final String ropstenConfig =
                 "peer.discovery = {\n" +
                         "\n" +
                         "    # List of the peers to start\n" +
@@ -50,22 +50,22 @@ public class MordenEthereumFacadeProvider implements EthereumFacadeProvider {
                         "# contains several versions of\n" +
                         "# genesis configuration according\n" +
                         "# to the network the peer will run on\n" +
-                        "genesis = frontier-morden.json\n" +
+                        "genesis = ropsten.json\n" +
                         "\n" +
                         "# Blockchain settings (constants and algorithms) which are\n" +
                         "# not described in the genesis file (like MINIMUM_DIFFICULTY or Mining algorithm)\n" +
-                        "blockchain.config.name = \"morden\"\n" +
+                        "blockchain.config.name = \"ropsten\"\n" +
                         "\n" +
                         "database {\n" +
                         "    # place to save physical storage files\n" +
-                        "    dir = database-morden\n" +
+                        "    dir = database-ropsten\n" +
                         "}\n";
 
 
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties();
-            props.overrideParams(ConfigFactory.parseString(mordenConfig.replaceAll("'", "\"")));
+            props.overrideParams(ConfigFactory.parseString(ropstenConfig.replaceAll("'", "\"")));
             return props;
         }
     }

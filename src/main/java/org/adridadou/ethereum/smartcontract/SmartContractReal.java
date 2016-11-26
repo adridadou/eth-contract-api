@@ -25,6 +25,7 @@ import org.ethereum.facade.Ethereum;
  * This code is released under Apache 2 license
  */
 public class SmartContractReal implements SmartContract {
+    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100000000000000L;
     private final EthAddress address;
     private final Contract contract;
     private final Ethereum ethereum;
@@ -45,7 +46,7 @@ public class SmartContractReal implements SmartContract {
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
 
-        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
+        Transaction tx = CallTransaction.createCallTransaction(0, 0, GAS_LIMIT_FOR_CONSTANT_CALLS,
                 address.toString(), 0, contract.getByName(functionName), args);
         tx.sign(sender.key);
 
