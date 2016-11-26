@@ -1,15 +1,10 @@
 package org.adridadou.ethereum.provider;
 
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
+import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.blockchain.BlockchainConfig;
 import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
-import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
@@ -22,28 +17,43 @@ import org.ethereum.facade.EthereumFactory;
 import org.springframework.context.annotation.Bean;
 import org.web3j.crypto.WalletUtils;
 
+import java.io.File;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class RopstenEthereumFacadeProvider {
+public class GenericEthereumFacadeProvider {
 
-    public EthereumFacade create() {
-        return create(new OnBlockHandler(), new OnTransactionHandler());
+    public final static byte MAIN_CHAIN_ID = 0;
+    public final static byte ROPSTEN_CHAIN_ID = 3;
+
+    private static class GenericConfig {
+        static String config;
+
+
+        @Bean
+        public SystemProperties systemProperties() {
+            SystemProperties props = new SystemProperties();
+            props.overrideParams(ConfigFactory.parseString(config.replaceAll("'", "\"")));
+            return props;
+        }
     }
 
+    public EthereumFacade create(final BlockchainConfig config) {
+        return create(new OnBlockHandler(), new OnTransactionHandler(), config);
+    }
 
-    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
+    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler, final BlockchainConfig config) {
+        GenericConfig.config = config.toString();
+        Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
+        ethereum.init();
 
-        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
-                .addIp("94.242.229.4:40404")
-                .addIp("94.242.229.203:30303")
-                .networkId(GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID)
-                .eip8(true)
-                .genesis("ropsten.json")
-                .configName("ropsten")
-                .dbDirectory("database-ropsten")
-                .build());
+        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }
 
     public SecureKey getKey(final String id) {

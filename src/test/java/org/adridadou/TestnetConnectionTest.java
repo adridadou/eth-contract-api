@@ -35,7 +35,7 @@ public class TestnetConnectionTest {
 
     private void init() throws Exception {
         sender = privateNetwork.getKey("cow").decode("");
-        ethereum = ropsten.create();
+        ethereum = standalone.create();
         //privateNetwork.create(PrivateNetworkConfig.config()
         //.initialBalance(sender, ether(10)));
     }
