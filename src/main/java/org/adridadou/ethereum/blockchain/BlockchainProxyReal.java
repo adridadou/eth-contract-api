@@ -123,7 +123,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
                     toAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                    data.data);
+                    data.data,
+                    ethereum.getChainIdForNextBlock());
             tx.sign(sender.key);
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(sender);
