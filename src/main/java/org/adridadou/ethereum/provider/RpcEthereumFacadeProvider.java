@@ -12,6 +12,9 @@ import org.web3j.protocol.http.HttpService;
  */
 public class RpcEthereumFacadeProvider {
 
+    public final static byte MAIN_CHAIN_ID = 0;
+    public final static byte ROPSTEN_CHAIN_ID = 2;
+
     public EthereumFacade create(final String url, final Byte chainId) {
         return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
     }

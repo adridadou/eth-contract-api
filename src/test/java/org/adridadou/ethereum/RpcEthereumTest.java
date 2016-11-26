@@ -41,7 +41,7 @@ public class RpcEthereumTest {
 
     @Test
     public void test() throws IOException, ExecutionException, InterruptedException {
-        EthereumFacade ethereum = provider.create(web3j, (byte) 2);
+        EthereumFacade ethereum = provider.create(web3j, RpcEthereumFacadeProvider.ROPSTEN_CHAIN_ID);
 
         when(web3j.getTransactionCount(account)).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);
