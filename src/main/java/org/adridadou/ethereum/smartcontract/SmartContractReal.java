@@ -10,7 +10,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
-import org.adridadou.exception.EthereumApiException;
+import org.adridadou.exception.FunctionNotFoundException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.CallTransaction;
@@ -86,7 +86,7 @@ public class SmartContractReal implements SmartContract {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
-            throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
+            throw new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
         }
         EthData functionCallBytes = EthData.of(func.encode(args));
 
