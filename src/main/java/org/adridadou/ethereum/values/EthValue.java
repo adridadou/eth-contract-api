@@ -20,6 +20,10 @@ public class EthValue implements Comparable<EthValue> {
         return new EthValue(value.multiply(ETHER_CONVERSION.toBigInteger()));
     }
 
+    public static EthValue ether(final long value) {
+        return ether(BigInteger.valueOf(value));
+    }
+
     public static EthValue wei(final int value) {
         return wei(BigInteger.valueOf(value));
     }

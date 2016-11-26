@@ -34,4 +34,8 @@ contract myContract2 {
             arr[i] = i;
         }
     }
+
+    function throwMe() {
+        throw;
+    }
 }

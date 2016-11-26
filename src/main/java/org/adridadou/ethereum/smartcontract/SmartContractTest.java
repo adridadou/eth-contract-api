@@ -3,6 +3,7 @@ package org.adridadou.ethereum.smartcontract;
 import com.google.common.collect.Lists;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
+import org.ethereum.util.blockchain.SolidityCallResult;
 import org.ethereum.util.blockchain.SolidityContract;
 
 import java.lang.reflect.Field;
@@ -22,7 +23,15 @@ public class SmartContractTest implements SmartContract {
 
     @Override
     public CompletableFuture<Object[]> callFunction(String methodName, Object... arguments) {
-        return CompletableFuture.completedFuture(contract.callFunction(methodName, arguments).getReturnValues());
+        SolidityCallResult result = contract.callFunction(methodName, arguments);
+        CompletableFuture<Object[]> future = new CompletableFuture<>();
+
+        if (!result.isSuccessful()) {
+            future.completeExceptionally(new EthereumApiException("error"));
+        } else {
+            future.complete(result.getReturnValues());
+        }
+        return future;
     }
 
     @Override

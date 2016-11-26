@@ -6,6 +6,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
+import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
@@ -201,5 +202,9 @@ public class PrivateEthereumFacadeProvider {
                 })
         );
         return facade;
+    }
+
+    public SecureKey getKey(String id) {
+        return new StringSecureKey("");
     }
 }
