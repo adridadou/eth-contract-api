@@ -36,8 +36,10 @@ public class TestnetConnectionTest {
     private void init() throws Exception {
         sender = privateNetwork.getKey("cow").decode("");
         ethereum = standalone.create();
-        //privateNetwork.create(PrivateNetworkConfig.config()
-        //.initialBalance(sender, ether(10)));
+        /*
+        ethereum = privateNetwork.create(PrivateNetworkConfig.config()
+        .initialBalance(sender, ether(10)));
+        */
     }
 
     private MyContract2 publishAndMapContract() throws Exception {
@@ -78,7 +80,6 @@ public class TestnetConnectionTest {
         } catch (final ExecutionException ex) {
             assertEquals(EthereumApiException.class, ex.getCause().getClass());
         }
-
     }
 
     @Test

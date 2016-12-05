@@ -204,7 +204,7 @@ public class PrivateEthereumFacadeProvider {
         return facade;
     }
 
-    public SecureKey getKey(String id) {
-        return new StringSecureKey("");
+    public SecureKey getKey(final String id) {
+        return new StringSecureKey(id);
     }
 }

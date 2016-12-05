@@ -20,7 +20,7 @@ public class TestnetEthereumFacadeProvider {
 
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
 
-        return new GenericEthereumFacadeProvider().create(BlockchainConfig.builder()
+        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
                 .eip8(false)
                 .dbDirectory("testnetSampleDb")
                 .genesis("frontier-test.json")
