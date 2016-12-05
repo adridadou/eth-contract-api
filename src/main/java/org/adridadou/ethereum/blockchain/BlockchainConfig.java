@@ -3,6 +3,7 @@ package org.adridadou.ethereum.blockchain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by davidroon on 26.11.16.
@@ -35,7 +36,9 @@ public class BlockchainConfig {
 
     public String toString() {
         final Optional<String> strIpList = Optional.ofNullable(ipList).map(lst -> String.join(",", lst));
-        final Optional<String> strActivePeer = Optional.ofNullable(peerActiveList).map(lst -> String.join(",", lst));
+        final Optional<String> strActivePeer = Optional.ofNullable(peerActiveList)
+                .map(lst -> "[" + String.join(",", lst.stream()
+                        .map(str -> "{ url = " + str + "}").collect(Collectors.toList())) + "]");
         return "peer.discovery = {\n" +
                 strIpList.map(lst -> "ip.list = [\n" + lst + "]\n").orElse("") +
                 Optional.ofNullable(peerDiscovery).map(discovery -> "enabled = " + discovery + "\n").orElse("") +
