@@ -123,7 +123,7 @@ public class BlockchainConfig {
 
         public Builder peerActiveUrl(String url) {
             this.peerActiveList = Optional.ofNullable(peerActiveList).orElseGet(ArrayList::new);
-            this.ipList.add("\"" + url + "\"");
+            this.peerActiveList.add("\"" + url + "\"");
             return this;
         }
     }
