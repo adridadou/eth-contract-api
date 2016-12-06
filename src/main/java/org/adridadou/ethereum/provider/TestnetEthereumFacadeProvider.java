@@ -7,6 +7,9 @@ import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
+import org.adridadou.ethereum.values.config.ChainId;
+import org.adridadou.ethereum.values.config.DatabaseDirectory;
+import org.adridadou.ethereum.values.config.GenesisPath;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -22,10 +25,10 @@ public class TestnetEthereumFacadeProvider {
 
         return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
                 .eip8(false)
-                .dbDirectory("testnetSampleDb")
-                .genesis("frontier-test.json")
+                .dbDirectory(DatabaseDirectory.db("testnetSampleDb"))
+                .genesis(GenesisPath.path("frontier-test.json"))
                 .syncEnabled(true)
-                .networkId(161)
+                .networkId(ChainId.id(161))
                 .listenPort(0)
                 .peerDiscovery(false)
                 .peerActiveUrl("enode://9bcff30ea776ebd28a9424d0ac7aa500d372f918445788f45a807d83186bd52c4c0afaf504d77e2077e5a99f1f264f75f8738646c1ac3673ccc652b65565c3bb@peer-1.ether.camp:30303")

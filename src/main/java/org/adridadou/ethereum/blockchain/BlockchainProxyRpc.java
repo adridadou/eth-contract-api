@@ -5,6 +5,7 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
 import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
@@ -34,11 +35,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
     private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
-    private final Byte chainId;
+    private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
 
-    public BlockchainProxyRpc(Web3JFacade web3jFacade, Byte chainId) {
+    public BlockchainProxyRpc(Web3JFacade web3jFacade, ChainId chainId) {
         this.web3JFacade = web3jFacade;
         this.chainId = chainId;
     }
@@ -139,7 +140,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
-                chainId);
+                chainId.id);
         tx.sign(sender.key);
 
         return CompletableFuture.supplyAsync(() -> {

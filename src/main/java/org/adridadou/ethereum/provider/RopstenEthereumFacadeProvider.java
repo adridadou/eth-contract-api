@@ -6,20 +6,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.blockchain.BlockchainConfig;
-import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.values.config.DatabaseDirectory;
+import org.adridadou.ethereum.values.config.EthereumConfigName;
+import org.adridadou.ethereum.values.config.GenesisPath;
+import org.adridadou.ethereum.values.config.NodeIp;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.config.SystemProperties;
-import org.ethereum.facade.Ethereum;
-import org.ethereum.facade.EthereumFactory;
-import org.springframework.context.annotation.Bean;
 import org.web3j.crypto.WalletUtils;
 
 /**
@@ -36,13 +33,13 @@ public class RopstenEthereumFacadeProvider {
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
 
         return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
-                .addIp("94.242.229.4:40404")
-                .addIp("94.242.229.203:30303")
+                .addIp(NodeIp.ip("94.242.229.4:40404"))
+                .addIp(NodeIp.ip("94.242.229.203:30303"))
                 .networkId(GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID)
                 .eip8(true)
-                .genesis("ropsten.json")
-                .configName("ropsten")
-                .dbDirectory("database-ropsten")
+                .genesis(GenesisPath.path("ropsten.json"))
+                .configName(EthereumConfigName.name("ropsten"))
+                .dbDirectory(DatabaseDirectory.db("database-ropsten"))
                 .build());
     }
 

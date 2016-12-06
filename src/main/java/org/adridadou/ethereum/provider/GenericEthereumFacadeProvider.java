@@ -10,6 +10,7 @@ import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
@@ -28,8 +29,8 @@ import java.util.stream.Collectors;
  */
 public class GenericEthereumFacadeProvider {
 
-    public final static byte MAIN_CHAIN_ID = 0;
-    public final static byte ROPSTEN_CHAIN_ID = 3;
+    public final static ChainId MAIN_CHAIN_ID = ChainId.id(0);
+    public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
 
     private static class GenericConfig {
         static String config;

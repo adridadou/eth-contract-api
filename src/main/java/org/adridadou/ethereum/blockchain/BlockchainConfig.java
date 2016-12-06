@@ -1,5 +1,7 @@
 package org.adridadou.ethereum.blockchain;
 
+import org.adridadou.ethereum.values.config.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,18 +12,18 @@ import java.util.stream.Collectors;
  * This code is released under Apache 2 license
  */
 public class BlockchainConfig {
-    private final Byte networkId;
+    private final ChainId networkId;
     private final Boolean eip8;
-    private final String genesis;
-    private final String configName;
-    private final String dbDir;
-    private final List<String> ipList;
+    private final GenesisPath genesis;
+    private final EthereumConfigName configName;
+    private final DatabaseDirectory dbDir;
+    private final List<NodeIp> ipList;
     private final Boolean syncEnabled;
     private final Integer listenPort;
     private final Boolean peerDiscovery;
     private final List<String> peerActiveList;
 
-    public BlockchainConfig(Byte networkId, Boolean eip8, String genesis, String configName, String dbDir, List<String> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList) {
+    public BlockchainConfig(ChainId networkId, Boolean eip8, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList) {
         this.networkId = networkId;
         this.eip8 = eip8;
         this.genesis = genesis;
@@ -35,7 +37,7 @@ public class BlockchainConfig {
     }
 
     public String toString() {
-        final Optional<String> strIpList = Optional.ofNullable(ipList).map(lst -> String.join(",", lst));
+        final Optional<String> strIpList = Optional.ofNullable(ipList).map(lst -> String.join(",", lst.stream().map(NodeIp::toString).collect(Collectors.toList())));
         final Optional<String> strActivePeer = Optional.ofNullable(peerActiveList)
                 .map(lst -> "[" + String.join(",", lst.stream()
                         .map(str -> "{ url = " + str + "}").collect(Collectors.toList())) + "]");
@@ -50,7 +52,7 @@ public class BlockchainConfig {
                 Optional.ofNullable(genesis).map(json -> "genesis = " + json + "\n").orElse("") +
                 Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
-                Optional.ofNullable(dbDir).map(db -> "database {\n" + "dir = " + dbDir + "\n" + "}\n").orElse("");
+                Optional.ofNullable(dbDir).map(db -> "database = {\n" + "dir = " + dbDir + "\n" + "}\n").orElse("");
     }
 
     public static Builder builder() {
@@ -58,24 +60,19 @@ public class BlockchainConfig {
     }
 
     public static class Builder {
-        private Byte networkId;
+        private ChainId networkId;
         private boolean eip8;
-        private String genesis;
-        private String configName;
-        private String dbDir;
-        private List<String> ipList;
+        private GenesisPath genesis;
+        private EthereumConfigName configName;
+        private DatabaseDirectory dbDir;
+        private List<NodeIp> ipList;
         private Boolean syncEnabled;
         private Integer listenPort;
         private Boolean peerDiscovery;
         private List<String> peerActiveList;
 
-        public Builder networkId(byte networkId) {
+        public Builder networkId(ChainId networkId) {
             this.networkId = networkId;
-            return this;
-        }
-
-        public Builder networkId(int networkId) {
-            this.networkId = (byte) networkId;
             return this;
         }
 
@@ -84,24 +81,24 @@ public class BlockchainConfig {
             return this;
         }
 
-        public Builder genesis(String genesis) {
+        public Builder genesis(GenesisPath genesis) {
             this.genesis = genesis;
             return this;
         }
 
-        public Builder configName(String configName) {
+        public Builder configName(EthereumConfigName configName) {
             this.configName = configName;
             return this;
         }
 
-        public Builder dbDirectory(String dbDir) {
+        public Builder dbDirectory(DatabaseDirectory dbDir) {
             this.dbDir = dbDir;
             return this;
         }
 
-        public Builder addIp(String ip) {
+        public Builder addIp(NodeIp ip) {
             this.ipList = Optional.ofNullable(ipList).orElseGet(ArrayList::new);
-            this.ipList.add("\"" + ip + "\"");
+            this.ipList.add(ip);
             return this;
         }
 
