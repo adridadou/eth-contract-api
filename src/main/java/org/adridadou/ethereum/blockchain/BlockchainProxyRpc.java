@@ -127,14 +127,13 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     public CompletableFuture<EthExecutionResult> sendTx(final EthValue value, final EthData data, final EthAccount sender, final EthAddress toAddress) {
-        BigInteger nonce = web3JFacade.getTransactionCount(sender);
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
 
         increasePendingTransactionCounter(sender);
 
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
-                ByteUtil.bigIntegerToBytes(getNonce(sender, nonce)),
+                ByteUtil.bigIntegerToBytes(getNonce(sender)),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
@@ -150,18 +149,19 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         });
     }
 
-    private BigInteger getNonce(final EthAccount account, final BigInteger nonce) {
-        return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO)).subtract(BigInteger.ONE);
+    public BigInteger getNonce(EthAccount account) {
+        return web3JFacade.getTransactionCount(account)
+                .add(pendingTransactions.getOrDefault(account, BigInteger.ZERO))
+                .subtract(BigInteger.ONE);
     }
 
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
-        BigInteger nonce = web3JFacade.getTransactionCount(sender);
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
         increasePendingTransactionCounter(sender);
 
         RawTransaction tx = RawTransaction.createContractTransaction(
-                getNonce(sender, nonce),
+                getNonce(sender),
                 gasPrice,
                 gas.add(BigInteger.valueOf(100_000)),
                 ethValue.inWei(),

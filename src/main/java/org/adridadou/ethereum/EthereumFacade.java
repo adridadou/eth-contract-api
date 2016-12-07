@@ -3,6 +3,7 @@ package org.adridadou.ethereum;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -78,5 +79,9 @@ public class EthereumFacade {
 
     public CompletableFuture<EthExecutionResult> sendEther(EthAccount mainAccount, EthAccount account, EthValue value) {
         return blockchainProxy.sendTx(value, EthData.empty(), mainAccount, account.getAddress());
+    }
+
+    public BigInteger getNonce(EthAccount account) {
+        return blockchainProxy.getNonce(account);
     }
 }

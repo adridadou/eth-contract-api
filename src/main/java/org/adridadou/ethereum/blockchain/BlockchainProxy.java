@@ -5,6 +5,7 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 
+import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -27,6 +28,8 @@ public interface BlockchainProxy {
     boolean addressExists(EthAddress address);
 
     EthValue getBalance(EthAddress address);
+
+    BigInteger getNonce(EthAccount account);
 
     default void hasEnoughFund(EthAddress address, EthValue requiredFund) {
         if (getBalance(address).compareTo(requiredFund) < 0) {

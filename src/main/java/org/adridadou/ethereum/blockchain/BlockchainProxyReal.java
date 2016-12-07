@@ -96,7 +96,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    private BigInteger getNonce(final EthAccount account) {
+    public BigInteger getNonce(final EthAccount account) {
         BigInteger nonce = ethereum.getRepository().getNonce(account.getAddress().address);
         return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
     }
