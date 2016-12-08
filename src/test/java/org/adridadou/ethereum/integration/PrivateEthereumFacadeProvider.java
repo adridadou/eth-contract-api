@@ -11,7 +11,6 @@ import org.adridadou.ethereum.keystore.StringSecureKey;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.core.Block;
 import org.ethereum.facade.Ethereum;
@@ -22,8 +21,6 @@ import org.ethereum.samples.BasicSample;
 import org.springframework.context.annotation.Bean;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -166,10 +163,8 @@ public class PrivateEthereumFacadeProvider {
 
         if (dagCached) {
             new File(config.getDbName()).mkdirs();
-            InputStream mineDag = getClass().getClassLoader().getResourceAsStream("cachedDag/mine-dag.dat");
-            InputStream mineDagLight = getClass().getClassLoader().getResourceAsStream("cachedDag/mine-dag-light.dat");
-            IOUtils.copy(mineDag, new FileOutputStream(new File(config.getDbName() + "/mine-dag.dat")));
-            IOUtils.copy(mineDagLight, new FileOutputStream(new File(config.getDbName() + "/mine-dag-light.dat")));
+            FileUtils.copyFile(new File("cachedDag/mine-dag.dat"), new File(config.getDbName() + "/mine-dag.dat"));
+            FileUtils.copyFile(new File("cachedDag/mine-dag-light.dat"), new File(config.getDbName() + "/mine-dag-light.dat"));
         }
 
         MinerConfig.dbName = config.getDbName();
@@ -182,8 +177,8 @@ public class PrivateEthereumFacadeProvider {
         }
 
         if (!dagCached) {
-            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("src/test/resources/cachedDag/mine-dag.dat"));
-            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("src/test/resources/cachedDag/mine-dag-light.dat"));
+            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
+            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
         }
 
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());

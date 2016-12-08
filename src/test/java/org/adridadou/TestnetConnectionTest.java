@@ -2,10 +2,12 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.integration.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.integration.PrivateNetworkConfig;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 
+import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
 import org.adridadou.ethereum.values.SoliditySource;
@@ -35,11 +37,9 @@ public class TestnetConnectionTest {
 
     private void init() throws Exception {
         sender = privateNetwork.getKey("cow").decode("");
-        ethereum = standalone.create();
-        /*
         ethereum = privateNetwork.create(PrivateNetworkConfig.config()
-        .initialBalance(sender, ether(10)));
-        */
+                .initialBalance(sender, ether(10))
+        );
     }
 
     private MyContract2 publishAndMapContract() throws Exception {
