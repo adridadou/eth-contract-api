@@ -47,12 +47,12 @@ public class BlockchainConfig {
                 "}\n" +
                 strActivePeer.map(lst -> "peer.active = " + lst + "\n").orElse("") +
                 Optional.ofNullable(listenPort).map(port -> "peer.listen.port = " + listenPort + "\n").orElse("") +
-                Optional.ofNullable(networkId).map(id -> "peer.networkId = " + networkId + "\n").orElse("") +
+                Optional.ofNullable(networkId).map(id -> "peer.networkId = " + networkId.id + "\n").orElse("") +
                 Optional.ofNullable(eip8).map(v -> "peer.p2p.eip8 = " + v + "\n").orElse("") +
-                Optional.ofNullable(genesis).map(json -> "genesis = " + json + "\n").orElse("") +
-                Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config + "\"\n").orElse("") +
+                Optional.ofNullable(genesis).map(json -> "genesis = " + json.path + "\n").orElse("") +
+                Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config.name + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
-                Optional.ofNullable(dbDir).map(db -> "database = {\n" + "dir = " + dbDir + "\n" + "}\n").orElse("");
+                Optional.ofNullable(dbDir).map(db -> "database = {\n" + "dir = " + dbDir.directory + "\n" + "}\n").orElse("");
     }
 
     public static Builder builder() {
