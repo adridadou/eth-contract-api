@@ -10,3 +10,11 @@ test:
     post:
         - mvn clean test jacoco:report coveralls:report:
             timeout: 7200
+
+
+dependencies:
+  # we automatically cache and restore many dependencies between
+  # builds. If you need to, you can add custom paths to cache:
+  cache_directories:
+    - "custom_1"   # relative to the build directory
+    - "~/custom_2" # relative to the user's home directory
