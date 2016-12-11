@@ -5,7 +5,6 @@ import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.Response;
 import org.web3j.protocol.core.methods.request.Transaction;
@@ -36,7 +35,7 @@ public class Web3JFacade {
                     BigInteger.valueOf(1_000_000_000),
                     address.withLeading0x(), BigInteger.ZERO,
                     data.toString()
-            ), DefaultBlockParameter.valueOf("latest")).send()));
+            ), DefaultBlockParameterName.LATEST).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
@@ -50,9 +49,9 @@ public class Web3JFacade {
         }
     }
 
-    public BigInteger getTransactionCount(EthAccount sender) {
+    public BigInteger getTransactionCount(EthAddress address) {
         try {
-            return Numeric.decodeQuantity(handleError(web3j.ethGetTransactionCount(sender.getAddress().withLeading0x(), DefaultBlockParameterName.LATEST).send()));
+            return Numeric.decodeQuantity(handleError(web3j.ethGetTransactionCount(address.withLeading0x(), DefaultBlockParameterName.LATEST).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
@@ -84,7 +83,7 @@ public class Web3JFacade {
 
     public EthGetBalance getBalance(EthAddress address) {
         try {
-            return web3j.ethGetBalance(address.withLeading0x(), DefaultBlockParameter.valueOf("latest")).send();
+            return web3j.ethGetBalance(address.withLeading0x(), DefaultBlockParameterName.LATEST).send();
         } catch (IOException e) {
             throw new IOError(e);
         }

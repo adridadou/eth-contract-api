@@ -74,4 +74,9 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return EthValue.wei(0);
     }
 
+    @Override
+    public BigInteger getNonce(EthAddress address) {
+        return BigInteger.ONE;
+    }
+
 }

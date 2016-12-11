@@ -5,6 +5,7 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
 import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
@@ -33,12 +34,14 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int SLEEP_DURATION = 5000;
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
-    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
 
-    public BlockchainProxyRpc(Web3JFacade web3jFacade) {
+    public BlockchainProxyRpc(Web3JFacade web3jFacade, ChainId chainId) {
         this.web3JFacade = web3jFacade;
+        this.chainId = chainId;
     }
 
     @Override
@@ -124,40 +127,41 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     public CompletableFuture<EthExecutionResult> sendTx(final EthValue value, final EthData data, final EthAccount sender, final EthAddress toAddress) {
-        BigInteger nonce = web3JFacade.getTransactionCount(sender);
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
 
-        increasePendingTransactionCounter(sender);
+        increasePendingTransactionCounter(sender.getAddress());
 
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
-                ByteUtil.bigIntegerToBytes(getNonce(sender, nonce)),
+                ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                data.data);
+                data.data,
+                chainId.id);
         tx.sign(sender.key);
 
         return CompletableFuture.supplyAsync(() -> {
             web3JFacade.sendTransaction(EthData.of(tx.getEncoded()));
-            decreasePendingTransactionCounter(sender);
+            decreasePendingTransactionCounter(sender.getAddress());
             return new EthExecutionResult(new byte[0]);
         });
     }
 
-    private BigInteger getNonce(final EthAccount account, final BigInteger nonce) {
-        return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO)).subtract(BigInteger.ONE);
+    public BigInteger getNonce(EthAddress address) {
+        return web3JFacade.getTransactionCount(address)
+                .add(pendingTransactions.getOrDefault(address, BigInteger.ZERO))
+                .subtract(BigInteger.ONE);
     }
 
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
-        BigInteger nonce = web3JFacade.getTransactionCount(sender);
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        increasePendingTransactionCounter(sender);
+        increasePendingTransactionCounter(sender.getAddress());
 
         RawTransaction tx = RawTransaction.createContractTransaction(
-                getNonce(sender, nonce),
+                getNonce(sender.getAddress()),
                 gasPrice,
                 gas.add(BigInteger.valueOf(100_000)),
                 ethValue.inWei(),
@@ -166,7 +170,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         EthData result = web3JFacade.sendTransaction(signedTx);
         return this.handleTransaction(result)
                 .thenApply(receipt -> {
-                    decreasePendingTransactionCounter(sender);
+                    decreasePendingTransactionCounter(sender.getAddress());
                     return EthAddress.of(receipt.getContractAddress().orElse(null));
                 });
     }
@@ -196,11 +200,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         return EthValue.wei(result.getBalance());
     }
 
-    private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
+    private void decreasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
-    private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
+    private void increasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }

@@ -10,7 +10,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
-import org.adridadou.exception.EthereumApiException;
+import org.adridadou.exception.FunctionNotFoundException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.CallTransaction;
@@ -25,6 +25,7 @@ import org.ethereum.facade.Ethereum;
  * This code is released under Apache 2 license
  */
 public class SmartContractReal implements SmartContract {
+    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100000000000000L;
     private final EthAddress address;
     private final Contract contract;
     private final Ethereum ethereum;
@@ -45,7 +46,7 @@ public class SmartContractReal implements SmartContract {
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
 
-        Transaction tx = CallTransaction.createCallTransaction(0, 0, 100000000000000L,
+        Transaction tx = CallTransaction.createCallTransaction(0, 0, GAS_LIMIT_FOR_CONSTANT_CALLS,
                 address.toString(), 0, contract.getByName(functionName), args);
         tx.sign(sender.key);
 
@@ -85,7 +86,7 @@ public class SmartContractReal implements SmartContract {
         CallTransaction.Function func = contract.getByName(functionName);
 
         if (func == null) {
-            throw new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
+            throw new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
         }
         EthData functionCallBytes = EthData.of(func.encode(args));
 

@@ -2,8 +2,8 @@ package org.adridadou.ethereum;
 
 
 import org.adridadou.ethereum.blockchain.Web3JFacade;
-import org.adridadou.ethereum.keystore.Keystore;
-import org.adridadou.ethereum.provider.RpcEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.GenericEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.GenericRpcEthereumFacadeProvider;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
  */
 public class RpcEthereumTest {
 
-    private final RpcEthereumFacadeProvider provider = new RpcEthereumFacadeProvider();
+    private final GenericRpcEthereumFacadeProvider provider = new GenericRpcEthereumFacadeProvider();
     private final Web3JFacade web3j = mock(Web3JFacade.class);
     private final SoliditySource contract = new SoliditySource(
             "contract myContract2 {" +
@@ -42,9 +42,9 @@ public class RpcEthereumTest {
 
     @Test
     public void test() throws IOException, ExecutionException, InterruptedException {
-        EthereumFacade ethereum = provider.create(web3j);
+        EthereumFacade ethereum = provider.create(web3j, GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID);
 
-        when(web3j.getTransactionCount(account)).thenReturn(BigInteger.TEN);
+        when(web3j.getTransactionCount(account.getAddress())).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);
         when(web3j.estimateGas(eq(account), any(EthData.class))).thenReturn(BigInteger.TEN);
         when(web3j.constantCall(eq(account), eq(address), any(EthData.class))).thenReturn(EthData.of(new byte[0]));

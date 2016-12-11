@@ -25,12 +25,10 @@ import org.web3j.crypto.WalletUtils;
  */
 public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
 
-    @Override
     public EthereumFacade create() {
         return create(new OnBlockHandler(), new OnTransactionHandler());
     }
 
-    @Override
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
         Ethereum ethereum = EthereumFactory.createEthereum();
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
@@ -39,8 +37,7 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }
 
-    @Override
-    public SecureKey getKey(String id) {
+    public SecureKey getLockedAccount(String id) {
         File[] files = new File(getKeystoreFolderPath()).listFiles();
 
         return Lists.newArrayList(Preconditions.checkNotNull(files, "the folder " + getKeystoreFolderPath() + " cannot be found"))
@@ -49,7 +46,6 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
                 .orElseThrow(() -> new EthereumApiException("the file " + id + " could not be found"));
     }
 
-    @Override
     public List<? extends SecureKey> listAvailableKeys() {
         File[] files = Optional.ofNullable(new File(getKeystoreFolderPath()).listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + getKeystoreFolderPath()));
         return Lists.newArrayList(files).stream()
