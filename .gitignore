@@ -1,5 +1,4 @@
-/database-morden
-/database-morden.old
+/database-ropsten
 /testnetSampleDb
 /eth-api.iml
 /.idea
@@ -14,7 +13,8 @@ buildNumber.properties
 .mvn/timing.properties
 /sampleDB-2
 /database
-/sampleDB-1
+/privateIntegration
 /logs
 /eth-contract-api.iml
-/src/test/resources/cachedDag/
+/src/test/resources
+/cachedDag/
