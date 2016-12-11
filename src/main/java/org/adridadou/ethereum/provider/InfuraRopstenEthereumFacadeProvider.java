@@ -1,46 +1,29 @@
 package org.adridadou.ethereum.provider;
 
+import com.google.common.collect.Lists;
+import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.blockchain.BlockchainConfig;
+import org.adridadou.ethereum.handler.OnBlockHandler;
+import org.adridadou.ethereum.handler.OnTransactionHandler;
+import org.adridadou.ethereum.keystore.FileSecureKey;
+import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.values.config.*;
+import org.adridadou.exception.EthereumApiException;
+import org.web3j.crypto.WalletUtils;
+
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
-import org.adridadou.ethereum.blockchain.BlockchainConfig;
-import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.handler.OnBlockHandler;
-import org.adridadou.ethereum.handler.OnTransactionHandler;
-import org.adridadou.ethereum.keystore.FileSecureKey;
-import org.adridadou.ethereum.keystore.SecureKey;
-import org.adridadou.ethereum.values.config.DatabaseDirectory;
-import org.adridadou.ethereum.values.config.EthereumConfigName;
-import org.adridadou.ethereum.values.config.GenesisPath;
-import org.adridadou.ethereum.values.config.NodeIp;
-import org.adridadou.exception.EthereumApiException;
-import org.web3j.crypto.WalletUtils;
-
 /**
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class RopstenEthereumFacadeProvider implements EthereumFacadeProvider {
+public class InfuraRopstenEthereumFacadeProvider implements EthereumFacadeProvider {
 
-    public EthereumFacade create() {
-        return create(new OnBlockHandler(), new OnTransactionHandler());
-    }
-
-
-    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
-
-        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
-                .addIp(NodeIp.ip("94.242.229.4:40404"))
-                .addIp(NodeIp.ip("94.242.229.203:30303"))
-                .networkId(GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID)
-                .eip8(true)
-                .genesis(GenesisPath.path("ropsten.json"))
-                .configName(EthereumConfigName.name("ropsten"))
-                .dbDirectory(DatabaseDirectory.db("database-ropsten"))
-                .build());
+    public EthereumFacade create(final InfuraKey key) {
+        return new GenericRpcEthereumFacadeProvider().create("https://ropsten.infura.io/" + key.key, GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID);
     }
 
     public SecureKey getLockedAccount(final String id) {

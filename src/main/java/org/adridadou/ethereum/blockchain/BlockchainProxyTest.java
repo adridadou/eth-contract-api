@@ -75,7 +75,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public BigInteger getNonce(EthAccount account) {
+    public BigInteger getNonce(EthAddress address) {
         return BigInteger.ONE;
     }
 

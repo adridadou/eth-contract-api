@@ -1,8 +1,8 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.integration.PrivateEthereumFacadeProvider;
-import org.adridadou.ethereum.integration.PrivateNetworkConfig;
+import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.PrivateNetworkConfig;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;

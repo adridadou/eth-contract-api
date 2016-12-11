@@ -33,7 +33,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
 
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
@@ -96,9 +96,9 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    public BigInteger getNonce(final EthAccount account) {
-        BigInteger nonce = ethereum.getRepository().getNonce(account.getAddress().address);
-        return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
+    public BigInteger getNonce(final EthAddress address) {
+        BigInteger nonce = ethereum.getRepository().getNonce(address.address);
+        return nonce.add(pendingTransactions.getOrDefault(address, BigInteger.ZERO));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
-            BigInteger nonce = getNonce(sender);
+            BigInteger nonce = getNonce(sender.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
@@ -127,7 +127,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ethereum.getChainIdForNextBlock());
             tx.sign(sender.key);
             ethereum.submitTransaction(tx);
-            increasePendingTransactionCounter(sender);
+            increasePendingTransactionCounter(sender.getAddress());
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
             Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
@@ -136,7 +136,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
                     .map(params -> {
                         Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
-                        decreasePendingTransactionCounter(sender);
+                        decreasePendingTransactionCounter(sender.getAddress());
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
@@ -158,11 +158,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return EthValue.wei(ethereum.getRepository().getBalance(address.address));
     }
 
-    private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
+    private void decreasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
-    private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
+    private void increasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }

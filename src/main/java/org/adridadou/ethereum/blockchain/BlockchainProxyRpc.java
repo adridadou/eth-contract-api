@@ -34,7 +34,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     private static final int SLEEP_DURATION = 5000;
     private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
-    private final Map<EthAccount, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
     private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
@@ -130,10 +130,10 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
 
-        increasePendingTransactionCounter(sender);
+        increasePendingTransactionCounter(sender.getAddress());
 
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
-                ByteUtil.bigIntegerToBytes(getNonce(sender)),
+                ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
@@ -144,24 +144,24 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
         return CompletableFuture.supplyAsync(() -> {
             web3JFacade.sendTransaction(EthData.of(tx.getEncoded()));
-            decreasePendingTransactionCounter(sender);
+            decreasePendingTransactionCounter(sender.getAddress());
             return new EthExecutionResult(new byte[0]);
         });
     }
 
-    public BigInteger getNonce(EthAccount account) {
-        return web3JFacade.getTransactionCount(account)
-                .add(pendingTransactions.getOrDefault(account, BigInteger.ZERO))
+    public BigInteger getNonce(EthAddress address) {
+        return web3JFacade.getTransactionCount(address)
+                .add(pendingTransactions.getOrDefault(address, BigInteger.ZERO))
                 .subtract(BigInteger.ONE);
     }
 
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        increasePendingTransactionCounter(sender);
+        increasePendingTransactionCounter(sender.getAddress());
 
         RawTransaction tx = RawTransaction.createContractTransaction(
-                getNonce(sender),
+                getNonce(sender.getAddress()),
                 gasPrice,
                 gas.add(BigInteger.valueOf(100_000)),
                 ethValue.inWei(),
@@ -170,7 +170,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         EthData result = web3JFacade.sendTransaction(signedTx);
         return this.handleTransaction(result)
                 .thenApply(receipt -> {
-                    decreasePendingTransactionCounter(sender);
+                    decreasePendingTransactionCounter(sender.getAddress());
                     return EthAddress.of(receipt.getContractAddress().orElse(null));
                 });
     }
@@ -200,11 +200,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         return EthValue.wei(result.getBalance());
     }
 
-    private void decreasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).subtract(BigInteger.ONE));
+    private void decreasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
-    private void increasePendingTransactionCounter(EthAccount sender) {
-        pendingTransactions.put(sender, pendingTransactions.getOrDefault(sender, BigInteger.ZERO).add(BigInteger.ONE));
+    private void increasePendingTransactionCounter(EthAddress address) {
+        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).add(BigInteger.ONE));
     }
 }

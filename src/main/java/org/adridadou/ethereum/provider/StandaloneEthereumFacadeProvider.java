@@ -11,7 +11,7 @@ import org.adridadou.ethereum.keystore.StringSecureKey;
  * Created by davidroon on 28.05.16.
  * This code is released under Apache 2 license
  */
-public class StandaloneEthereumFacadeProvider {
+public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider {
 
     public EthereumFacade create() {
         return create(new OnBlockHandler(), new OnTransactionHandler());
@@ -21,7 +21,7 @@ public class StandaloneEthereumFacadeProvider {
         return new EthereumFacade(new BlockchainProxyTest());
     }
 
-    public SecureKey getKey(String id) {
+    public SecureKey getLockedAccount(String id) {
         return new StringSecureKey("");
     }
 

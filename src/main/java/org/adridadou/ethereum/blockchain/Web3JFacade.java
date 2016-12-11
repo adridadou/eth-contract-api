@@ -49,9 +49,9 @@ public class Web3JFacade {
         }
     }
 
-    public BigInteger getTransactionCount(EthAccount sender) {
+    public BigInteger getTransactionCount(EthAddress address) {
         try {
-            return Numeric.decodeQuantity(handleError(web3j.ethGetTransactionCount(sender.getAddress().withLeading0x(), DefaultBlockParameterName.LATEST).send()));
+            return Numeric.decodeQuantity(handleError(web3j.ethGetTransactionCount(address.withLeading0x(), DefaultBlockParameterName.LATEST).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
