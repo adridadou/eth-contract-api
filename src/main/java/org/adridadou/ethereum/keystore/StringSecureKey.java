@@ -18,7 +18,7 @@ public class StringSecureKey implements SecureKey {
     }
 
     @Override
-    public EthAccount decode(String password) throws Exception {
+    public EthAccount decode(String password) {
         return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
     }
 

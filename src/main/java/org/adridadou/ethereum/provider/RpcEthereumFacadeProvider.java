@@ -2,6 +2,8 @@ package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.blockchain.Web3JFacade;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
@@ -10,9 +12,11 @@ import org.web3j.protocol.http.HttpService;
  * This code is released under Apache 2 license
  */
 public class RpcEthereumFacadeProvider {
+    public EthereumFacade create(final String url, final ChainId chainId) {
+        return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
+    }
 
-    public EthereumFacade create(final String url) {
-        Web3j web3j = Web3j.build(new HttpService(url));
-        return new EthereumFacade(new BlockchainProxyRpc(web3j));
+    public EthereumFacade create(final Web3JFacade web3j, final ChainId chainId) {
+        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId));
     }
 }

@@ -96,7 +96,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         return metadata;
     }
 
-    private BigInteger getNonce(final EthAccount account) {
+    public BigInteger getNonce(final EthAccount account) {
         BigInteger nonce = ethereum.getRepository().getNonce(account.getAddress().address);
         return nonce.add(pendingTransactions.getOrDefault(account, BigInteger.ZERO));
     }
@@ -123,7 +123,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ByteUtil.longToBytesNoLeadZeroes(3_000_000),
                     toAddress.address,
                     ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                    data.data);
+                    data.data,
+                    ethereum.getChainIdForNextBlock());
             tx.sign(sender.key);
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(sender);

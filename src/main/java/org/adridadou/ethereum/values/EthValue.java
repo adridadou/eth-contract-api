@@ -20,6 +20,10 @@ public class EthValue implements Comparable<EthValue> {
         return new EthValue(value.multiply(ETHER_CONVERSION.toBigInteger()));
     }
 
+    public static EthValue ether(final long value) {
+        return ether(BigInteger.valueOf(value));
+    }
+
     public static EthValue wei(final int value) {
         return wei(BigInteger.valueOf(value));
     }
@@ -48,14 +52,12 @@ public class EthValue implements Comparable<EthValue> {
         if (o == null || getClass() != o.getClass()) return false;
 
         EthValue ethValue = (EthValue) o;
-
-        return value != null ? value.equals(ethValue.value) : ethValue.value == null;
-
+        return value.equals(ethValue.value);
     }
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return value.hashCode();
     }
 
     @Override

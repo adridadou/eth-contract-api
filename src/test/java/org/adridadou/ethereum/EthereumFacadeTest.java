@@ -2,9 +2,12 @@ package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -19,9 +22,15 @@ import static org.junit.Assert.assertTrue;
  * This code is released under Apache 2 license
  */
 public class EthereumFacadeTest {
-    private BlockchainProxy proxy = new BlockchainProxyTest();
-    private EthereumFacade ethereum = new EthereumFacade(proxy);
+    private final BlockchainProxy proxy = new BlockchainProxyTest();
+    private final EthereumFacade ethereum = new EthereumFacade(proxy);
     private final EthAccount sender = null;
+
+    @Before
+    public void before() {
+        ethereum.addInputHandlers(InputTypeHandler.JAVA_INPUT_CONVERTERS)
+                .addOutputHandlers(OutputTypeHandler.JAVA_OUTPUT_CONVERTERS);
+    }
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
@@ -57,11 +66,11 @@ public class EthereumFacadeTest {
     }
 
     public static class MyReturnType {
-        private Boolean val1;
-        private String val2;
-        private Integer val3;
+        private final Boolean val1;
+        private final String val2;
+        private final Integer val3;
 
-        public MyReturnType(Boolean val1, String val2, Integer val3) {
+        public MyReturnType(final Boolean val1, final String val2, final Integer val3) {
             this.val1 = val1;
             this.val2 = val2;
             this.val3 = val3;

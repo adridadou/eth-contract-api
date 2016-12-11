@@ -77,7 +77,7 @@ public class Keystore {
         throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
     }
 
-    private static byte[] checkMacScrypt(Keystore keystore, String password) throws Exception {
+    private static byte[] checkMacScrypt(Keystore keystore, String password) {
         byte[] part = new byte[16];
         KdfParams params = keystore.getCrypto().getKdfparams();
         byte[] h = scrypt(password.getBytes(EthereumFacade.CHARSET), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
@@ -103,7 +103,7 @@ public class Keystore {
         return c;
     }
 
-    private static byte[] scrypt(byte[] pass, byte[] salt, int n, int r, int p, int dkLen) throws GeneralSecurityException {
+    private static byte[] scrypt(byte[] pass, byte[] salt, int n, int r, int p, int dkLen) {
         return SCrypt.generate(pass, salt, n, r, p, dkLen);
     }
 
@@ -114,7 +114,7 @@ public class Keystore {
         return skf.generateSecret(spec).getEncoded();
     }
 
-    public static byte[] sha3(byte[] h) throws NoSuchAlgorithmException {
+    public static byte[] sha3(byte[] h) {
         MessageDigest KECCAK = new Keccak.Digest256();
         KECCAK.reset();
         KECCAK.update(h);

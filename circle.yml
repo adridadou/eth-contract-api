@@ -1,3 +1,19 @@
 machine:
     java:
         version: oraclejdk8
+
+test:
+    override:
+        - mvn clean test:
+            timeout: 7200
+
+    post:
+        - mvn clean test jacoco:report coveralls:report:
+            timeout: 7200
+
+
+dependencies:
+  # we automatically cache and restore many dependencies between
+  # builds. If you need to, you can add custom paths to cache:
+  cache_directories:
+    - "cachedDag"   # relative to the build directory
