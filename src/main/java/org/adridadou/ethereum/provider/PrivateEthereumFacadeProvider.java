@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.integration;
+package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
@@ -187,7 +187,7 @@ public class PrivateEthereumFacadeProvider {
         //This event does not trigger when you are the miner
         ethereumListener.onSyncDone();
         facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
-                .map(entry -> facade.sendEther(mainAccount, entry.getKey(), entry.getValue()))
+                .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
                 .forEach(result -> {
                     try {
                         result.get();

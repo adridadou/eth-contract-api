@@ -36,6 +36,10 @@ public class SoliditySource {
         }
     }
 
+    public static SoliditySource from(String source) {
+        return new SoliditySource(source);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

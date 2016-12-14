@@ -29,7 +29,7 @@ public interface BlockchainProxy {
 
     EthValue getBalance(EthAddress address);
 
-    BigInteger getNonce(EthAccount account);
+    BigInteger getNonce(EthAddress address);
 
     default void hasEnoughFund(EthAddress address, EthValue requiredFund) {
         if (getBalance(address).compareTo(requiredFund) < 0) {

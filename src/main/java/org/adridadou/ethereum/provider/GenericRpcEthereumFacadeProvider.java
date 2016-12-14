@@ -11,7 +11,7 @@ import org.web3j.protocol.http.HttpService;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class RpcEthereumFacadeProvider {
+public class GenericRpcEthereumFacadeProvider {
     public EthereumFacade create(final String url, final ChainId chainId) {
         return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
     }

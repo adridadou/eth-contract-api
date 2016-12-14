@@ -23,7 +23,7 @@ import org.web3j.crypto.WalletUtils;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class MainEthereumFacadeProvider {
+public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
 
     public EthereumFacade create() {
         return create(new OnBlockHandler(), new OnTransactionHandler());
@@ -37,7 +37,7 @@ public class MainEthereumFacadeProvider {
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }
 
-    public SecureKey getKey(String id) {
+    public SecureKey getLockedAccount(String id) {
         File[] files = new File(getKeystoreFolderPath()).listFiles();
 
         return Lists.newArrayList(Preconditions.checkNotNull(files, "the folder " + getKeystoreFolderPath() + " cannot be found"))
