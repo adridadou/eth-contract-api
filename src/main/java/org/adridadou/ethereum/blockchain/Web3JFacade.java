@@ -43,7 +43,7 @@ public class Web3JFacade {
 
     public TransactionReceipt getTransactionReceipt(final EthData transactionHash) {
         try {
-            return handleError(web3j.ethGetTransactionReceipt(transactionHash.toString()).send());
+            return handleError(web3j.ethGetTransactionReceipt(transactionHash.withLeading0x()).send());
         } catch (IOException e) {
             throw new IOError(e);
         }
