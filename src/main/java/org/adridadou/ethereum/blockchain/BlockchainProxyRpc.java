@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
@@ -78,7 +80,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(EthValue.wei(1), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
                 .thenApply(address -> new SmartContractRpc(metadata.abi, web3JFacade, sender, address, this));
     }
 
@@ -139,7 +141,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
-                chainId.id);
+                (byte) chainId.id);
         tx.sign(sender.key);
 
         return CompletableFuture.supplyAsync(() -> {
@@ -197,7 +199,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         if (result.hasError()) {
             throw new EthereumApiException(result.getError().getMessage());
         }
-        return EthValue.wei(result.getBalance());
+        return wei(result.getBalance());
     }
 
     private void decreasePendingTransactionCounter(EthAddress address) {

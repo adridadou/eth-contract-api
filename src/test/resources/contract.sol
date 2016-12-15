@@ -1,3 +1,5 @@
+pragma solidity ^0.4.6;
+
 contract myContract2 {
 	string i1;
 	string i2;
