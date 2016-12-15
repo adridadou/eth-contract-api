@@ -139,7 +139,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
-                chainId.id);
+                (byte) chainId.id);
         tx.sign(sender.key);
 
         return CompletableFuture.supplyAsync(() -> {
