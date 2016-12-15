@@ -31,7 +31,8 @@ public class RpcEthereumTest {
     private final GenericRpcEthereumFacadeProvider provider = new GenericRpcEthereumFacadeProvider();
     private final Web3JFacade web3j = mock(Web3JFacade.class);
     private final SoliditySource contract = new SoliditySource(
-            "contract myContract2 {" +
+            "pragma solidity ^0.4.6;" +
+                    "contract myContract2 {" +
                     "  int i1;" +
                     "  function myMethod(int value) {i1 = value;}" +
                     "  function getI1() constant returns (int) {return i1;}" +

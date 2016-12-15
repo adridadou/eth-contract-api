@@ -25,7 +25,8 @@ public class EthereumProviderTest {
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {
         SoliditySource contract = new SoliditySource(
-                "contract myContract {" +
+                "pragma solidity ^0.4.6;" +
+                        "contract myContract {" +
                         "  int i1;" +
                         "  function myMethod() returns (int) {" +
                         "    return 23;" +
@@ -42,7 +43,8 @@ public class EthereumProviderTest {
     @Test
     public void checkCreateTx() throws IOException, ExecutionException, InterruptedException {
         SoliditySource contract = new SoliditySource(
-                "contract myContract2 {" +
+                "pragma solidity ^0.4.6;" +
+                        "contract myContract2 {" +
                         "  int i1;" +
                         "  function myMethod(int value) {i1 = value;}" +
                         "  function getI1() constant returns (int) {return i1;}" +
