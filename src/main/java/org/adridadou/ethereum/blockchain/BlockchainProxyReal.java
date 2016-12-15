@@ -24,6 +24,8 @@ import org.ethereum.util.ByteUtil;
 import org.ethereum.util.CopyOnWriteMap;
 import org.spongycastle.util.encoders.Hex;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
@@ -75,7 +77,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(EthValue.wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
                 .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
     }
 
@@ -155,7 +157,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public EthValue getBalance(EthAddress address) {
-        return EthValue.wei(ethereum.getRepository().getBalance(address.address));
+        return wei(ethereum.getRepository().getBalance(address.address));
     }
 
     private void decreasePendingTransactionCounter(EthAddress address) {
