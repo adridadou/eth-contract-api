@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.blockchain;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
 import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 
 import java.math.BigInteger;
@@ -71,7 +72,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public EthValue getBalance(EthAddress address) {
-        return EthValue.wei(0);
+        return wei(0);
     }
 
     @Override

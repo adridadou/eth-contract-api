@@ -18,3 +18,4 @@ buildNumber.properties
 /eth-contract-api.iml
 /src/test/resources
 /cachedDag/
+/ethercamp-test/

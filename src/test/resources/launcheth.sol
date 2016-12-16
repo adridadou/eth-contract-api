@@ -1,3 +1,5 @@
+pragma solidity ^0.4.6;
+
 contract abstract {}
 
 contract owned is abstract {

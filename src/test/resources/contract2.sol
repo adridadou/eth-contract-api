@@ -1,3 +1,5 @@
+pragma solidity ^0.4.6;
+
 contract myContract2 {
 	address owner;
 	function getI1() constant returns (string) {return "hello";}

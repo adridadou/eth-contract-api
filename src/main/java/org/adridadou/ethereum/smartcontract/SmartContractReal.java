@@ -20,6 +20,8 @@ import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutor;
 import org.ethereum.facade.Ethereum;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 /**
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
@@ -79,7 +81,7 @@ public class SmartContractReal implements SmartContract {
 
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
-        return callFunction(EthValue.wei(1), functionName, args);
+        return callFunction(wei(0), functionName, args);
     }
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
