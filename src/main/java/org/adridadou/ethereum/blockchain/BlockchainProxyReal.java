@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
@@ -124,7 +123,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
-
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(account.getAddress());
@@ -144,13 +142,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
 
             return CompletableFuture.supplyAsync(() -> eventHandler.observeBlocks()
-                    .filter(params -> {
-                        System.out.println("*************************");
-                        System.out.println(params.receipts.stream().map(receipt -> Hex.toHexString(receipt.getTransaction().getHash())).collect(Collectors.toList()));
-                        System.out.println(Hex.toHexString(tx.getHash()));
-                        System.out.println(params.receipts.stream().anyMatch(findReceipt));
-                        return params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT;
-                    })
+                    .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
                     .map(params -> {
                         Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
                         decreasePendingTransactionCounter(account.getAddress());
