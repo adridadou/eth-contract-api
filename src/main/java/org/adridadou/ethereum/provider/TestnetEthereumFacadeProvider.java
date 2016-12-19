@@ -16,7 +16,7 @@ import org.adridadou.ethereum.values.config.GenesisPath;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class TestnetEthereumFacadeProvider {
+public class TestnetEthereumFacadeProvider implements EthereumJConfig {
 
 
     public EthereumFacade create() {
@@ -25,7 +25,16 @@ public class TestnetEthereumFacadeProvider {
 
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
 
-        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
+        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, config());
+    }
+
+    public SecureKey getKey(String id) {
+        return new StringSecureKey(id);
+    }
+
+    @Override
+    public BlockchainConfig config() {
+        return BlockchainConfig.builder()
                 .eip8(false)
                 .dbDirectory(DatabaseDirectory.db("ethercamp-test"))
                 .genesis(GenesisPath.path("frontier-test.json"))
@@ -37,10 +46,6 @@ public class TestnetEthereumFacadeProvider {
                 .peerActiveUrl("enode://c2b35ed63f5d79c7f160d05c54dd60b3ba32d455dbb10a5fe6fde44854073db02f9a538423a63a480126c74c7f650d77066ae446258e3d00388401d419b99f88@peer-2.ether.camp:30303")
                 .peerActiveUrl("enode://8246787f8d57662b850b354f0b526251eafee1f077fc709460dc8788fa640a597e49ffc727580f3ebbbc5eacb34436a66ea40415fab9d73563481666090a6cf0@peer-3.ether.camp:30303")
                 .configName(EthereumConfigName.name("testnet"))
-                .build());
-    }
-
-    public SecureKey getKey(String id) {
-        return new StringSecureKey(id);
+                .build();
     }
 }

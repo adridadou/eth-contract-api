@@ -5,7 +5,9 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
@@ -13,6 +15,7 @@ import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
+import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionReceipt;
@@ -21,7 +24,6 @@ import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
-import org.ethereum.util.CopyOnWriteMap;
 import org.spongycastle.util.encoders.Hex;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
@@ -35,7 +37,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
 
     public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler) {
         this.ethereum = ethereum;
@@ -99,8 +101,15 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     public BigInteger getNonce(final EthAddress address) {
-        BigInteger nonce = ethereum.getRepository().getNonce(address.address);
+        BigInteger nonce = ((BlockchainImpl) ethereum.getBlockchain()).getRepository().getNonce(address.address);
         return nonce.add(pendingTransactions.getOrDefault(address, BigInteger.ZERO));
+    }
+
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        byte[] code = ((BlockchainImpl) ethereum.getBlockchain()).getRepository().getCode(address.address);
+
+        return SmartContractByteCode.of(code);
     }
 
     @Override
@@ -116,9 +125,9 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
 
-    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
+    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
-            BigInteger nonce = getNonce(sender.getAddress());
+            BigInteger nonce = getNonce(account.getAddress());
             Transaction tx = new Transaction(
                     ByteUtil.bigIntegerToBytes(nonce),
                     ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
@@ -127,18 +136,24 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                     data.data,
                     ethereum.getChainIdForNextBlock());
-            tx.sign(sender.key);
+            tx.sign(account.key);
             ethereum.submitTransaction(tx);
-            increasePendingTransactionCounter(sender.getAddress());
+            increasePendingTransactionCounter(account.getAddress());
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
             Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
 
             return CompletableFuture.supplyAsync(() -> eventHandler.observeBlocks()
-                    .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
+                    .filter(params -> {
+                        System.out.println("*************************");
+                        System.out.println(params.receipts.stream().map(receipt -> Hex.toHexString(receipt.getTransaction().getHash())).collect(Collectors.toList()));
+                        System.out.println(Hex.toHexString(tx.getHash()));
+                        System.out.println(params.receipts.stream().anyMatch(findReceipt));
+                        return params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT;
+                    })
                     .map(params -> {
                         Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
-                        decreasePendingTransactionCounter(sender.getAddress());
+                        decreasePendingTransactionCounter(account.getAddress());
                         return receipt.map(eventHandler::checkForErrors)
                                 .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());

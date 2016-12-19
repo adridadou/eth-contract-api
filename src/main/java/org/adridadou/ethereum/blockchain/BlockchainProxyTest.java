@@ -80,4 +80,9 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return BigInteger.ONE;
     }
 
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        return null;
+    }
+
 }

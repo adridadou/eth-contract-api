@@ -157,6 +157,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
                 .subtract(BigInteger.ONE);
     }
 
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        return web3JFacade.getCode(address);
+    }
+
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();

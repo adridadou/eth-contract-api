@@ -84,4 +84,8 @@ public class EthereumFacade {
     public BigInteger getNonce(EthAddress address) {
         return blockchainProxy.getNonce(address);
     }
+
+    public SmartContractByteCode getCode(EthAddress address) {
+        return blockchainProxy.getCode(address);
+    }
 }

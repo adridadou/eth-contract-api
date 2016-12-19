@@ -1,8 +1,6 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
-import org.adridadou.ethereum.provider.PrivateNetworkConfig;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -10,11 +8,13 @@ import org.adridadou.ethereum.values.EthAddress;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.ethereum.values.SoliditySource;
 import org.adridadou.exception.EthereumApiException;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -32,25 +32,27 @@ public class TestnetConnectionTest {
     private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
 
-    private EthAccount sender;
+    private EthAccount mainAccount;
     private EthereumFacade ethereum;
+    private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
+
+    public TestnetConnectionTest() throws URISyntaxException {
+    }
 
     private void init() throws Exception {
-        sender = privateNetwork.getKey("cow").decode("");
+        mainAccount = privateNetwork.getKey("cow").decode("");
         ethereum = privateNetwork.create(PrivateNetworkConfig.config()
-                .initialBalance(sender, ether(10))
+                .initialBalance(mainAccount, ether(10))
         );
     }
 
-    private MyContract2 publishAndMapContract() throws Exception {
-        SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
-        EthAddress address = futureAddress.get();
-
-        return ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
+    private EthAddress publishAndMapContract() throws Exception {
+        ethereum.getBalance(mainAccount);
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", mainAccount);
+        return futureAddress.get();
     }
 
-    private void testMethodCalls(MyContract2 myContract) throws Exception {
+    private void testMethodCalls(MyContract2 myContract, EthAddress address) throws Exception {
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
@@ -80,13 +82,25 @@ public class TestnetConnectionTest {
         } catch (final ExecutionException ex) {
             assertEquals(EthereumApiException.class, ex.getCause().getClass());
         }
+
+
+        SmartContractByteCode code = ethereum.getCode(address);
+
+        p(code.getMetadaLink().toString());
+
+    }
+
+    private void p(final String s) {
+        System.out.println(s);
     }
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
         init();
-        MyContract2 myContract = publishAndMapContract();
-        testMethodCalls(myContract);
+        EthAddress address = publishAndMapContract();
+        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, mainAccount, MyContract2.class);
+
+        testMethodCalls(myContract, address);
     }
 
     public static class MyReturnType {

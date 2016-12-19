@@ -1,8 +1,11 @@
 package org.adridadou.ethereum.smartcontract;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
@@ -85,24 +88,17 @@ public class SmartContractReal implements SmartContract {
     }
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
-        CallTransaction.Function func = contract.getByName(functionName);
-
-        if (func == null) {
-            throw new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions());
-        }
-        EthData functionCallBytes = EthData.of(func.encode(args));
-
-        return bcProxy.sendTx(value, functionCallBytes, sender, address)
-                .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
-
+        return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
+            EthData functionCallBytes = EthData.of(func.encode(args));
+            return bcProxy.sendTx(value, functionCallBytes, sender, address)
+                    .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
+        }).orElseThrow(() -> new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 
     private String getAvailableFunctions() {
-        List<String> names = new ArrayList<>();
-        for (CallTransaction.Function func : contract.functions) {
-            names.add(func.name);
-        }
-        return names.toString();
+        return Arrays.stream(contract.functions)
+                .map(c -> c.name)
+                .collect(Collectors.toList()).toString();
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {

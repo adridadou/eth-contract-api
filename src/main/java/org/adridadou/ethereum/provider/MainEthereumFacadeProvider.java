@@ -32,7 +32,7 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
     public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
         Ethereum ethereum = EthereumFactory.createEthereum();
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-        ethereum.init();
+        ethereum.initSyncing();
 
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }

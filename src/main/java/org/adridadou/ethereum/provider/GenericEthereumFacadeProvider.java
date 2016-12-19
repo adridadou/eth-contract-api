@@ -28,11 +28,10 @@ public class GenericEthereumFacadeProvider {
     private static class GenericConfig {
         static String config;
 
-
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties();
-            props.overrideParams(ConfigFactory.parseString(config.replaceAll("'", "\"")));
+            props.overrideParams(ConfigFactory.parseString(config));
             return props;
         }
     }
@@ -46,7 +45,7 @@ public class GenericEthereumFacadeProvider {
         log.info("config:" + GenericConfig.config);
         Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-        ethereum.init();
+        ethereum.initSyncing();
 
         return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
     }

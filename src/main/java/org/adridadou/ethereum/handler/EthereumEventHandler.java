@@ -9,6 +9,8 @@ import org.ethereum.core.TransactionExecutionSummary;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.listener.EthereumListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 import rx.Observable;
 
@@ -17,6 +19,7 @@ import rx.Observable;
  * This code is released under Apache 2 license
  */
 public class EthereumEventHandler extends EthereumListenerAdapter {
+    private final static Logger log = LoggerFactory.getLogger(EthereumEventHandler.class);
     private final CompletableFuture<Boolean> ready = new CompletableFuture<>();
     private final OnBlockHandler onBlockHandler;
     private final OnTransactionHandler onTransactionHandler;
@@ -31,6 +34,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
     @Override
     public void onBlock(Block block, List<TransactionReceipt> receipts) {
+        log.info("on block", receipts);
         onBlockHandler.newBlock(new OnBlockParameters(block, receipts));
         currentBlockNumber = block.getNumber();
     }
@@ -54,7 +58,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
     }
 
     @Override
-    public void onSyncDone() {
+    public void onSyncDone(final SyncState syncState) {
         ready.complete(Boolean.TRUE);
     }
 

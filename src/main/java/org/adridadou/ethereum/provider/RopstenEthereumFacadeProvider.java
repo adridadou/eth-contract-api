@@ -23,16 +23,10 @@ import org.web3j.crypto.WalletUtils;
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class RopstenEthereumFacadeProvider implements EthereumFacadeProvider {
+public class RopstenEthereumFacadeProvider implements EthereumFacadeProvider, EthereumJConfig {
 
-    public EthereumFacade create() {
-        return create(new OnBlockHandler(), new OnTransactionHandler());
-    }
-
-
-    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
-
-        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, BlockchainConfig.builder()
+    public BlockchainConfig config() {
+        return BlockchainConfig.builder()
                 .addIp(NodeIp.ip("94.242.229.4:40404"))
                 .addIp(NodeIp.ip("94.242.229.203:30303"))
                 .networkId(GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID)
@@ -40,7 +34,15 @@ public class RopstenEthereumFacadeProvider implements EthereumFacadeProvider {
                 .genesis(GenesisPath.path("ropsten.json"))
                 .configName(EthereumConfigName.name("ropsten"))
                 .dbDirectory(DatabaseDirectory.db("database-ropsten"))
-                .build());
+                .build();
+    }
+
+    public EthereumFacade create() {
+        return create(new OnBlockHandler(), new OnTransactionHandler());
+    }
+
+    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
+        return new GenericEthereumFacadeProvider().create(onBlockHandler, onTransactionHandler, config());
     }
 
     public SecureKey getLockedAccount(final String id) {

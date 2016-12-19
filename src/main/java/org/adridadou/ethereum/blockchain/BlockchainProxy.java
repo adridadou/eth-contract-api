@@ -31,6 +31,8 @@ public interface BlockchainProxy {
 
     BigInteger getNonce(EthAddress address);
 
+    SmartContractByteCode getCode(EthAddress address);
+
     default void hasEnoughFund(EthAddress address, EthValue requiredFund) {
         if (getBalance(address).compareTo(requiredFund) < 0) {
             throw new EthereumApiException("not enough fund for " + address.withLeading0x());

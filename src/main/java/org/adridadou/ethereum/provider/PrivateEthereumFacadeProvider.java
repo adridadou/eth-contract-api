@@ -15,6 +15,7 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.core.Block;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
@@ -170,7 +171,7 @@ public class PrivateEthereumFacadeProvider {
         MinerConfig.dbName = config.getDbName();
 
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        ethereum.init();
+        ethereum.initSyncing();
 
         while (!ethereum.getBlockMiner().isMining()) {
             Thread.sleep(100);
@@ -185,7 +186,7 @@ public class PrivateEthereumFacadeProvider {
         final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
 
         //This event does not trigger when you are the miner
-        ethereumListener.onSyncDone();
+        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
         facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
                 .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
                 .forEach(result -> {
