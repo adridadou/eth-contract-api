@@ -45,6 +45,7 @@ public class SwarmService {
     }
 
     public SmartContractMetadata getMetadata(final SwarmHash hash) throws IOException {
+        //TODO: verify the metadata with the checksum
         String metadata = get(hash);
         try {
             JSONParser parser = new JSONParser();
