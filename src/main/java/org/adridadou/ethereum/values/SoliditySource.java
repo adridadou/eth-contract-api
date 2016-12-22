@@ -2,8 +2,17 @@ package org.adridadou.ethereum.values;
 
 import org.adridadou.ethereum.EthereumFacade;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.ethereum.solidity.compiler.CompilationResult;
+import org.ethereum.solidity.compiler.CompilationResult.ContractMetadata;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Created by davidroon on 18.09.16.
@@ -11,12 +20,52 @@ import java.io.*;
  */
 public class SoliditySource {
     private final String source;
+	private ContractData contractData;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public class ContractData{
+    public Map<String, ContractMetadata> contracts;
+    public String version;
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ContractMetadata {
+        public String abi;
+        public String bin;
+        public String solInterface;
+
+        public String getInterface() {
+            return solInterface;
+        }
+
+        public void setInterface(String solInterface) {
+            this.solInterface = solInterface;
+        }
+        
+        public ContractAbi getAbi() {
+			return new ContractAbi(abi);
+		}
+    }
+
+    
     public SoliditySource(String source) {
         this.source = source;
     }
 
-    public String getSource() {
+    public SoliditySource(String source, String rawJson) throws JsonParseException, JsonMappingException, IOException {
+		this.source = source;
+        if(rawJson == null || rawJson.isEmpty()){
+        	contractData = new ContractData();
+        	contractData.contracts = Collections.emptyMap();
+        	contractData.version = "";
+
+           
+        } else {
+            contractData = new ObjectMapper().readValue(rawJson, ContractData.class);
+        }
+
+	}
+
+	public String getSource() {
         return source;
     }
 
@@ -40,6 +89,22 @@ public class SoliditySource {
         return new SoliditySource(source);
     }
 
+    public static  SoliditySource fromRawJson(String rawJson) throws JsonParseException, JsonMappingException, IOException {
+		return new SoliditySource(null,rawJson);
+	}
+    
+    public static  SoliditySource fromRawJson(File rawJson) throws JsonParseException, JsonMappingException, IOException {
+		return fromRawJson(new FileInputStream(rawJson));
+	}
+    
+    public static  SoliditySource fromRawJson(InputStream rawJson) throws JsonParseException, JsonMappingException, IOException {
+        try {
+            return new SoliditySource(null,IOUtils.toString(rawJson, EthereumFacade.CHARSET));
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
+	}
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,4 +125,12 @@ public class SoliditySource {
     public String toString() {
         return "source:" + source;
     }
+
+	public ContractData getContractData() {
+		return contractData;
+	}
+	
+	public boolean isCompiled() {
+		return contractData!=null;
+	}
 }
