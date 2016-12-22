@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.values;
 
 import com.google.common.base.Charsets;
+import org.adridadou.ethereum.swarm.SwarmHash;
 import org.adridadou.exception.EthereumApiException;
 import org.spongycastle.util.encoders.Hex;
 
@@ -49,7 +50,7 @@ public class SmartContractByteCode {
     private SwarmMetadaLink toSwarmMetadataLink(byte[] link) {
         byte[] hash = new byte[32];
         System.arraycopy(link, 7, hash, 0, 32);
-        return new SwarmMetadaLink(EthAddress.of(hash));
+        return new SwarmMetadaLink(SwarmHash.of(hash));
     }
 
     public String toString() {

@@ -83,11 +83,8 @@ public class TestnetConnectionTest {
             assertEquals(EthereumApiException.class, ex.getCause().getClass());
         }
 
-
         SmartContractByteCode code = ethereum.getCode(address);
-
-        p(code.getMetadaLink().toString());
-
+        p(ethereum.getMetadata(code.getMetadaLink().orElseThrow(RuntimeException::new)).toString());
     }
 
     private void p(final String s) {
@@ -98,7 +95,7 @@ public class TestnetConnectionTest {
     public void main_example_how_the_lib_works() throws Exception {
         init();
         EthAddress address = publishAndMapContract();
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, mainAccount, MyContract2.class);
+        MyContract2 myContract = ethereum.createContractProxy(address, mainAccount, MyContract2.class);
 
         testMethodCalls(myContract, address);
     }

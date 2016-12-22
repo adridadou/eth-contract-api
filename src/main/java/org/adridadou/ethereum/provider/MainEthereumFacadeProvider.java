@@ -14,6 +14,7 @@ import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.FileSecureKey;
 import org.adridadou.ethereum.keystore.SecureKey;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
@@ -34,7 +35,7 @@ public class MainEthereumFacadeProvider implements EthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
         ethereum.initSyncing();
 
-        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
     }
 
     public SecureKey getLockedAccount(String id) {

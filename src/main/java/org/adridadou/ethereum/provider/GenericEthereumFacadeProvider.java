@@ -7,6 +7,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
@@ -47,6 +48,6 @@ public class GenericEthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
         ethereum.initSyncing();
 
-        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
     }
 }

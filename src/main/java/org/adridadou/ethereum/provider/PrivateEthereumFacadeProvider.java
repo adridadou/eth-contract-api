@@ -8,6 +8,7 @@ import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
@@ -183,7 +184,7 @@ public class PrivateEthereumFacadeProvider {
         }
 
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
-        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
 
         //This event does not trigger when you are the miner
         ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);

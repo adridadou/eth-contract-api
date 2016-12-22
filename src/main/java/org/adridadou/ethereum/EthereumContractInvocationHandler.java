@@ -6,6 +6,7 @@ import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -113,7 +114,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount sender) throws IOException {
+    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount account) {
         final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
@@ -127,28 +128,34 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         if (found == null) {
             throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
         }
-        SmartContract smartContract = blockchainProxy.map(code, contractName, address, sender);
+        SmartContract smartContract = blockchainProxy.map(code, contractName, address, account);
 
         verifyContract(smartContract, contractInterface);
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
+        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
         Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(sender, smartContract);
+        proxies.put(account, smartContract);
         contracts.put(address, proxies);
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount sender) {
-        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
+    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
+        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
+        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
         Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(sender, smartContract);
+        proxies.put(account, smartContract);
         contracts.put(address, proxies);
+    }
+
+    <T> void register(T proxy, Class<T> contractInterface, EthAddress address, EthAccount account) {
+        SmartContractByteCode code = blockchainProxy.getCode(address);
+        SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
+        register(proxy, contractInterface, metadata.getAbi(), address, account);
     }
 
     private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
         Set<Method> interfaceMethods = Sets.newHashSet(contractInterface.getMethods());
-        Set<CallTransaction.Function> solidityMethods = smartContract.getFunctions().stream().filter(f -> f != null).collect(Collectors.toSet());
+        Set<CallTransaction.Function> solidityMethods = smartContract.getFunctions().stream().filter(Objects::nonNull).collect(Collectors.toSet());
 
         Set<String> interfaceMethodNames = interfaceMethods.stream().map(Method::getName).collect(Collectors.toSet());
         Set<String> solidityFuncNames = solidityMethods.stream().map(d -> d.name).collect(Collectors.toSet());
@@ -168,9 +175,15 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         }
     }
 
-    private CompilationResult compile(final String contract) throws IOException {
-        SolidityCompiler.Result res = SolidityCompiler.compile(
-                contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
-        return CompilationResult.parse(res.output);
+    private CompilationResult compile(final String contract) {
+
+        try {
+            SolidityCompiler.Result res = SolidityCompiler.compile(
+                    contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
+            return CompilationResult.parse(res.output);
+        } catch (IOException e) {
+            throw new EthereumApiException("error while compiling smart contract", e);
+        }
+
     }
 }

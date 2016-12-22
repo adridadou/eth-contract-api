@@ -16,6 +16,7 @@ import org.adridadou.ethereum.converters.output.OutputTypeConverter;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -45,15 +46,21 @@ public class EthereumFacade {
         return this;
     }
 
-    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount sender, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, code, contractName, address, sender);
+        handler.register(proxy, contractInterface, code, contractName, address, account);
         return proxy;
     }
 
-    public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount sender, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, abi, address, sender);
+        handler.register(proxy, contractInterface, abi, address, account);
+        return proxy;
+    }
+
+    public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
+        T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+        handler.register(proxy, contractInterface, address, account);
         return proxy;
     }
 
@@ -87,5 +94,9 @@ public class EthereumFacade {
 
     public SmartContractByteCode getCode(EthAddress address) {
         return blockchainProxy.getCode(address);
+    }
+
+    public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
+        return blockchainProxy.getMetadata(swarmMetadaLink);
     }
 }
