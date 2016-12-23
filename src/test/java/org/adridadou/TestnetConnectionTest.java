@@ -42,6 +42,7 @@ public class TestnetConnectionTest {
     private void init() throws Exception {
         mainAccount = privateNetwork.getKey("cow").decode("");
         ethereum = privateNetwork.create(PrivateNetworkConfig.config()
+                .reset(true)
                 .initialBalance(mainAccount, ether(10))
         );
     }
