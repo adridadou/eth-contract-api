@@ -52,8 +52,7 @@ public class BlockchainConfig {
                 Optional.ofNullable(genesis).map(json -> "genesis = " + json.path + "\n").orElse("") +
                 Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config.name + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
-                Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("") +
-                "\ndatabase.incompatibleDatabaseBehavior = RESET;";
+                Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("");
     }
 
     public static Builder builder() {

@@ -57,6 +57,7 @@ public class PrivateEthereumFacadeProvider {
                     // when more than 1 miner exist on the network extraData helps to identify the block creator
                     "mine.extraDataHex = cccccccccccccccccccc \n" +
                     "mine.cpuMineThreads = 2 \n" +
+                    "database.incompatibleDatabaseBehavior = IGNORE\n" +
                     "cache.flush.blocks = 1";
         }
 
@@ -160,7 +161,8 @@ public class PrivateEthereumFacadeProvider {
     public EthereumFacade create(final PrivateNetworkConfig config) throws Exception {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
         if (config.isResetPrivateBlockchain()) {
-            deleteFolder(new File(config.getDbName()), true);
+            deleteFolder(new File(config.getDbName()), false);
+            deleteFolder(new File("database"), false);
         }
 
         if (dagCached) {
@@ -172,6 +174,7 @@ public class PrivateEthereumFacadeProvider {
         MinerConfig.dbName = config.getDbName();
 
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
+
         ethereum.initSyncing();
 
         while (!ethereum.getBlockMiner().isMining()) {
