@@ -162,7 +162,6 @@ public class PrivateEthereumFacadeProvider {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
         if (config.isResetPrivateBlockchain()) {
             deleteFolder(new File(config.getDbName()), false);
-            deleteFolder(new File("database"), false);
         }
 
         if (dagCached) {

@@ -47,11 +47,6 @@
             <name>Repository from Bintray</name>
             <url>http://dl.bintray.com/web3j/maven</url>
         </repository>
-
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
 
     <dependencies>

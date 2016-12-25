@@ -193,4 +193,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private void increasePendingTransactionCounter(EthAddress address) {
         pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).add(BigInteger.ONE));
     }
+
+    protected void finalize() {
+        ethereum.close();
+    }
 }
