@@ -11,12 +11,20 @@ import java.io.*;
  */
 public class SoliditySource {
     private final String source;
+	private final String rawJson;
 
+    
     public SoliditySource(String source) {
         this.source = source;
+        this.rawJson = null;
     }
 
-    public String getSource() {
+    public SoliditySource(String source, String rawJson) throws IOException {
+		this.source = source;
+        this.rawJson = rawJson; 
+	}
+
+	public String getSource() {
         return source;
     }
 
@@ -40,6 +48,22 @@ public class SoliditySource {
         return new SoliditySource(source);
     }
 
+    public static  SoliditySource fromRawJson(String rawJson) throws IOException {
+		return new SoliditySource(null,rawJson);
+	}
+    
+    public static  SoliditySource fromRawJson(File rawJson) throws IOException {
+		return fromRawJson(new FileInputStream(rawJson));
+	}
+    
+    public static  SoliditySource fromRawJson(InputStream rawJson) throws IOException {
+        try {
+            return new SoliditySource(null,IOUtils.toString(rawJson, EthereumFacade.CHARSET));
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
+	}
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,17 +71,28 @@ public class SoliditySource {
 
         SoliditySource that = (SoliditySource) o;
 
-        return source != null ? source.equals(that.source) : that.source == null;
+        return source != null ? source.equals(that.source) : that.source == null 
+        	&& rawJson != null ? rawJson.equals(that.rawJson) : that.rawJson == null; 
 
     }
 
     @Override
     public int hashCode() {
-        return source != null ? source.hashCode() : 0;
+    	int result = source != null ? source.hashCode() : 0;
+        result = 31 * result + (rawJson != null ? rawJson.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
         return "source:" + source;
     }
+	
+	public boolean isCompiled() {
+		return rawJson!=null;
+	}
+
+	public String getRawJson() {
+		return rawJson;
+	}
 }
