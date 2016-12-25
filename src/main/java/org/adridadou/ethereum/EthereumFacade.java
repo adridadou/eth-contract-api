@@ -47,9 +47,6 @@ public class EthereumFacade {
 
     public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount sender, Class<T> contractInterface) throws IOException {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        if(code.isCompiled()){
-        	handler.register(proxy, contractInterface,code.getContractData().contracts.get(contractName).getAbi(), address, sender);
-        }else        
         handler.register(proxy, contractInterface, code, contractName, address, sender);
         return proxy;
     }

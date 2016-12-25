@@ -114,7 +114,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount sender) throws IOException {
-        final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
+     	final Map<String, CompilationResult.ContractMetadata> contractsFound =  code.isCompiled() ?  CompilationResult.parse(code.getRawJson()).contracts :   compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(contractName)) {
