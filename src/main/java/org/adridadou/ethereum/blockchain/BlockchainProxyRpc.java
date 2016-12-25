@@ -87,6 +87,18 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
+    	if(src.isCompiled()){
+    		CompilationResult res = CompilationResult.parse(src.getRawJson());
+            if (res.contracts.isEmpty()) {
+                throw new EthereumApiException("Compilation failed, no contracts returned:\n");
+            }
+            CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
+            if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
+                throw new EthereumApiException("Compilation failed, no binary returned:\n");
+            }
+            return metadata;
+    	}
+    	
         SolidityCompiler.Result result = SolidityCompiler.compile(src.getSource().getBytes(EthereumFacade.CHARSET), true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
         if (result.isFailed()) {
