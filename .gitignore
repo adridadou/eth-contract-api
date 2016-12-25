@@ -19,3 +19,4 @@ buildNumber.properties
 /src/test/resources
 /cachedDag/
 /ethercamp-test/
+!/cachedDag/empty
