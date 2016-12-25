@@ -2,8 +2,6 @@ package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.handler.OnBlockHandler;
-import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
 
@@ -12,12 +10,7 @@ import org.adridadou.ethereum.keystore.StringSecureKey;
  * This code is released under Apache 2 license
  */
 public class StandaloneEthereumFacadeProvider implements EthereumFacadeProvider {
-
     public EthereumFacade create() {
-        return create(new OnBlockHandler(), new OnTransactionHandler());
-    }
-
-    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
         return new EthereumFacade(new BlockchainProxyTest());
     }
 

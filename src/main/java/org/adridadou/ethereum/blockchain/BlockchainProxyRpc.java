@@ -6,7 +6,9 @@ import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.config.ChainId;
+import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -155,6 +157,16 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         return web3JFacade.getTransactionCount(address)
                 .add(pendingTransactions.getOrDefault(address, BigInteger.ZERO))
                 .subtract(BigInteger.ONE);
+    }
+
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        return web3JFacade.getCode(address);
+    }
+
+    @Override
+    public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
+        throw new NotImplementedException("not yet implemented");
     }
 
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {

@@ -3,6 +3,7 @@ package org.adridadou.ethereum.blockchain;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.exception.EthereumApiException;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -95,5 +96,13 @@ public class Web3JFacade {
             throw new EthereumApiException(response.getError().getMessage());
         }
         return response.getResult();
+    }
+
+    public SmartContractByteCode getCode(EthAddress address) {
+        try {
+            return SmartContractByteCode.of(web3j.ethGetCode(address.withLeading0x(), DefaultBlockParameterName.LATEST).send().getCode());
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
     }
 }

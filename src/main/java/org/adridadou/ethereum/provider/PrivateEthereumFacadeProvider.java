@@ -8,6 +8,7 @@ import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.SecureKey;
 import org.adridadou.ethereum.keystore.StringSecureKey;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
@@ -15,6 +16,7 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.core.Block;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
+import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
@@ -55,6 +57,7 @@ public class PrivateEthereumFacadeProvider {
                     // when more than 1 miner exist on the network extraData helps to identify the block creator
                     "mine.extraDataHex = cccccccccccccccccccc \n" +
                     "mine.cpuMineThreads = 2 \n" +
+                    "database.incompatibleDatabaseBehavior = IGNORE\n" +
                     "cache.flush.blocks = 1";
         }
 
@@ -158,7 +161,8 @@ public class PrivateEthereumFacadeProvider {
     public EthereumFacade create(final PrivateNetworkConfig config) throws Exception {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
         if (config.isResetPrivateBlockchain()) {
-            deleteFolder(new File(config.getDbName()), true);
+            deleteFolder(new File(config.getDbName()), false);
+            deleteFolder(new File("database"), false);
         }
 
         if (dagCached) {
@@ -170,7 +174,8 @@ public class PrivateEthereumFacadeProvider {
         MinerConfig.dbName = config.getDbName();
 
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        ethereum.init();
+
+        ethereum.initSyncing();
 
         while (!ethereum.getBlockMiner().isMining()) {
             Thread.sleep(100);
@@ -182,10 +187,10 @@ public class PrivateEthereumFacadeProvider {
         }
 
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
-        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
 
         //This event does not trigger when you are the miner
-        ethereumListener.onSyncDone();
+        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
         facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
                 .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
                 .forEach(result -> {

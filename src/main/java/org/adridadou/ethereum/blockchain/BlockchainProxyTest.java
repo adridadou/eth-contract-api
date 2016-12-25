@@ -10,6 +10,7 @@ import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
@@ -79,5 +80,16 @@ public class BlockchainProxyTest implements BlockchainProxy {
     public BigInteger getNonce(EthAddress address) {
         return BigInteger.ONE;
     }
+
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        return null;
+    }
+
+    @Override
+    public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
+        return null;
+    }
+
 
 }

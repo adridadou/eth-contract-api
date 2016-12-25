@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.converters.output;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 
@@ -20,9 +19,5 @@ public class EnumConverter implements OutputTypeConverter {
             return ((Class<? extends Enum>) type).getEnumConstants()[((BigInteger) obj).intValue()];
         }
         throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Enum");
-    }
-
-    private Class<?> getGenericType(Type genericType) {
-        return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
     }
 }

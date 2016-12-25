@@ -7,6 +7,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
@@ -28,11 +29,10 @@ public class GenericEthereumFacadeProvider {
     private static class GenericConfig {
         static String config;
 
-
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties();
-            props.overrideParams(ConfigFactory.parseString(config.replaceAll("'", "\"")));
+            props.overrideParams(ConfigFactory.parseString(config));
             return props;
         }
     }
@@ -46,8 +46,8 @@ public class GenericEthereumFacadeProvider {
         log.info("config:" + GenericConfig.config);
         Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-        ethereum.init();
+        ethereum.initSyncing();
 
-        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener));
+        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
     }
 }
