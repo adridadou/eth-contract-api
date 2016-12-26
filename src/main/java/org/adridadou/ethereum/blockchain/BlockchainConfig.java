@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class BlockchainConfig {
     private final ChainId networkId;
     private final Boolean eip8;
+    private final Boolean fastSync;
     private final GenesisPath genesis;
     private final EthereumConfigName configName;
     private final DatabaseDirectory dbDir;
@@ -23,9 +24,10 @@ public class BlockchainConfig {
     private final Boolean peerDiscovery;
     private final List<String> peerActiveList;
 
-    public BlockchainConfig(ChainId networkId, Boolean eip8, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList) {
+    public BlockchainConfig(ChainId networkId, Boolean eip8, Boolean fastSync, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList) {
         this.networkId = networkId;
         this.eip8 = eip8;
+        this.fastSync = fastSync;
         this.genesis = genesis;
         this.configName = configName;
         this.dbDir = dbDir;
@@ -52,7 +54,8 @@ public class BlockchainConfig {
                 Optional.ofNullable(genesis).map(json -> "genesis = " + json.path + "\n").orElse("") +
                 Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config.name + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
-                Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("");
+                Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("") +
+                Optional.ofNullable(fastSync).map(db -> "sync.fast.enabled = " + fastSync + "\n").orElse("");
     }
 
     public static Builder builder() {
@@ -61,7 +64,8 @@ public class BlockchainConfig {
 
     public static class Builder {
         private ChainId networkId;
-        private boolean eip8;
+        private Boolean eip8;
+        private Boolean fastSync;
         private GenesisPath genesis;
         private EthereumConfigName configName;
         private DatabaseDirectory dbDir;
@@ -78,6 +82,11 @@ public class BlockchainConfig {
 
         public Builder eip8(boolean eip8) {
             this.eip8 = eip8;
+            return this;
+        }
+
+        public Builder fastSync(boolean fastSync) {
+            this.fastSync = fastSync;
             return this;
         }
 
@@ -108,7 +117,7 @@ public class BlockchainConfig {
         }
 
         public BlockchainConfig build() {
-            return new BlockchainConfig(networkId, eip8, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList);
+            return new BlockchainConfig(networkId, eip8, fastSync, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList);
         }
 
         public Builder listenPort(Integer port) {

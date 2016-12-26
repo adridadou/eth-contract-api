@@ -2,6 +2,7 @@ package org.adridadou.ethereum.blockchain;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +21,6 @@ import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -50,9 +50,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        CompilationResult.ContractMetadata metadata;
         try {
-            metadata = compile(src, contractName);
+            CompilationResult.ContractMetadata metadata = compile(src, contractName);
             return mapFromAbi(new ContractAbi(metadata.abi), address, sender);
 
         } catch (IOException e) {
@@ -68,13 +67,13 @@ public class BlockchainProxyReal implements BlockchainProxy {
     @Override
     public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender, constructorArgs).thenApply(SmartContractReal::getAddress);
+            return createContract(code, contractName, sender, constructorArgs);
         } catch (IOException e) {
             throw new EthereumApiException("error while publishing " + contractName + ":", e);
         }
     }
 
-    private CompletableFuture<SmartContractReal> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<EthAddress> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         CallTransaction.Contract contractAbi = new CallTransaction.Contract(metadata.abi);
         CallTransaction.Function constructor = contractAbi.getConstructor();
@@ -83,8 +82,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
         }
         publishContractMetadaToSwarm(metadata.metadata);
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
-                .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender);
     }
 
     private void publishContractMetadaToSwarm(String metadata) throws IOException {
@@ -158,7 +156,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
             increasePendingTransactionCounter(account.getAddress());
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
-            Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
+            Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash());
 
             return CompletableFuture.supplyAsync(() -> eventHandler.observeBlocks()
                     .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)

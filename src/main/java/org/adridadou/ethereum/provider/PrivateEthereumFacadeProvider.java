@@ -6,8 +6,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
-import org.adridadou.ethereum.keystore.SecureKey;
-import org.adridadou.ethereum.keystore.StringSecureKey;
+import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
@@ -30,8 +29,8 @@ import java.util.concurrent.ExecutionException;
  * This code is released under Apache 2 license
  */
 public class PrivateEthereumFacadeProvider {
-
-    private static final EthAccount mainAccount = new StringSecureKey("cow").decode("");
+    private final AccountProvider accountProvider = new AccountProvider();
+    private final EthAccount mainAccount = accountProvider.fromString("cow");
 
     /**
      * Spring configuration class for the Miner peer
@@ -201,9 +200,5 @@ public class PrivateEthereumFacadeProvider {
                 })
         );
         return facade;
-    }
-
-    public SecureKey getKey(final String id) {
-        return new StringSecureKey(id);
     }
 }

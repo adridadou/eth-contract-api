@@ -37,17 +37,34 @@ public class GenericEthereumFacadeProvider {
         }
     }
 
-    public EthereumFacade create(final BlockchainConfig config) {
-        return create(new OnBlockHandler(), new OnTransactionHandler(), config);
+    public static Builder forNetwork(final BlockchainConfig.Builder config) {
+        return new Builder(config);
     }
 
-    public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler, final BlockchainConfig config) {
-        GenericConfig.config = config.toString();
-        log.info("config:" + GenericConfig.config);
-        Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-        ethereum.initSyncing();
+    public static class Builder {
 
-        return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
+        private final BlockchainConfig.Builder configBuilder;
+
+        public Builder(BlockchainConfig.Builder configBuilder) {
+            this.configBuilder = configBuilder;
+        }
+
+        public BlockchainConfig.Builder config() {
+            return configBuilder;
+        }
+
+        public EthereumFacade create() {
+            return create(new OnBlockHandler(), new OnTransactionHandler());
+        }
+
+        public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
+            GenericConfig.config = configBuilder.build().toString();
+            log.info("config:" + GenericConfig.config);
+            Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
+            EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
+            ethereum.initSyncing();
+
+            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
+        }
     }
 }

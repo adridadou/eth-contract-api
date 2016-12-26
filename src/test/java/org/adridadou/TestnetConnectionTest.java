@@ -1,10 +1,12 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 
+import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
@@ -27,10 +29,9 @@ import java.util.concurrent.Future;
  */
 public class TestnetConnectionTest {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
-    private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
-    private final RopstenEthereumFacadeProvider ropsten = new RopstenEthereumFacadeProvider();
-    private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
+    private final GenericEthereumFacadeProvider.Builder ethereumProvider = GenericEthereumFacadeProvider.forNetwork(ropsten());
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
+    private final AccountProvider accountProvider = new AccountProvider();
 
     private EthAccount mainAccount;
     private EthereumFacade ethereum;
@@ -40,11 +41,13 @@ public class TestnetConnectionTest {
     }
 
     private void init() throws Exception {
-        mainAccount = privateNetwork.getKey("cow").decode("");
+        mainAccount = accountProvider.fromString("cow");
+
         ethereum = privateNetwork.create(PrivateNetworkConfig.config()
                 .reset(true)
                 .initialBalance(mainAccount, ether(10))
         );
+
     }
 
     private EthAddress publishAndMapContract() throws Exception {

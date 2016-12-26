@@ -44,7 +44,7 @@ public class SmartContractByteCode {
         if (strLink.startsWith("bzzr0")) {
             return toSwarmMetadataLink(link);
         }
-        throw new EthereumApiException("unknown protocol from " + strLink);
+        throw new EthereumApiException("unknown protocol forNetwork " + strLink);
     }
 
     private SwarmMetadaLink toSwarmMetadataLink(byte[] link) {
