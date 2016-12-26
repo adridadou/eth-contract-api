@@ -68,13 +68,13 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     @Override
     public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender, constructorArgs).thenApply(SmartContractRpc::getAddress);
+            return createContract(code, contractName, sender, constructorArgs);
         } catch (IOException e) {
             throw new EthereumApiException("error while publishing " + contractName + ":", e);
         }
     }
 
-    private CompletableFuture<SmartContractRpc> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<EthAddress> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
         CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
         CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
         CallTransaction.Function constructor = contract.getConstructor();
@@ -82,8 +82,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
-                .thenApply(address -> new SmartContractRpc(metadata.abi, web3JFacade, sender, address, this));
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender);
     }
 
     private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {

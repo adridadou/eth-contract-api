@@ -42,11 +42,13 @@ public class TestnetConnectionTest {
 
     private void init() throws Exception {
         mainAccount = accountProvider.fromString("cow");
-
+        /*
         ethereum = privateNetwork.create(PrivateNetworkConfig.config()
                 .reset(true)
                 .initialBalance(mainAccount, ether(10))
-        );
+        );*/
+        ethereumProvider.config().fastSync(true);
+        ethereum = ethereumProvider.create();
 
     }
 

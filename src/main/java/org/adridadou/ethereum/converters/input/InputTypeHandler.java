@@ -13,11 +13,12 @@ import java.util.Optional;
  * This code is released under Apache 2 license
  */
 public class InputTypeHandler {
-    public static final List<InputTypeConverter<?>> JAVA_INPUT_CONVERTERS = ImmutableList.<InputTypeConverter<?>>builder().add(
+    public static final List<InputTypeConverter> JAVA_INPUT_CONVERTERS = ImmutableList.<InputTypeConverter>builder().add(
             new EthAddressConverter(),
             new EthAccountConverter(),
             new EthDataConverter(),
-            new EthValueConverter()
+            new EthValueConverter(),
+            new EnumConverter()
     ).build();
 
 
@@ -25,18 +26,18 @@ public class InputTypeHandler {
         addConverters(JAVA_INPUT_CONVERTERS);
     }
 
-    private final List<InputTypeConverter<?>> inputConverters = new ArrayList<>();
+    private final List<InputTypeConverter> inputConverters = new ArrayList<>();
 
-    public void addConverters(final InputTypeConverter<?>... converters) {
+    public void addConverters(final InputTypeConverter... converters) {
         addConverters(Lists.newArrayList(converters));
     }
 
-    public void addConverters(final Collection<InputTypeConverter<?>> converters) {
+    public void addConverters(final Collection<InputTypeConverter> converters) {
         inputConverters.addAll(converters);
     }
 
 
-    public Optional<InputTypeConverter<?>> getConverter(final Class<?> cls) {
+    public Optional<InputTypeConverter> getConverter(final Class<?> cls) {
         return inputConverters.stream().filter(converter -> converter.isOfType(cls)).findFirst();
     }
 
