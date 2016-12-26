@@ -2,7 +2,7 @@ package org.adridadou.ethereum;
 
 
 import org.adridadou.ethereum.blockchain.Web3JFacade;
-import org.adridadou.ethereum.provider.GenericEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.provider.GenericRpcEthereumFacadeProvider;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -43,7 +43,7 @@ public class RpcEthereumTest {
 
     @Test
     public void test() throws IOException, ExecutionException, InterruptedException {
-        EthereumFacade ethereum = provider.create(web3j, GenericEthereumFacadeProvider.ROPSTEN_CHAIN_ID);
+        EthereumFacade ethereum = provider.create(web3j, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
 
         when(web3j.getTransactionCount(account.getAddress())).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);

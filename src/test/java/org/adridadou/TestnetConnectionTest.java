@@ -7,6 +7,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 
 import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
@@ -29,11 +30,9 @@ import java.util.concurrent.Future;
  */
 public class TestnetConnectionTest {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
-    private final GenericEthereumFacadeProvider.Builder ethereumProvider = GenericEthereumFacadeProvider.forNetwork(ropsten());
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final AccountProvider accountProvider = new AccountProvider();
-
-    private EthAccount mainAccount;
+    private final EthAccount mainAccount = accountProvider.fromString("cow");
     private EthereumFacade ethereum;
     private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
@@ -41,15 +40,19 @@ public class TestnetConnectionTest {
     }
 
     private void init() throws Exception {
-        mainAccount = accountProvider.fromString("cow");
-        /*
-        ethereum = privateNetwork.create(PrivateNetworkConfig.config()
-                .reset(true)
-                .initialBalance(mainAccount, ether(10))
-        );*/
-        ethereumProvider.config().fastSync(true);
-        ethereum = ethereumProvider.create();
+        ethereum = fromPrivateNetwork();
+    }
 
+    private EthereumFacade fromRopsten() {
+        EthereumFacadeProvider.Builder ethereumProvider = EthereumFacadeProvider.forNetwork(ropsten());
+        ethereumProvider.extendConfig().fastSync(true);
+        return ethereumProvider.create();
+    }
+
+    private EthereumFacade fromPrivateNetwork() {
+        return privateNetwork.create(config()
+                .reset(true)
+                .initialBalance(mainAccount, ether(10)));
     }
 
     private EthAddress publishAndMapContract() throws Exception {

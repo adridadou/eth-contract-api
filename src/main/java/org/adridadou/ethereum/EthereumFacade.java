@@ -2,7 +2,6 @@ package org.adridadou.ethereum;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -36,7 +35,7 @@ public class EthereumFacade {
         this.blockchainProxy = blockchainProxy;
     }
 
-    public EthereumFacade addInputHandlers(final List<InputTypeConverter<?>> handlers) {
+    public EthereumFacade addInputHandlers(final List<InputTypeConverter> handlers) {
         inputTypeHandler.addConverters(handlers);
         return this;
     }
@@ -46,19 +45,19 @@ public class EthereumFacade {
         return this;
     }
 
-    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, code, contractName, address, account);
         return proxy;
     }
 
-    public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, abi, address, account);
         return proxy;
     }
 
-    public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) throws IOException {
+    public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, address, account);
         return proxy;

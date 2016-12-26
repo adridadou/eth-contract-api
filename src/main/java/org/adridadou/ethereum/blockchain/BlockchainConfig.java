@@ -23,8 +23,9 @@ public class BlockchainConfig {
     private final Integer listenPort;
     private final Boolean peerDiscovery;
     private final List<String> peerActiveList;
+    private final String peerPrivateKey;
 
-    public BlockchainConfig(ChainId networkId, Boolean eip8, Boolean fastSync, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList) {
+    public BlockchainConfig(ChainId networkId, Boolean eip8, Boolean fastSync, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList, String peerPrivateKey) {
         this.networkId = networkId;
         this.eip8 = eip8;
         this.fastSync = fastSync;
@@ -36,6 +37,7 @@ public class BlockchainConfig {
         this.listenPort = listenPort;
         this.peerDiscovery = peerDiscovery;
         this.peerActiveList = peerActiveList;
+        this.peerPrivateKey = peerPrivateKey;
     }
 
     public String toString() {
@@ -52,10 +54,11 @@ public class BlockchainConfig {
                 Optional.ofNullable(networkId).map(id -> "peer.networkId = " + networkId.id + "\n").orElse("") +
                 Optional.ofNullable(eip8).map(v -> "peer.p2p.eip8 = " + v + "\n").orElse("") +
                 Optional.ofNullable(genesis).map(json -> "genesis = " + json.path + "\n").orElse("") +
-                Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config.name + "\"\n").orElse("") +
+                Optional.ofNullable(configName).map(config -> "blockchain.extendConfig.name = \"" + config.name + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
                 Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("") +
-                Optional.ofNullable(fastSync).map(db -> "sync.fast.enabled = " + fastSync + "\n").orElse("");
+                Optional.ofNullable(fastSync).map(fSync -> "sync.fast.enabled = " + fSync + "\n").orElse("") +
+                Optional.ofNullable(peerPrivateKey).map(privateKey -> "peer.privateKey = " + privateKey + "\n").orElse("");
     }
 
     public static Builder builder() {
@@ -74,6 +77,7 @@ public class BlockchainConfig {
         private Integer listenPort;
         private Boolean peerDiscovery;
         private List<String> peerActiveList;
+        private String peerPrivateKey;
 
         public Builder networkId(ChainId networkId) {
             this.networkId = networkId;
@@ -117,7 +121,7 @@ public class BlockchainConfig {
         }
 
         public BlockchainConfig build() {
-            return new BlockchainConfig(networkId, eip8, fastSync, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList);
+            return new BlockchainConfig(networkId, eip8, fastSync, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList, peerPrivateKey);
         }
 
         public Builder listenPort(Integer port) {
@@ -133,6 +137,11 @@ public class BlockchainConfig {
         public Builder peerActiveUrl(String url) {
             this.peerActiveList = Optional.ofNullable(peerActiveList).orElseGet(ArrayList::new);
             this.peerActiveList.add("\"" + url + "\"");
+            return this;
+        }
+
+        public Builder privateKey(String privateKey) {
+            this.peerPrivateKey = privateKey;
             return this;
         }
     }

@@ -12,17 +12,13 @@ import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 
 /**
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license
  */
-public class GenericEthereumFacadeProvider {
-    private final static Logger log = LoggerFactory.getLogger(GenericEthereumFacadeProvider.class);
-
+public class EthereumFacadeProvider {
     public final static ChainId MAIN_CHAIN_ID = ChainId.id(0);
     public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
 
@@ -49,7 +45,7 @@ public class GenericEthereumFacadeProvider {
             this.configBuilder = configBuilder;
         }
 
-        public BlockchainConfig.Builder config() {
+        public BlockchainConfig.Builder extendConfig() {
             return configBuilder;
         }
 
@@ -59,7 +55,6 @@ public class GenericEthereumFacadeProvider {
 
         public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
             GenericConfig.config = configBuilder.build().toString();
-            log.info("config:" + GenericConfig.config);
             Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
             EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
             ethereum.initSyncing();

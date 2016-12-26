@@ -22,6 +22,7 @@ import org.ethereum.samples.BasicSample;
 import org.springframework.context.annotation.Bean;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -66,9 +67,9 @@ public class PrivateEthereumFacadeProvider {
         }
 
         /**
-         * Instead of supplying properties via config file for the peer
+         * Instead of supplying properties via extendConfig file for the peer
          * we are substituting the corresponding bean which returns required
-         * config for this instance.
+         * extendConfig for this instance.
          */
         @Bean
         public SystemProperties systemProperties() {
@@ -130,9 +131,6 @@ public class PrivateEthereumFacadeProvider {
     }
 
     private static class RegularConfig {
-        private RegularConfig() {
-        }
-
         @Bean
         public SystemProperties systemProperties() {
             SystemProperties props = new SystemProperties(ConfigFactory.empty(), PrivateEthereumFacadeProvider.class.getClassLoader());
@@ -157,7 +155,7 @@ public class PrivateEthereumFacadeProvider {
         }
     }
 
-    public EthereumFacade create(final PrivateNetworkConfig config) throws Exception {
+    public EthereumFacade create(final PrivateNetworkConfig config) {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
         if (config.isResetPrivateBlockchain()) {
             deleteFolder(new File(config.getDbName()), true);
@@ -165,23 +163,25 @@ public class PrivateEthereumFacadeProvider {
 
         if (dagCached) {
             new File(config.getDbName()).mkdirs();
-            FileUtils.copyFile(new File("cachedDag/mine-dag.dat"), new File(config.getDbName() + "/mine-dag.dat"));
-            FileUtils.copyFile(new File("cachedDag/mine-dag-light.dat"), new File(config.getDbName() + "/mine-dag-light.dat"));
+            try {
+                FileUtils.copyFile(new File("cachedDag/mine-dag.dat"), new File(config.getDbName() + "/mine-dag.dat"));
+                FileUtils.copyFile(new File("cachedDag/mine-dag-light.dat"), new File(config.getDbName() + "/mine-dag-light.dat"));
+            } catch (IOException e) {
+                throw new EthereumApiException("error while copying dag files", e);
+            }
         }
 
         MinerConfig.dbName = config.getDbName();
-
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-
         ethereum.initSyncing();
 
-        while (!ethereum.getBlockMiner().isMining()) {
-            Thread.sleep(100);
-        }
-
         if (!dagCached) {
-            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
-            FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
+            try {
+                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
+                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
+            } catch (IOException e) {
+                throw new EthereumApiException("error while copying dag files to dagCached", e);
+            }
         }
 
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
@@ -201,4 +201,5 @@ public class PrivateEthereumFacadeProvider {
         );
         return facade;
     }
+
 }

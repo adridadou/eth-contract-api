@@ -38,7 +38,7 @@ public class AccountProvider {
         File[] files = Optional.ofNullable(directory.listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + WalletUtils.getMainnetKeyDirectory()));
         return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
-                .map(FileSecureKey::new)
+                .map(this::fromFile)
                 .collect(Collectors.toList());
     }
 
