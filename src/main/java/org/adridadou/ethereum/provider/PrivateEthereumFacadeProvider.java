@@ -160,7 +160,7 @@ public class PrivateEthereumFacadeProvider {
     public EthereumFacade create(final PrivateNetworkConfig config) throws Exception {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
         if (config.isResetPrivateBlockchain()) {
-            deleteFolder(new File(config.getDbName()), false);
+            deleteFolder(new File(config.getDbName()), true);
         }
 
         if (dagCached) {
