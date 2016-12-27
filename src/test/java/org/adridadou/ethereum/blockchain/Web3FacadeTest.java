@@ -1,14 +1,11 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
-import org.adridadou.ethereum.values.EthData;
 import org.junit.Test;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.Request;
-import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 
 import java.io.IOException;
@@ -26,8 +23,6 @@ public class Web3FacadeTest {
     private final Web3JFacade web3Facade = new Web3JFacade(web3j);
     private final EthAddress address = EthAddress.of("0x00394857372832");
     private final AccountProvider accountProvider = new AccountProvider();
-    private final EthAccount account = accountProvider.fromString("test");
-    private final EthData data = EthData.empty();
 
     @Test
     public void test_getBalance() throws IOException {
