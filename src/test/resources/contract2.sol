@@ -17,4 +17,8 @@ contract myContract2 {
             arr[i] = i;
         }
     }
+
+    function getOwner() constant returns (address) {
+        return owner;
+    }
 }

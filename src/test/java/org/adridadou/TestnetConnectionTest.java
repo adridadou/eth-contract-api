@@ -51,7 +51,6 @@ public class TestnetConnectionTest {
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        ethereum.getBalance(mainAccount);
         CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", mainAccount);
         return futureAddress.get();
     }
@@ -102,6 +101,8 @@ public class TestnetConnectionTest {
         MyContract2 myContract = ethereum.createContractProxy(address, mainAccount, MyContract2.class);
 
         testMethodCalls(myContract, address, ethereum);
+
+        assertEquals(mainAccount.getAddress(), myContract.getOwner());
         ethereum.shutdown();
 
     }
@@ -172,5 +173,7 @@ public class TestnetConnectionTest {
         Set<Integer> getSet();
 
         CompletableFuture<Void> throwMe();
+
+        EthAddress getOwner();
     }
 }

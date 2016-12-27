@@ -38,7 +38,6 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
         return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
-
     }
 
     @Override
@@ -83,7 +82,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public SmartContractByteCode getCode(EthAddress address) {
-        return null;
+        return SmartContractByteCode.of(new byte[0]);
     }
 
     @Override
