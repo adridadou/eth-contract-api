@@ -97,7 +97,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        final EthereumFacade ethereum = fromRopsten();
+        final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
         MyContract2 myContract = ethereum.createContractProxy(address, mainAccount, MyContract2.class);
 
