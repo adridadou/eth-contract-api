@@ -38,23 +38,15 @@ the main network, testnet, a private one or even a mocked network for unit testi
 In order to configure all that, you need to use an EthereumFacadeProvider. Several ones exist
 to make it easier to start.
 
-####GenericEthereumFacadeProvider
-This provider is perfect to configure your own local node.
-It uses the ConfigBuilder to configure the node to configure EthereumJ
+#### AccountProvider 
+This class is used to get an account object.
+It can create an account from a String (seed) or from a File (keystore)
 
-This class is used in the other EthereumJ based providers with a pre-defined
-configuration.
-
-####MainEthereumFacadeProvider
-This is the provider used to connect to the main net. 
-In addition to creating a node for the main net, it also has 
-helper methods to load an identity from the keystore used in geth / Mist
-
-####RopstenEthereumFacadeProvider
-This is the provider used to connect to Ropsten testnet.
-
-####TestnetEthereumFacadeProvider
-This is the provider used to connect to ether.camp testnet.
+####EthereumFacadeProvider
+This is the provider used to connect through EthereumJ. 
+The different pre-defined configurations can be found at org.adridadou.ethereum.provider.EthereumJConfigs
+You can use the function "from" that takes a configuration.
+This returns a Provider Builder. You can then extend the configuration. This is useful when you want to connect to Ropsten but with fast sync (for example)
 
 ####StandaloneEthereumFacadeProvider
 This is a mocked blockchain to have fast testing. Not all the functionalities
@@ -63,7 +55,7 @@ your smart contracts that run fast.
 
 If you feel that something is missing, please create an issue
 
-####GenericRpcEthereumFacadeProvider
+####RpcEthereumFacadeProvider
 This is the provider used to connect to a remote node through RPC.
 It uses the library web3j. The accounts are always handled locally, i.e.
 the accounts on the node are never used
