@@ -91,5 +91,10 @@ public class BlockchainProxyTest implements BlockchainProxy {
         return null;
     }
 
+    @Override
+    public void shutdown() {
+
+    }
+
 
 }

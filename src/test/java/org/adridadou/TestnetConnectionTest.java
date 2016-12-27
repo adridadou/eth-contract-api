@@ -102,6 +102,8 @@ public class TestnetConnectionTest {
         MyContract2 myContract = ethereum.createContractProxy(address, mainAccount, MyContract2.class);
 
         testMethodCalls(myContract, address, ethereum);
+        ethereum.shutdown();
+
     }
 
     public static class MyReturnType {
@@ -170,6 +172,5 @@ public class TestnetConnectionTest {
         Set<Integer> getSet();
 
         CompletableFuture<Void> throwMe();
-
     }
 }

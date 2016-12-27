@@ -27,14 +27,15 @@ public class Web3JFacade {
         this.web3j = web3j;
     }
 
-    public EthData constantCall(final EthAccount sender, final EthAddress address, final EthData data) {
+    public EthData constantCall(final EthAccount account, final EthAddress address, final EthData data) {
         try {
             return EthData.of(handleError(web3j.ethCall(new Transaction(
-                    sender.getAddress().withLeading0x(),
+                    account.getAddress().withLeading0x(),
                     BigInteger.ZERO,
                     BigInteger.ZERO,
                     BigInteger.valueOf(1_000_000_000),
-                    address.withLeading0x(), BigInteger.ZERO,
+                    address.withLeading0x(),
+                    BigInteger.ZERO,
                     data.toString()
             ), DefaultBlockParameterName.LATEST).send()));
         } catch (IOException e) {

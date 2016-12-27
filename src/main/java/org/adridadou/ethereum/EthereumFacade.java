@@ -98,4 +98,8 @@ public class EthereumFacade {
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
         return blockchainProxy.getMetadata(swarmMetadaLink);
     }
+
+    public void shutdown() {
+        blockchainProxy.shutdown();
+    }
 }

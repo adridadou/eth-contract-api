@@ -168,6 +168,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         throw new NotImplementedException("not yet implemented");
     }
 
+    @Override
+    public void shutdown() {
+        //do nothing
+    }
+
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
         BigInteger gasPrice = web3JFacade.getGasPrice();

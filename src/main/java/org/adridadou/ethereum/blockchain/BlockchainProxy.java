@@ -41,6 +41,8 @@ public interface BlockchainProxy {
     }
 
     SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink);
+
+    void shutdown();
 }
 
 
