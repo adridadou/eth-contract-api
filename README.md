@@ -1,6 +1,7 @@
 # eth-contract-api
 [![CircleCI](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop.svg?style=svg)](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop)
 [![Coverage Status](https://coveralls.io/repos/github/adridadou/eth-contract-api/badge.svg?branch=develop)](https://coveralls.io/github/adridadou/eth-contract-api?branch=develop)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3b1efe2be2094d8587e5dc22b8d4a00b)](https://www.codacy.com/app/Adridadou/eth-contract-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=adridadou/eth-contract-api&amp;utm_campaign=Badge_Grade)
 [![Gitter](https://badges.gitter.im/eth-contract-api/Lobby.svg)](https://gitter.im/eth-contract-api/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 EthereumJ native API to use and test smart contracts easily

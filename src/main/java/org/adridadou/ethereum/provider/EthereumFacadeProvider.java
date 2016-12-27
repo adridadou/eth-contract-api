@@ -23,7 +23,7 @@ public class EthereumFacadeProvider {
     public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
 
     private static class GenericConfig {
-        static String config;
+        private static String config;
 
         @Bean
         public SystemProperties systemProperties() {

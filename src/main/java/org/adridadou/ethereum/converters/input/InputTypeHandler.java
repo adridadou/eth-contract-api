@@ -21,12 +21,11 @@ public class InputTypeHandler {
             new EnumConverter()
     ).build();
 
+    private final List<InputTypeConverter> inputConverters = new ArrayList<>();
 
     public InputTypeHandler() {
         addConverters(JAVA_INPUT_CONVERTERS);
     }
-
-    private final List<InputTypeConverter> inputConverters = new ArrayList<>();
 
     public void addConverters(final InputTypeConverter... converters) {
         addConverters(Lists.newArrayList(converters));
