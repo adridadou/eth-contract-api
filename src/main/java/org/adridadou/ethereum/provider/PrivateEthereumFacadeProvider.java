@@ -9,6 +9,7 @@ import org.adridadou.ethereum.handler.OnTransactionHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.config.DatabaseDirectory;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
 import org.ethereum.config.SystemProperties;
@@ -42,23 +43,9 @@ public class PrivateEthereumFacadeProvider {
 
         public static String config() {
             // no need for discovery in that small network
-            return "peer.discovery.enabled = false \n" +
-                    "peer.listen.port = 30335 \n" +
-                    // need to have different nodeId's for the peers
-                    "peer.privateKey = 6ef8da380c27cea8fdf7448340ea99e8e2268fc2950d79ed47cbf6f85dc977ec \n" +
-                    // our private net ID
-                    "peer.networkId = 555 \n" +
-                    // we have no peers to sync with
-                    "sync.enabled = false \n" +
-                    // genesis with a lower initial difficulty and some predefined known funded accounts
-                    "genesis = private-genesis.json \n" +
-                    // two peers need to have separate database dirs
-                    "database.dir = " + dbName + " \n" +
-                    // when more than 1 miner exist on the network extraData helps to identify the block creator
-                    "mine.extraDataHex = cccccccccccccccccccc \n" +
-                    "mine.cpuMineThreads = 2 \n" +
-                    "database.incompatibleDatabaseBehavior = IGNORE\n" +
-                    "cache.flush.blocks = 1";
+            return EthereumJConfigs.privateMiner()
+                    .dbDirectory(DatabaseDirectory.db(dbName))
+                    .build().toString();
         }
 
         @Bean

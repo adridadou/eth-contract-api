@@ -24,8 +24,9 @@ public class BlockchainConfig {
     private final Boolean peerDiscovery;
     private final List<String> peerActiveList;
     private final String peerPrivateKey;
+    private final IncompatibleDatabaseBehavior behavior;
 
-    public BlockchainConfig(ChainId networkId, Boolean eip8, Boolean fastSync, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList, String peerPrivateKey) {
+    public BlockchainConfig(ChainId networkId, Boolean eip8, Boolean fastSync, GenesisPath genesis, EthereumConfigName configName, DatabaseDirectory dbDir, List<NodeIp> ipList, Boolean syncEnabled, Integer listenPort, Boolean peerDiscovery, List<String> peerActiveList, String peerPrivateKey, IncompatibleDatabaseBehavior behavior) {
         this.networkId = networkId;
         this.eip8 = eip8;
         this.fastSync = fastSync;
@@ -38,6 +39,7 @@ public class BlockchainConfig {
         this.peerDiscovery = peerDiscovery;
         this.peerActiveList = peerActiveList;
         this.peerPrivateKey = peerPrivateKey;
+        this.behavior = behavior;
     }
 
     public String toString() {
@@ -58,7 +60,8 @@ public class BlockchainConfig {
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
                 Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("") +
                 Optional.ofNullable(fastSync).map(fSync -> "sync.fast.enabled = " + fSync + "\n").orElse("") +
-                Optional.ofNullable(peerPrivateKey).map(privateKey -> "peer.privateKey = " + privateKey + "\n").orElse("");
+                Optional.ofNullable(peerPrivateKey).map(privateKey -> "peer.privateKey = " + privateKey + "\n").orElse("") +
+                Optional.ofNullable(behavior).map(incompatibleDatabaseBehavior -> "database.incompatibleDatabaseBehavior = " + incompatibleDatabaseBehavior.name() + "\n").orElse("");
     }
 
     public static Builder builder() {
@@ -78,6 +81,7 @@ public class BlockchainConfig {
         private Boolean peerDiscovery;
         private List<String> peerActiveList;
         private String peerPrivateKey;
+        private IncompatibleDatabaseBehavior behavior;
 
         public Builder networkId(ChainId networkId) {
             this.networkId = networkId;
@@ -121,7 +125,7 @@ public class BlockchainConfig {
         }
 
         public BlockchainConfig build() {
-            return new BlockchainConfig(networkId, eip8, fastSync, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList, peerPrivateKey);
+            return new BlockchainConfig(networkId, eip8, fastSync, genesis, configName, dbDir, ipList, syncEnabled, listenPort, peerDiscovery, peerActiveList, peerPrivateKey, behavior);
         }
 
         public Builder listenPort(Integer port) {
@@ -142,6 +146,11 @@ public class BlockchainConfig {
 
         public Builder privateKey(String privateKey) {
             this.peerPrivateKey = privateKey;
+            return this;
+        }
+
+        public Builder incompatibleDatabaseBehavior(IncompatibleDatabaseBehavior behavior) {
+            this.behavior = behavior;
             return this;
         }
     }

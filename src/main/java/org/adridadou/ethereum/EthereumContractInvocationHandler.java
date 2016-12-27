@@ -114,7 +114,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount account) {
+    protected <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount account) {
         final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
         CompilationResult.ContractMetadata found = null;
         for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
@@ -137,7 +137,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         contracts.put(address, proxies);
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
+    protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
         SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
@@ -147,7 +147,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         contracts.put(address, proxies);
     }
 
-    <T> void register(T proxy, Class<T> contractInterface, EthAddress address, EthAccount account) {
+    protected <T> void register(T proxy, Class<T> contractInterface, EthAddress address, EthAccount account) {
         SmartContractByteCode code = blockchainProxy.getCode(address);
         SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
         register(proxy, contractInterface, metadata.getAbi(), address, account);

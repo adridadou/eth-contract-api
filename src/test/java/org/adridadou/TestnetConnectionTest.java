@@ -33,14 +33,9 @@ public class TestnetConnectionTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final AccountProvider accountProvider = new AccountProvider();
     private final EthAccount mainAccount = accountProvider.fromString("cow");
-    private EthereumFacade ethereum;
     private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
     public TestnetConnectionTest() throws URISyntaxException {
-    }
-
-    private void init() throws Exception {
-        ethereum = fromPrivateNetwork();
     }
 
     private EthereumFacade fromRopsten() {
@@ -55,13 +50,13 @@ public class TestnetConnectionTest {
                 .initialBalance(mainAccount, ether(10)));
     }
 
-    private EthAddress publishAndMapContract() throws Exception {
+    private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
         ethereum.getBalance(mainAccount);
         CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", mainAccount);
         return futureAddress.get();
     }
 
-    private void testMethodCalls(MyContract2 myContract, EthAddress address) throws Exception {
+    private void testMethodCalls(MyContract2 myContract, EthAddress address, EthereumFacade ethereum) throws Exception {
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contract myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
@@ -102,11 +97,11 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        init();
-        EthAddress address = publishAndMapContract();
+        final EthereumFacade ethereum = fromRopsten();
+        EthAddress address = publishAndMapContract(ethereum);
         MyContract2 myContract = ethereum.createContractProxy(address, mainAccount, MyContract2.class);
 
-        testMethodCalls(myContract, address);
+        testMethodCalls(myContract, address, ethereum);
     }
 
     public static class MyReturnType {

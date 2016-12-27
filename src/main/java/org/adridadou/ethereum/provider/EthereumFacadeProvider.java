@@ -57,7 +57,6 @@ public class EthereumFacadeProvider {
             GenericConfig.config = configBuilder.build().toString();
             Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
             EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-            ethereum.initSyncing();
 
             return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
         }

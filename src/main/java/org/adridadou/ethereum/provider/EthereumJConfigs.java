@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.blockchain.BlockchainConfig;
+import org.adridadou.ethereum.blockchain.IncompatibleDatabaseBehavior;
 import org.adridadou.ethereum.values.config.*;
 
 /**
@@ -39,7 +40,7 @@ public class EthereumJConfigs {
                 .configName(EthereumConfigName.name("testnet"));
     }
 
-    public static BlockchainConfig.Builder privateMiner(final DatabaseDirectory db) {
+    public static BlockchainConfig.Builder privateMiner() {
         return BlockchainConfig
                 .builder()
                 .peerDiscovery(false)
@@ -48,26 +49,6 @@ public class EthereumJConfigs {
                 .networkId(ChainId.id(55))
                 .syncEnabled(false)
                 .genesis(GenesisPath.path("private-genesis.json"))
-                .dbDirectory(db);
-        //.incompatibleDatabaseBehavior(IGNORE);
-        /*
-        "peer.discovery.enabled = false \n" +
-                "peer.listen.port = 30335 \n" +
-                // need to have different nodeId's for the peers
-                "peer.privateKey = 6ef8da380c27cea8fdf7448340ea99e8e2268fc2950d79ed47cbf6f85dc977ec \n" +
-                // our private net ID
-                "peer.networkId = 555 \n" +
-                // we have no peers to sync with
-                "sync.enabled = false \n" +
-                // genesis with a lower initial difficulty and some predefined known funded accounts
-                "genesis = private-genesis.json \n" +
-                // two peers need to have separate database dirs
-                "database.dir = " + dbName + " \n" +
-                // when more than 1 miner exist on the network extraData helps to identify the block creator
-                "mine.extraDataHex = cccccccccccccccccccc \n" +
-                "mine.cpuMineThreads = 2 \n" +
-                "database.incompatibleDatabaseBehavior = IGNORE\n" +
-                "cache.flush.blocks = 1";
-                */
+                .incompatibleDatabaseBehavior(IncompatibleDatabaseBehavior.IGNORE);
     }
 }
