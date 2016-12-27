@@ -56,7 +56,7 @@ public class BlockchainConfig {
                 Optional.ofNullable(networkId).map(id -> "peer.networkId = " + networkId.id + "\n").orElse("") +
                 Optional.ofNullable(eip8).map(v -> "peer.p2p.eip8 = " + v + "\n").orElse("") +
                 Optional.ofNullable(genesis).map(json -> "genesis = " + json.path + "\n").orElse("") +
-                Optional.ofNullable(configName).map(config -> "blockchain.extendConfig.name = \"" + config.name + "\"\n").orElse("") +
+                Optional.ofNullable(configName).map(config -> "blockchain.config.name = \"" + config.name + "\"\n").orElse("") +
                 Optional.ofNullable(syncEnabled).map(sync -> "sync.enabled = " + sync + "\n").orElse("") +
                 Optional.ofNullable(dbDir).map(db -> "database.dir = " + dbDir.directory + "\n").orElse("") +
                 Optional.ofNullable(fastSync).map(fSync -> "sync.fast.enabled = " + fSync + "\n").orElse("") +
