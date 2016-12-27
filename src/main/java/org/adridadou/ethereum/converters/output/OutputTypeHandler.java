@@ -24,6 +24,8 @@ public class OutputTypeHandler {
             new EnumConverter()
     ).build();
 
+    private final List<OutputTypeConverter> outputConverters = new ArrayList<>();
+
     public OutputTypeHandler() {
         addConverters(JAVA_OUTPUT_CONVERTERS);
         addConverters(
@@ -32,8 +34,6 @@ public class OutputTypeHandler {
                 new CompletableFutureConverter(this),
                 new SetConverter(this));
     }
-
-    private final List<OutputTypeConverter> outputConverters = new ArrayList<>();
 
     public void addConverters(final OutputTypeConverter... converters) {
         addConverters(Lists.newArrayList(converters));
