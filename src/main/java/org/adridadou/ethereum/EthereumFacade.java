@@ -77,7 +77,7 @@ public class EthereumFacade {
         return new Builder<>(contractInterface, address, getAbi(address));
     }
 
-    private ContractAbi getAbi(final EthAddress address) {
+    public ContractAbi getAbi(final EthAddress address) {
         SmartContractByteCode code = blockchainProxy.getCode(address);
         SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
         return metadata.getAbi();
