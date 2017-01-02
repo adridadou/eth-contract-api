@@ -6,6 +6,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.crypto.ECKey;
 import org.spongycastle.crypto.digests.SHA3Digest;
+import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.WalletUtils;
 
 import java.io.File;
@@ -18,31 +19,39 @@ import java.util.stream.Collectors;
  * This code is released under Apache 2 license
  */
 public class AccountProvider {
-    public EthAccount fromString(final String id) {
+    public static EthAccount fromPrivateKey(final byte[] privateKey) {
+        return new EthAccount(ECKey.fromPrivate(privateKey));
+    }
+
+    public static EthAccount fromPrivateKey(final String privateKey) {
+        return new EthAccount(ECKey.fromPrivate(Hex.decode(privateKey)));
+    }
+
+    public static EthAccount from(final String id) {
         return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
     }
 
-    public SecureKey fromFile(final File file) {
+    public static SecureKey from(final File file) {
         return new FileSecureKey(file);
     }
 
-    public List<SecureKey> listMainKeystores() {
+    public static List<SecureKey> listMainKeystores() {
         return listKeystores(new File(WalletUtils.getMainnetKeyDirectory()));
     }
 
-    public List<SecureKey> listRopstenKeystores() {
+    public static List<SecureKey> listRopstenKeystores() {
         return listKeystores(new File(WalletUtils.getTestnetKeyDirectory()));
     }
 
-    public List<SecureKey> listKeystores(final File directory) {
+    public static List<SecureKey> listKeystores(final File directory) {
         File[] files = Optional.ofNullable(directory.listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + WalletUtils.getMainnetKeyDirectory()));
         return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
-                .map(this::fromFile)
+                .map(AccountProvider::from)
                 .collect(Collectors.toList());
     }
 
-    private byte[] doSha3(byte[] message) {
+    private static byte[] doSha3(byte[] message) {
         SHA3Digest digest = new SHA3Digest(256);
         byte[] hash = new byte[digest.getDigestSize()];
 

@@ -31,8 +31,7 @@ import java.util.concurrent.ExecutionException;
  * This code is released under Apache 2 license
  */
 public class PrivateEthereumFacadeProvider {
-    private final AccountProvider accountProvider = new AccountProvider();
-    private final EthAccount mainAccount = accountProvider.fromString("cow");
+    private final EthAccount mainAccount = AccountProvider.from("cow");
 
     /**
      * Spring configuration class for the Miner peer

@@ -16,6 +16,7 @@ import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
+import org.adridadou.exception.EthereumApiException;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -59,8 +60,27 @@ public class EthereumFacade {
 
     public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, address, account);
+        handler.register(proxy, contractInterface, getAbi(address), address, account);
         return proxy;
+    }
+
+    public <T> Builder<T> createContractProxy(EthAddress address, Class<T> contractInterface) {
+        return new Builder<>(contractInterface, address, getAbi(address));
+    }
+
+    public <T> Builder<T> createContractProxy(EthAddress address,ContractAbi abi, Class<T> contractInterface) {
+        return new Builder<>(contractInterface, address, abi);
+    }
+
+    public <T> Builder<T> createContractProxy(SoliditySource source, EthAddress address, Class<T> contractInterface) {
+
+        return new Builder<>(contractInterface, address, getAbi(address));
+    }
+
+    private ContractAbi getAbi(final EthAddress address) {
+        SmartContractByteCode code = blockchainProxy.getCode(address);
+        SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
+        return metadata.getAbi();
     }
 
     public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
@@ -101,5 +121,25 @@ public class EthereumFacade {
 
     public void shutdown() {
         blockchainProxy.shutdown();
+    }
+
+
+    public class Builder<T> {
+
+        private final Class<T> contractInterface;
+        private final EthAddress address;
+        private final ContractAbi abi;
+
+        public Builder(Class<T> contractInterface, EthAddress address, ContractAbi abi) {
+            this.contractInterface = contractInterface;
+            this.address = address;
+            this.abi = abi;
+        }
+
+        public T forAccount(final EthAccount account) {
+            T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
+            EthereumFacade.this.handler.register(proxy,contractInterface,abi, address, account);
+            return proxy;
+        }
     }
 }

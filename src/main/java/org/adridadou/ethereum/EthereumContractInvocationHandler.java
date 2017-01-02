@@ -6,7 +6,6 @@ import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -145,12 +144,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
         proxies.put(account, smartContract);
         contracts.put(address, proxies);
-    }
-
-    protected <T> void register(T proxy, Class<T> contractInterface, EthAddress address, EthAccount account) {
-        SmartContractByteCode code = blockchainProxy.getCode(address);
-        SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
-        register(proxy, contractInterface, metadata.getAbi(), address, account);
     }
 
     private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
