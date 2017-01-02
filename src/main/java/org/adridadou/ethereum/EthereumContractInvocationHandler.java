@@ -156,7 +156,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Sets.SetView<String> superfluous = Sets.difference(interfaceMethodNames, solidityFuncNames);
 
         if (!superfluous.isEmpty()) {
-            throw new EthereumApiException("superflous function definition in interface " + contractInterface.getName() + ":" + superfluous.toString());
+            throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it from your interface");
         }
 
         Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));

@@ -21,7 +21,8 @@ public class OutputTypeHandler {
             new BooleanConverter(),
             new AddressConverter(),
             new VoidConverter(),
-            new EnumConverter()
+            new EnumConverter(),
+            new DateConverter()
     ).build();
 
     private final List<OutputTypeConverter> outputConverters = new ArrayList<>();

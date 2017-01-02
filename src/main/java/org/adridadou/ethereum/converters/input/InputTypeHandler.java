@@ -18,7 +18,8 @@ public class InputTypeHandler {
             new EthAccountConverter(),
             new EthDataConverter(),
             new EthValueConverter(),
-            new EnumConverter()
+            new EnumConverter(),
+            new DateConverter()
     ).build();
 
     private final List<InputTypeConverter> inputConverters = new ArrayList<>();
