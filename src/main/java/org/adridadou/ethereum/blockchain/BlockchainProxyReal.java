@@ -87,7 +87,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     private void publishContractMetadaToSwarm(String metadata) throws IOException {
-        //TODO: publish the metadata to swarm
         swarmService.publish(metadata);
     }
 
@@ -137,7 +136,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
-        return sendTx(ethValue,data,sender,DEFAULT_GAS_LIMIT);
+        return sendTx(ethValue,data,sender,BigInteger.valueOf(ByteUtil.byteArrayToLong(ethereum.getBlockchain().getBestBlock().getGasLimit())));
     }
 
     @Override
@@ -153,7 +152,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
-        return sendTx(value,data,sender,address,DEFAULT_GAS_LIMIT);
+        return sendTx(value,data,sender,address,BigInteger.valueOf(ByteUtil.byteArrayToLong(ethereum.getBlockchain().getBestBlock().getGasLimit())));
     }
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress, BigInteger gasLimit) {
