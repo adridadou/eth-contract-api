@@ -104,7 +104,7 @@ public class EthereumFacade {
     }
 
     public CompletableFuture<EthExecutionResult> sendEther(EthAccount fromAccount, EthAddress to, EthValue value) {
-        return blockchainProxy.sendTx(value, EthData.empty(), fromAccount, to);
+        return blockchainProxy.sendTx(value, EthData.empty(), fromAccount, to, BigInteger.valueOf(127_000));
     }
 
     public BigInteger getNonce(EthAddress address) {

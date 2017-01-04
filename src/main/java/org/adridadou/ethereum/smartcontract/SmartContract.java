@@ -2,6 +2,7 @@ package org.adridadou.ethereum.smartcontract;
 
 import org.ethereum.core.CallTransaction;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,4 +16,6 @@ public interface SmartContract {
     Object[] callConstFunction(String methodName, Object... arguments);
 
     List<CallTransaction.Function> getFunctions();
+
+    BigInteger estimateGas(String methodName, Object... arguments);
 }

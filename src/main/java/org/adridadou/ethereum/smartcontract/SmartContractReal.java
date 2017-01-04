@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +49,18 @@ public class SmartContractReal implements SmartContract {
         return Lists.newArrayList(contract.functions);
     }
 
-    public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
+    @Override
+    public BigInteger estimateGas(String methodName, Object... arguments) {
+        TransactionExecutor executor = executeLocally(getBlockchain().getBestBlock(), methodName, arguments);
+        return BigInteger.valueOf(executor.getGasUsed());
+    }
 
+    public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
+        TransactionExecutor executor = executeLocally(callBlock, functionName, args);
+        return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
+    }
+
+    private TransactionExecutor executeLocally(Block callBlock, final String functionName, final Object ... args) {
         Transaction tx = CallTransaction.createCallTransaction(0, 0, GAS_LIMIT_FOR_CONSTANT_CALLS,
                 address.toString(), 0, contract.getByName(functionName), args);
         tx.sign(sender.key);
@@ -67,7 +78,7 @@ public class SmartContractReal implements SmartContract {
             executor.go();
             executor.finalization();
 
-            return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
+            return executor;
         } finally {
             repository.rollback();
         }
@@ -89,7 +100,7 @@ public class SmartContractReal implements SmartContract {
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
             EthData functionCallBytes = EthData.of(func.encode(args));
-            return bcProxy.sendTx(value, functionCallBytes, sender, address)
+            return bcProxy.sendTx(value, functionCallBytes, sender, address, estimateGas(functionName, args))
                     .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
         }).orElseThrow(() -> new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }

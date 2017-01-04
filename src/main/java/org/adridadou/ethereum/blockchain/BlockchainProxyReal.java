@@ -36,6 +36,7 @@ import static org.adridadou.ethereum.values.EthValue.wei;
 public class BlockchainProxyReal implements BlockchainProxy {
 
     private static final long BLOCK_WAIT_LIMIT = 16;
+    private static final BigInteger DEFAULT_GAS_LIMIT = BigInteger.valueOf(4_000_000);
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
     private final SwarmService swarmService;
@@ -91,7 +92,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(src.getSource().getBytes(EthereumFacade.CHARSET), true,
+        SolidityCompiler.Result result = SolidityCompiler.getInstance().compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
                 SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
         if (result.isFailed()) {
             throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
@@ -115,7 +116,9 @@ public class BlockchainProxyReal implements BlockchainProxy {
     @Override
     public SmartContractByteCode getCode(EthAddress address) {
         byte[] code = ((BlockchainImpl) ethereum.getBlockchain()).getRepository().getCode(address.address);
-
+        if(code.length == 0) {
+            throw new EthereumApiException("no code found at the address. please verify that a smart contract is deployed at " + address.withLeading0x());
+        }
         return SmartContractByteCode.of(code);
     }
 
@@ -133,29 +136,31 @@ public class BlockchainProxyReal implements BlockchainProxy {
         ethereum.close();
     }
 
-    @Override
     public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
-        return this.sendTxInternal(ethValue, data, sender, EthAddress.empty())
+        return sendTx(ethValue,data,sender,DEFAULT_GAS_LIMIT);
+    }
+
+    @Override
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
+        return this.sendTxInternal(ethValue, data, sender, EthAddress.empty(), gasLimit)
                 .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
+    }
+
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address, BigInteger gasLimit) {
+        return this.sendTxInternal(value, data, sender, address, gasLimit)
+                .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
     @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
-        return this.sendTxInternal(value, data, sender, address)
-                .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
+        return sendTx(value,data,sender,address,DEFAULT_GAS_LIMIT);
     }
 
-    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
+    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress, BigInteger gasLimit) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(account.getAddress());
-            Transaction tx = new Transaction(
-                    ByteUtil.bigIntegerToBytes(nonce),
-                    ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
-                    ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    toAddress.address,
-                    ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                    data.data,
-                    ethereum.getChainIdForNextBlock());
+
+            Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(account.getAddress());

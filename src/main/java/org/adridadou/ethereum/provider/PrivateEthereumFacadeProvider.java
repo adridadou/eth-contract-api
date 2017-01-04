@@ -116,15 +116,6 @@ public class PrivateEthereumFacadeProvider {
         }
     }
 
-    private static class RegularConfig {
-        @Bean
-        public SystemProperties systemProperties() {
-            SystemProperties props = new SystemProperties(ConfigFactory.empty(), PrivateEthereumFacadeProvider.class.getClassLoader());
-            props.overrideParams(ConfigFactory.parseString("peer.discovery.enabled = false \npeer.listen.port = 30336 \npeer.privateKey = 3ec771c31cac8c0dba77a69e503765701d3c2bb62435888d4ffa38fed60c445c \npeer.networkId = 555 \npeer.active = [    { url = \'enode://26ba1aadaf59d7607ad7f437146927d79e80312f026cfa635c6b2ccf2c5d3521f5812ca2beb3b295b14f97110e6448c1c7ff68f14c5328d43a3c62b44143e9b1@localhost:30335\' }] \nsync.enabled = true \ngenesis = private-genesis.json \ndatabase.dir = sampleDB-2 \n".replaceAll("\'", "\"")));
-            return props;
-        }
-    }
-
     private void deleteFolder(File folder, final boolean root) {
         File[] files = folder.listFiles();
         if (files != null) { //some JVMs return null for empty dirs

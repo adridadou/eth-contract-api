@@ -131,6 +131,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     public CompletableFuture<EthExecutionResult> sendTx(final EthValue value, final EthData data, final EthAccount sender, final EthAddress toAddress) {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
+        return sendTx(value,data,sender,toAddress, gas);
+    }
+
+    @Override
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress, BigInteger gasLimit) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
 
         increasePendingTransactionCounter(sender.getAddress());
@@ -138,7 +143,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
                 ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
-                ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
+                ByteUtil.longToBytesNoLeadZeroes(gasLimit.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
@@ -175,13 +180,18 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
         BigInteger gas = web3JFacade.estimateGas(sender, data);
+        return sendTx(ethValue, data,sender,gas);
+    }
+
+    @Override
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
         increasePendingTransactionCounter(sender.getAddress());
 
         RawTransaction tx = RawTransaction.createContractTransaction(
                 getNonce(sender.getAddress()),
                 gasPrice,
-                gas.add(BigInteger.valueOf(100_000)),
+                gasLimit.add(BigInteger.valueOf(100_000)),
                 ethValue.inWei(),
                 data.toString());
         EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));

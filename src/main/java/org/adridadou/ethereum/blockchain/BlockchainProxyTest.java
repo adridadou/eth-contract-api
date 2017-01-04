@@ -57,7 +57,17 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
-        return this.sendTx(ethValue, data, sender, null).thenApply(result -> EthAddress.of(result.getResult()));
+        return this.sendTx(ethValue, data, sender, EthAddress.empty()).thenApply(result -> EthAddress.of(result.getResult()));
+    }
+
+    @Override
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address, BigInteger gasLimit) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
+        return sendTx(ethValue,data,sender,BigInteger.valueOf(10_000_000));
     }
 
     @Override
