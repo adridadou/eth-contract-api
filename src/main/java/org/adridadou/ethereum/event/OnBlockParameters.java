@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.handler;
+package org.adridadou.ethereum.event;
 
 import org.ethereum.core.Block;
 import org.ethereum.core.TransactionReceipt;

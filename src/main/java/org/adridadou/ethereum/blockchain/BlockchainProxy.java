@@ -1,10 +1,11 @@
 package org.adridadou.ethereum.blockchain;
 
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
+import rx.Observable;
 
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +44,8 @@ public interface BlockchainProxy {
     }
 
     SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink);
+
+    <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls);
 
     void shutdown();
 }

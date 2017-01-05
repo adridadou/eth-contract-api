@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.handler;
+package org.adridadou.ethereum.event;
 
 import com.google.common.collect.Sets;
 import rx.Observable;

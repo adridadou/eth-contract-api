@@ -1,7 +1,7 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
 import org.adridadou.ethereum.values.*;
@@ -20,6 +20,7 @@ import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.response.*;
+import rx.Observable;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -171,6 +172,12 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     @Override
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
         throw new NotImplementedException("not yet implemented");
+    }
+
+    @Override
+    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
+
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override

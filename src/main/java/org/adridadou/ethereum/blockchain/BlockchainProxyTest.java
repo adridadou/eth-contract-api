@@ -6,7 +6,7 @@ import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractTest;
 import org.adridadou.ethereum.values.*;
@@ -14,6 +14,7 @@ import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
+import rx.Observable;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -67,7 +68,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
-        return sendTx(ethValue,data,sender,BigInteger.valueOf(10_000_000));
+        return sendTx(ethValue,data,sender);
     }
 
     @Override
@@ -98,6 +99,11 @@ public class BlockchainProxyTest implements BlockchainProxy {
     @Override
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
         return null;
+    }
+
+    @Override
+    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override

@@ -30,15 +30,15 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * This code is released under Apache 2 license
  */
 public class SmartContractReal implements SmartContract {
-    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100000000000000L;
+    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100_000_000_000_000L;
     private final EthAddress address;
     private final Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
     private final EthAccount sender;
 
-    public SmartContractReal(String abi, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
-        this.contract = new Contract(abi);
+    public SmartContractReal(Contract contract, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
+        this.contract = contract;
         this.ethereum = ethereum;
         this.sender = sender;
         this.bcProxy = bcProxy;

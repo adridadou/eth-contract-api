@@ -11,7 +11,8 @@ import java.util.function.Predicate;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.swarm.SwarmService;
@@ -27,6 +28,7 @@ import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
+import rx.Observable;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
 
@@ -41,13 +43,16 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private final EthereumEventHandler eventHandler;
     private final SwarmService swarmService;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
+    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final InputTypeHandler inputTypeHandler;
+    private final OutputTypeHandler outputTypeHandler;
 
-    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService, InputTypeHandler inputTypeHandler) {
+    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
         this.swarmService = swarmService;
         this.inputTypeHandler = inputTypeHandler;
+        this.outputTypeHandler = outputTypeHandler;
         eventHandler.onReady().thenAccept((b) -> ethereum.getBlockchain().flush());
     }
 
@@ -55,7 +60,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
         try {
             CompilationResult.ContractMetadata metadata = compile(src, contractName);
-            return mapFromAbi(new ContractAbi(metadata.abi), address, sender);
+            return mapFromAbi(ContractAbi.of(metadata.abi), address, sender);
 
         } catch (IOException e) {
             throw new EthereumApiException("error while mapping a smart contract", e);
@@ -64,7 +69,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        return new SmartContractReal(abi.getAbi(), ethereum, sender, address, this);
+        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
+        return new SmartContractReal(contracts.get(address), ethereum, sender, address, this);
     }
 
     @Override
@@ -136,6 +142,17 @@ public class BlockchainProxyReal implements BlockchainProxy {
         } catch (IOException e) {
             throw new EthereumApiException("error while getting metadata", e);
         }
+    }
+
+    @Override
+    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
+        return Optional.ofNullable(contracts.get(contractAddress)).map(contract -> eventHandler.observeTransactions()
+                    .filter(params -> EthAddress.of(params.transaction.getReceiveAddress()).equals(contractAddress))
+                    .flatMap(params -> Observable.from(params.logs))
+                    .map(contract::parseEvent)
+                    .filter(invocation -> eventName.equals(invocation.function.name))
+                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls))
+        ).orElseThrow(() -> new EthereumApiException("no contract registered at " + contractAddress.withLeading0x() + ". You need to register it first with its ABI (createContractProxy)."));
     }
 
     @Override

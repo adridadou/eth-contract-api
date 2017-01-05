@@ -1,5 +1,6 @@
-package org.adridadou.ethereum.handler;
+package org.adridadou.ethereum.event;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,12 +38,12 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
     @Override
     public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
-        onTransactionHandler.onTransaction(new OnTransactionParameters(txReceipt.getTransaction(), state));
+        onTransactionHandler.onTransaction(new OnTransactionParameters(txReceipt.getTransaction(), state, new ArrayList<>()));
     }
 
     @Override
     public void onTransactionExecuted(TransactionExecutionSummary summary) {
-        onTransactionHandler.onTransaction(new OnTransactionParameters(summary.getTransaction(), PendingTransactionState.INCLUDED));
+        onTransactionHandler.onTransaction(new OnTransactionParameters(summary.getTransaction(), PendingTransactionState.INCLUDED, summary.getLogs()));
     }
 
     public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {

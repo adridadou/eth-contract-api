@@ -13,10 +13,11 @@ import org.adridadou.ethereum.converters.input.InputTypeConverter;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeConverter;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
+import rx.Observable;
 
 /**
  * Created by davidroon on 31.03.16.
@@ -122,6 +123,10 @@ public class EthereumFacade {
 
     public void shutdown() {
         blockchainProxy.shutdown();
+    }
+
+    public <T> Observable<T> observeEvents(EthAddress address, String eventName, Class<T> cls) {
+        return blockchainProxy.observeEvents(address,eventName, cls);
     }
 
 

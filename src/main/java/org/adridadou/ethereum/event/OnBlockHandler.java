@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.handler;
+package org.adridadou.ethereum.event;
 
 /**
  * Created by davidroon on 19.08.16.

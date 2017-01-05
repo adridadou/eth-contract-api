@@ -15,10 +15,10 @@ import org.web3j.protocol.http.HttpService;
  */
 public class GenericRpcEthereumFacadeProvider {
     public EthereumFacade create(final String url, final ChainId chainId) {
-        return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
+        return create(new Web3JFacade(Web3j.build(new HttpService(url)), new OutputTypeHandler()), chainId);
     }
 
     public EthereumFacade create(final Web3JFacade web3j, final ChainId chainId) {
-        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId), new InputTypeHandler(), new OutputTypeHandler());
+        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId), new InputTypeHandler(), web3j.getOutputTypeHandler());
     }
 }
