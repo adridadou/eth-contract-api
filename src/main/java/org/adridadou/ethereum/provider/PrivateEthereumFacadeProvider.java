@@ -35,6 +35,70 @@ import java.util.concurrent.ExecutionException;
 public class PrivateEthereumFacadeProvider {
     private final EthAccount mainAccount = AccountProvider.from("cow");
 
+    public EthereumFacade create(final PrivateNetworkConfig config) {
+        final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
+        if (config.isResetPrivateBlockchain()) {
+            deleteFolder(new File(config.getDbName()), true);
+        }
+
+        if (dagCached) {
+            new File(config.getDbName()).mkdirs();
+            try {
+                FileUtils.copyFile(new File("cachedDag/mine-dag.dat"), new File(config.getDbName() + "/mine-dag.dat"));
+                FileUtils.copyFile(new File("cachedDag/mine-dag-light.dat"), new File(config.getDbName() + "/mine-dag-light.dat"));
+            } catch (IOException e) {
+                throw new EthereumApiException("error while copying dag files", e);
+            }
+        }
+
+        MinerConfig.dbName = config.getDbName();
+        Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
+        ethereum.initSyncing();
+
+        if (!dagCached) {
+            try {
+                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
+                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
+            } catch (IOException e) {
+                throw new EthereumApiException("error while copying dag files to dagCached", e);
+            }
+        }
+
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
+        InputTypeHandler inputTypeHandler = new InputTypeHandler();
+        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST), inputTypeHandler),inputTypeHandler, new OutputTypeHandler());
+
+        //This event does not trigger when you are the miner
+        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
+                .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
+                .forEach(result -> {
+                    try {
+                        result.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new EthereumApiException("error while setting the initial balances");
+                    }
+                })
+        );
+        return facade;
+    }
+
+    private void deleteFolder(File folder, final boolean root) {
+        File[] files = folder.listFiles();
+        if (files != null) { //some JVMs return null for empty dirs
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    deleteFolder(f, false);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        if (!root) {
+            folder.delete();
+        }
+    }
+
     /**
      * Spring configuration class for the Miner peer
      */
@@ -117,69 +181,4 @@ public class PrivateEthereumFacadeProvider {
             logger.info("Cancel mining block: " + block.getShortDescr());
         }
     }
-
-    private void deleteFolder(File folder, final boolean root) {
-        File[] files = folder.listFiles();
-        if (files != null) { //some JVMs return null for empty dirs
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    deleteFolder(f, false);
-                } else {
-                    f.delete();
-                }
-            }
-        }
-        if (!root) {
-            folder.delete();
-        }
-    }
-
-    public EthereumFacade create(final PrivateNetworkConfig config) {
-        final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
-        if (config.isResetPrivateBlockchain()) {
-            deleteFolder(new File(config.getDbName()), true);
-        }
-
-        if (dagCached) {
-            new File(config.getDbName()).mkdirs();
-            try {
-                FileUtils.copyFile(new File("cachedDag/mine-dag.dat"), new File(config.getDbName() + "/mine-dag.dat"));
-                FileUtils.copyFile(new File("cachedDag/mine-dag-light.dat"), new File(config.getDbName() + "/mine-dag-light.dat"));
-            } catch (IOException e) {
-                throw new EthereumApiException("error while copying dag files", e);
-            }
-        }
-
-        MinerConfig.dbName = config.getDbName();
-        Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        ethereum.initSyncing();
-
-        if (!dagCached) {
-            try {
-                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
-                FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
-            } catch (IOException e) {
-                throw new EthereumApiException("error while copying dag files to dagCached", e);
-            }
-        }
-
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
-        InputTypeHandler inputTypeHandler = new InputTypeHandler();
-        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST), inputTypeHandler),inputTypeHandler, new OutputTypeHandler());
-
-        //This event does not trigger when you are the miner
-        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
-        facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
-                .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
-                .forEach(result -> {
-                    try {
-                        result.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new EthereumApiException("error while setting the initial balances");
-                    }
-                })
-        );
-        return facade;
-    }
-
 }

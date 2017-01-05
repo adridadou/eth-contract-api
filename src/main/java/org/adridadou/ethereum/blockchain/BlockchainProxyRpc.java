@@ -191,7 +191,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         RawTransaction tx = RawTransaction.createContractTransaction(
                 getNonce(sender.getAddress()),
                 gasPrice,
-                gasLimit.add(BigInteger.valueOf(100_000)),
+                gasLimit,
                 ethValue.inWei(),
                 data.toString());
         EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
