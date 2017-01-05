@@ -24,6 +24,10 @@ public class EthereumFacadeProvider {
     public final static ChainId MAIN_CHAIN_ID = ChainId.id(0);
     public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
 
+    public static Builder forNetwork(final BlockchainConfig.Builder config) {
+        return new Builder(config);
+    }
+
     private static class GenericConfig {
         private static String config;
 
@@ -33,10 +37,6 @@ public class EthereumFacadeProvider {
             props.overrideParams(ConfigFactory.parseString(config));
             return props;
         }
-    }
-
-    public static Builder forNetwork(final BlockchainConfig.Builder config) {
-        return new Builder(config);
     }
 
     public static class Builder {
