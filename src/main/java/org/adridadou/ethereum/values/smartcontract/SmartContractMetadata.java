@@ -24,12 +24,12 @@ public class SmartContractMetadata {
 
         SmartContractMetadata that = (SmartContractMetadata) o;
 
-        return abi != null ? abi.equals(that.abi) : that.abi == null;
+        return abi.equals(that.abi);
     }
 
     @Override
     public int hashCode() {
-        return abi != null ? abi.hashCode() : 0;
+        return abi.hashCode();
     }
 
     @Override

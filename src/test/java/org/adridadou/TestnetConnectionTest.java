@@ -3,16 +3,13 @@ package org.adridadou;
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.*;
 
 import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
 import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
-import org.adridadou.ethereum.values.SmartContractByteCode;
-import org.adridadou.ethereum.values.SoliditySource;
 import org.adridadou.exception.EthereumApiException;
 import org.junit.Test;
 
