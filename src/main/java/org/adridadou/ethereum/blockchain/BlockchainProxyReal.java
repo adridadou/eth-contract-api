@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -36,16 +37,17 @@ import static org.adridadou.ethereum.values.EthValue.wei;
 public class BlockchainProxyReal implements BlockchainProxy {
 
     private static final long BLOCK_WAIT_LIMIT = 16;
-    private static final BigInteger DEFAULT_GAS_LIMIT = BigInteger.valueOf(4_000_000);
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
     private final SwarmService swarmService;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
+    private final InputTypeHandler inputTypeHandler;
 
-    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService) {
+    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService, InputTypeHandler inputTypeHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
         this.swarmService = swarmService;
+        this.inputTypeHandler = inputTypeHandler;
         eventHandler.onReady().thenAccept((b) -> ethereum.getBlockchain().flush());
     }
 
@@ -82,8 +84,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("No constructor with params found");
         }
         publishContractMetadaToSwarm(metadata.metadata);
-        byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
+        byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(prepareArguments(constructorArgs));
         return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender);
+    }
+
+    public Object[] prepareArguments(Object[] args) {
+        return Arrays.stream(args)
+                .map(inputTypeHandler::convert)
+                .toArray();
     }
 
     private void publishContractMetadaToSwarm(String metadata) throws IOException {

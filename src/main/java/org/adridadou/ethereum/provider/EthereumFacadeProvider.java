@@ -4,6 +4,8 @@ import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.blockchain.BlockchainConfig;
 import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.handler.EthereumEventHandler;
 import org.adridadou.ethereum.handler.OnBlockHandler;
 import org.adridadou.ethereum.handler.OnTransactionHandler;
@@ -57,8 +59,9 @@ public class EthereumFacadeProvider {
             GenericConfig.config = configBuilder.build().toString();
             Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
             EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
-
-            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST)));
+            InputTypeHandler inputTypeHandler = new InputTypeHandler();
+            OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
+            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST),inputTypeHandler),inputTypeHandler, outputTypeHandler);
         }
     }
 }

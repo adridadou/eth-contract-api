@@ -29,9 +29,9 @@ public class EthereumFacade {
     private final InputTypeHandler inputTypeHandler;
     private final BlockchainProxy blockchainProxy;
 
-    public EthereumFacade(BlockchainProxy blockchainProxy) {
-        inputTypeHandler = new InputTypeHandler();
-        outputTypeHandler = new OutputTypeHandler();
+    public EthereumFacade(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+        this.inputTypeHandler = inputTypeHandler;
+        this.outputTypeHandler = outputTypeHandler;
         this.handler = new EthereumContractInvocationHandler(blockchainProxy, inputTypeHandler, outputTypeHandler);
         this.blockchainProxy = blockchainProxy;
     }

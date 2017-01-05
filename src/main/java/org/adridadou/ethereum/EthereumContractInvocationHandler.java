@@ -169,7 +169,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private CompilationResult compile(final String contract) {
-
         try {
             SolidityCompiler.Result res = SolidityCompiler.compile(
                     contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
@@ -177,6 +176,5 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         } catch (IOException e) {
             throw new EthereumApiException("error while compiling smart contract", e);
         }
-
     }
 }

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class EthereumFacadeTest {
     private final BlockchainProxy proxy = new BlockchainProxyTest();
-    private final EthereumFacade ethereum = new EthereumFacade(proxy);
+    private final EthereumFacade ethereum = new EthereumFacade(proxy, new InputTypeHandler(), new OutputTypeHandler());
     private final EthAccount sender = null;
 
     @Before
