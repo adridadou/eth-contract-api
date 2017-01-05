@@ -198,7 +198,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                         Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
                         decreasePendingTransactionCounter(account.getAddress());
                         return receipt.map(eventHandler::checkForErrors)
-                                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
+                                .orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
                     }).toBlocking().first());
         });
     }

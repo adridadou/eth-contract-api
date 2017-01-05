@@ -105,7 +105,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
         return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash, SLEEP_DURATION, ATTEMPTS)
-                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("Transaction reciept not generated after " + ATTEMPTS + " attempts")));
+                .orElseThrow(() -> new EthereumApiException("Transaction reciept not generated after " + ATTEMPTS + " attempts")));
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash, int sleepDuration, int attempts) {
