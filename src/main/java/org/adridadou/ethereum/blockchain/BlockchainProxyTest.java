@@ -62,16 +62,6 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address, BigInteger gasLimit) {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
-        return sendTx(ethValue,data,sender);
-    }
-
-    @Override
     public EthereumEventHandler events() {
         return null;
     }

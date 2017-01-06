@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.smartcontract;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -49,12 +48,6 @@ public class SmartContractReal implements SmartContract {
         return Lists.newArrayList(contract.functions);
     }
 
-    @Override
-    public BigInteger estimateGas(String methodName, Object... arguments) {
-        TransactionExecutor executor = executeLocally(getBlockchain().getBestBlock(), methodName, arguments);
-        return BigInteger.valueOf(executor.getGasUsed());
-    }
-
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
         TransactionExecutor executor = executeLocally(callBlock, functionName, args);
         return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
@@ -100,7 +93,7 @@ public class SmartContractReal implements SmartContract {
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
             EthData functionCallBytes = EthData.of(func.encode(args));
-            return bcProxy.sendTx(value, functionCallBytes, sender, address, estimateGas(functionName, args))
+            return bcProxy.sendTx(value, functionCallBytes, sender, address)
                     .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
         }).orElseThrow(() -> new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }

@@ -16,6 +16,4 @@ public interface SmartContract {
     Object[] callConstFunction(String methodName, Object... arguments);
 
     List<CallTransaction.Function> getFunctions();
-
-    BigInteger estimateGas(String methodName, Object... arguments);
 }

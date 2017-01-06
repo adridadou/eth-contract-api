@@ -7,7 +7,6 @@ import org.ethereum.util.blockchain.SolidityCallResult;
 import org.ethereum.util.blockchain.SolidityContract;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -50,10 +49,5 @@ public class SmartContractTest implements SmartContract {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new EthereumApiException("error while getting functions list", e);
         }
-    }
-
-    @Override
-    public BigInteger estimateGas(String methodName, Object... arguments) {
-        return BigInteger.valueOf(10_000_000);
     }
 }

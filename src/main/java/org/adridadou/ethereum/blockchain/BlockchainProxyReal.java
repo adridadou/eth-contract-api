@@ -19,10 +19,7 @@ import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.BlockchainImpl;
-import org.ethereum.core.CallTransaction;
-import org.ethereum.core.Transaction;
-import org.ethereum.core.TransactionReceipt;
+import org.ethereum.core.*;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.solidity.compiler.CompilationResult;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -37,7 +34,7 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * This code is released under Apache 2 license
  */
 public class BlockchainProxyReal implements BlockchainProxy {
-
+    public static final BigInteger GAS_LIMIT_FOR_CONSTANT_CALLS = BigInteger.valueOf(100_000_000_000_000L);
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
@@ -160,32 +157,27 @@ public class BlockchainProxyReal implements BlockchainProxy {
         ethereum.close();
     }
 
-    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
-        return sendTx(ethValue,data,sender,BigInteger.valueOf(ByteUtil.byteArrayToLong(ethereum.getBlockchain().getBestBlock().getGasLimit())));
-    }
-
     @Override
-    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
-        return this.sendTxInternal(ethValue, data, sender, EthAddress.empty(), gasLimit)
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
+        return this.sendTxInternal(ethValue, data, sender, EthAddress.empty())
                 .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address, BigInteger gasLimit) {
-        return this.sendTxInternal(value, data, sender, address, gasLimit)
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
+        return this.sendTxInternal(value, data, sender, address)
                 .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
     }
 
-    @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
-        return sendTx(value,data,sender,address,BigInteger.valueOf(ByteUtil.byteArrayToLong(ethereum.getBlockchain().getBestBlock().getGasLimit())));
-    }
-
-    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress, BigInteger gasLimit) {
+    private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(account.getAddress());
+            Transaction txLocal = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
+            txLocal.sign(account.key);
 
+            BigInteger gasLimit = estimateGas(getBlockchain().getBestBlock(), txLocal).add(BigInteger.valueOf(100_000));
             Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
+
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(account.getAddress());
             long currentBlock = eventHandler.getCurrentBlockNumber();
@@ -229,4 +221,30 @@ public class BlockchainProxyReal implements BlockchainProxy {
     protected void finalize() {
         ethereum.close();
     }
+
+  private BigInteger estimateGas(Block callBlock, Transaction tx) {
+    Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
+    try {
+      TransactionExecutor executor = new TransactionExecutor
+        (tx, callBlock.getCoinbase(), repository, getBlockchain().getBlockStore(),
+          getBlockchain().getProgramInvokeFactory(), callBlock)
+        .setLocalCall(true);
+
+      executor.init();
+      executor.execute();
+      executor.go();
+      executor.finalization();
+
+      return BigInteger.valueOf(executor.getGasUsed());
+    } finally {
+      repository.rollback();
+    }
+  }
+
+  private BlockchainImpl getBlockchain() {
+    return (BlockchainImpl) ethereum.getBlockchain();
+  }
+  private Repository getRepository() {
+    return getBlockchain().getRepository();
+  }
 }

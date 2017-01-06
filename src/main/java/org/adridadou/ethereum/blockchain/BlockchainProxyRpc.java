@@ -130,14 +130,10 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         return Optional.ofNullable(web3JFacade.getTransactionReceipt(transactionHash));
     }
 
-    public CompletableFuture<EthExecutionResult> sendTx(final EthValue value, final EthData data, final EthAccount sender, final EthAddress toAddress) {
-        BigInteger gas = web3JFacade.estimateGas(sender, data);
-        return sendTx(value,data,sender,toAddress, gas);
-    }
-
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress, BigInteger gasLimit) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
+        BigInteger gasLimit = web3JFacade.estimateGas(sender, data);
 
         increasePendingTransactionCounter(sender.getAddress());
 
@@ -185,14 +181,11 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         //do nothing
     }
 
-    public CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender) {
-        BigInteger gas = web3JFacade.estimateGas(sender, data);
-        return sendTx(ethValue, data,sender,gas);
-    }
-
     @Override
-    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender, BigInteger gasLimit) {
+    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
+        BigInteger gasLimit = web3JFacade.estimateGas(sender, data);
+
         increasePendingTransactionCounter(sender.getAddress());
 
         RawTransaction tx = RawTransaction.createContractTransaction(

@@ -11,7 +11,6 @@ import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.core.CallTransaction.Contract;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,14 +39,6 @@ public class SmartContractRpc implements SmartContract {
 
     public List<CallTransaction.Function> getFunctions() {
         return Lists.newArrayList(contract.functions);
-    }
-
-    @Override
-    public BigInteger estimateGas(String methodName, Object... arguments) {
-        return Optional.ofNullable(contract.getByName(methodName)).map(func -> {
-            EthData result = web3j.constantCall(sender, address, EthData.of(func.encode(arguments)));
-            return web3j.estimateGas(sender, result);
-        }).orElse(BigInteger.ZERO);
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {

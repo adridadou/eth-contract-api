@@ -25,7 +25,6 @@ import rx.Observable;
  */
 public class EthereumFacade {
     public final static Charset CHARSET = Charsets.UTF_8;
-  public static final BigInteger GAS_LIMIT_FOR_ETH_SEND = BigInteger.valueOf(127_000);
   private final EthereumContractInvocationHandler handler;
     private final OutputTypeHandler outputTypeHandler;
     private final InputTypeHandler inputTypeHandler;
@@ -106,7 +105,7 @@ public class EthereumFacade {
     }
 
     public CompletableFuture<EthExecutionResult> sendEther(EthAccount fromAccount, EthAddress to, EthValue value) {
-        return blockchainProxy.sendTx(value, EthData.empty(), fromAccount, to, GAS_LIMIT_FOR_ETH_SEND);
+        return blockchainProxy.sendTx(value, EthData.empty(), fromAccount, to);
     }
 
     public BigInteger getNonce(EthAddress address) {
