@@ -42,7 +42,7 @@ public class EventsTest {
     public void main_example_how_the_lib_works() throws Exception {
         final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
-        ContractEvents myContract = ethereum.createContractProxy(address, mainAccount, ContractEvents.class);
+        ContractEvents myContract = ethereum.createContractProxy(contract, "contractEvents", address, mainAccount, ContractEvents.class);
 
         ethereum.observeEvents(address, "MyEvent", MyEvent.class).forEach(event -> System.out.println("******" + event.toString()));
 

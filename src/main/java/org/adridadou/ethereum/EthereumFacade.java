@@ -2,6 +2,7 @@ package org.adridadou.ethereum;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -17,6 +18,8 @@ import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
+import org.ethereum.solidity.compiler.CompilationResult;
+import org.ethereum.solidity.compiler.SolidityCompiler;
 import rx.Observable;
 
 /**
@@ -47,9 +50,9 @@ public class EthereumFacade {
         return this;
     }
 
-    public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) {
+    public <T> T createContractProxy(SoliditySource src, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, code, contractName, address, account);
+        handler.register(proxy, contractInterface, compile(src, contractName), address, account);
         return proxy;
     }
 
@@ -73,10 +76,13 @@ public class EthereumFacade {
         return new Builder<>(contractInterface, address, abi);
     }
 
-    public <T> Builder<T> createContractProxy(SoliditySource source, EthAddress address, Class<T> contractInterface) {
-
-        return new Builder<>(contractInterface, address, getAbi(address));
+    public <T> Builder<T> createContractProxy(SoliditySource source, String contractName, EthAddress address, Class<T> contractInterface) {
+        return new Builder<>(contractInterface, address, getAbi(source, contractName));
     }
+
+  public ContractAbi getAbi(final SoliditySource source, String contractName) {
+        return compile(source,contractName).getAbi();
+  }
 
     public ContractAbi getAbi(final EthAddress address) {
         SmartContractByteCode code = blockchainProxy.getCode(address);
@@ -85,7 +91,7 @@ public class EthereumFacade {
     }
 
     public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        return blockchainProxy.publish(code, contractName, sender, constructorArgs);
+        return blockchainProxy.publish(compile(code, contractName), sender, constructorArgs);
     }
 
     public boolean addressExists(final EthAddress address) {
@@ -123,6 +129,30 @@ public class EthereumFacade {
     public void shutdown() {
         blockchainProxy.shutdown();
     }
+
+  public CompiledContract compile(SoliditySource src, String contractName) {
+      try {
+          SolidityCompiler.Result result = SolidityCompiler.getInstance().compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
+            SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
+          if (result.isFailed()) {
+              throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
+          }
+          CompilationResult res = CompilationResult.parse(result.output);
+          if (res.contracts.isEmpty()) {
+              throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
+          }
+          CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
+          if(metadata == null) {
+              throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
+          }
+          if (metadata.bin == null || metadata.bin.isEmpty()) {
+              throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
+          }
+          return CompiledContract.from(src, contractName, metadata);
+      } catch (IOException e) {
+          throw new EthereumApiException("error while compiling " + contractName, e);
+      }
+  }
 
     public <T> Observable<T> observeEvents(EthAddress address, String eventName, Class<T> cls) {
         return blockchainProxy.observeEvents(address,eventName, cls);

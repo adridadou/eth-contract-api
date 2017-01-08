@@ -6,13 +6,9 @@ import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
-import org.ethereum.solidity.compiler.CompilationResult;
-import org.ethereum.solidity.compiler.SolidityCompiler;
 
-import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -79,21 +75,9 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         return outputTypeHandler.convertSpecificType(result, method.getReturnType());
     }
 
-    protected <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount account) {
-        final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
-        CompilationResult.ContractMetadata found = null;
-        for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(contractName)) {
-                if (found != null) {
-                    throw new EthereumApiException("more than one Contract found for " + contractInterface.getSimpleName());
-                }
-                found = entry.getValue();
-            }
-        }
-        if (found == null) {
-            throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
-        }
-        SmartContract smartContract = blockchainProxy.map(code, contractName, address, account);
+    protected <T> void register(T proxy, Class<T> contractInterface, CompiledContract compiledContract, EthAddress address, EthAccount account) {
+
+        SmartContract smartContract = blockchainProxy.mapFromAbi(compiledContract.getAbi(), address, account);
 
         verifyContract(smartContract, contractInterface);
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
@@ -131,16 +115,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             if (methods.get(func.name) != null && func.inputs.length != methods.get(func.name).getParameterCount()) {
                 throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
             }
-        }
-    }
-
-    private CompilationResult compile(final String contract) {
-        try {
-            SolidityCompiler.Result res = SolidityCompiler.compile(
-                    contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
-            return CompilationResult.parse(res.output);
-        } catch (IOException e) {
-            throw new EthereumApiException("error while compiling smart contract", e);
         }
     }
 }

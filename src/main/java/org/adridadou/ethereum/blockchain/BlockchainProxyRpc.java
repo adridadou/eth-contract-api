@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.blockchain;
 
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
@@ -10,13 +9,10 @@ import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.ethereum.core.CallTransaction;
-import org.ethereum.solidity.compiler.CompilationResult;
-import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
 import org.ethereum.util.CopyOnWriteMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.response.*;
@@ -50,57 +46,27 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        CompilationResult.ContractMetadata metadata;
-        try {
-            metadata = compile(src, contractName);
-            return mapFromAbi(new ContractAbi(metadata.abi), address, sender);
-
-        } catch (IOException e) {
-            throw new EthereumApiException("error while mapping a smart contract", e);
-        }
-    }
-
-    @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         return new SmartContractRpc(abi.getAbi(), web3JFacade, sender, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender, constructorArgs);
+            return createContract(contract, sender, constructorArgs);
         } catch (IOException e) {
-            throw new EthereumApiException("error while publishing " + contractName + ":", e);
+            throw new EthereumApiException("error while publishing the contract", e);
         }
     }
 
-    private CompletableFuture<EthAddress> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
-        CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        CallTransaction.Contract contract = new CallTransaction.Contract(metadata.abi);
+    private CompletableFuture<EthAddress> createContract(CompiledContract compiledContract, EthAccount sender, Object... constructorArgs) throws IOException {
+        CallTransaction.Contract contract = new CallTransaction.Contract(compiledContract.getAbi().getAbi());
         CallTransaction.Function constructor = contract.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender);
-    }
-
-    private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(src.getSource().getBytes(EthereumFacade.CHARSET), true,
-                SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
-        if (result.isFailed()) {
-            throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
-        }
-        CompilationResult res = CompilationResult.parse(result.output);
-        if (res.contracts.isEmpty()) {
-            throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
-        }
-        CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-        if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
-            throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-        }
-        return metadata;
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(compiledContract.getBinary().data, argsEncoded)), sender);
     }
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {

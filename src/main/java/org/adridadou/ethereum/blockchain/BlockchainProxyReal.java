@@ -9,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
@@ -21,10 +20,7 @@ import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.facade.Ethereum;
-import org.ethereum.solidity.compiler.CompilationResult;
-import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
-import org.spongycastle.util.encoders.Hex;
 import rx.Observable;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
@@ -54,41 +50,29 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        try {
-            CompilationResult.ContractMetadata metadata = compile(src, contractName);
-            return mapFromAbi(ContractAbi.of(metadata.abi), address, sender);
-
-        } catch (IOException e) {
-            throw new EthereumApiException("error while mapping a smart contract", e);
-        }
-    }
-
-    @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
         return new SmartContractReal(contracts.get(address), ethereum, sender, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
+    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
         try {
-            return createContract(code, contractName, sender, constructorArgs);
+            //CompletableFuture.runAsync(() -> publishContractMetadaToSwarm(contract.getMetadata().getValue()));
+            return createContract(contract, sender, constructorArgs);
         } catch (IOException e) {
-            throw new EthereumApiException("error while publishing " + contractName + ":", e);
+            throw new EthereumApiException("error while publishing the contract", e);
         }
     }
 
-    private CompletableFuture<EthAddress> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
-        CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        CallTransaction.Contract contractAbi = new CallTransaction.Contract(metadata.abi);
+    private CompletableFuture<EthAddress> createContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) throws IOException {
+        CallTransaction.Contract contractAbi = new CallTransaction.Contract(contract.getAbi().getAbi());
         CallTransaction.Function constructor = contractAbi.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
             throw new EthereumApiException("No constructor with params found");
         }
-        publishContractMetadaToSwarm(metadata.metadata);
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(prepareArguments(constructorArgs));
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender);
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(contract.getBinary().data, argsEncoded)), sender);
     }
 
     public Object[] prepareArguments(Object[] args) {
@@ -97,28 +81,8 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 .toArray();
     }
 
-    private void publishContractMetadaToSwarm(String metadata) throws IOException {
+    private void publishContractMetadaToSwarm(String metadata){
         swarmService.publish(metadata);
-    }
-
-    private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.getInstance().compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
-                SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
-        if (result.isFailed()) {
-            throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
-        }
-        CompilationResult res = CompilationResult.parse(result.output);
-        if (res.contracts.isEmpty()) {
-            throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
-        }
-        CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-        if(metadata == null) {
-          throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
-        }
-        if (metadata.bin == null || metadata.bin.isEmpty()) {
-            throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-        }
-        return metadata;
     }
 
     public BigInteger getNonce(final EthAddress address) {

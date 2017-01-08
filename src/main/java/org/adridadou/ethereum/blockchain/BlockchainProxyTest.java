@@ -37,18 +37,13 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
-    }
-
-    @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
         return new SmartContractTest(blockchain.createExistingContractFromABI(abi.getAbi(), address.address));
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), contractName, constructorArgs).getAddress()));
+    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
+        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(contract.getSource().getSource(), contract.getName(), constructorArgs).getAddress()));
     }
 
     @Override
