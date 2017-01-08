@@ -67,7 +67,7 @@ public class PrivateEthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, new OnBlockHandler(), new OnTransactionHandler());
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST), inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler);
+        final EthereumFacade facade = new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
 
         //This event does not trigger when you are the miner
         ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);

@@ -61,7 +61,7 @@ public class EthereumFacadeProvider {
             EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener, SwarmService.from(SwarmService.PUBLIC_HOST),inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler);
+            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
         }
     }
 }

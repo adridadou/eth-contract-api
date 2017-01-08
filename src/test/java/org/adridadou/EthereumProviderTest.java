@@ -5,6 +5,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 public class EthereumProviderTest {
     private final BlockchainProxy bcProxy = new BlockchainProxyTest();
     private final EthAccount sender = null;
-    private final EthereumFacade ethereum = new EthereumFacade(bcProxy, new InputTypeHandler(), new OutputTypeHandler());
+    private final EthereumFacade ethereum = new EthereumFacade(bcProxy, new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
 
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {

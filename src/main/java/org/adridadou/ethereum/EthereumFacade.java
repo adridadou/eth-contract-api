@@ -15,6 +15,8 @@ import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeConverter;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.swarm.SwarmHash;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
@@ -32,11 +34,13 @@ public class EthereumFacade {
     private final OutputTypeHandler outputTypeHandler;
     private final InputTypeHandler inputTypeHandler;
     private final BlockchainProxy blockchainProxy;
+    private final SwarmService swarmService;
 
-    public EthereumFacade(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+    public EthereumFacade(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler, SwarmService swarmService) {
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
-        this.handler = new EthereumContractInvocationHandler(blockchainProxy, inputTypeHandler, outputTypeHandler);
+      this.swarmService = swarmService;
+      this.handler = new EthereumContractInvocationHandler(blockchainProxy, inputTypeHandler, outputTypeHandler);
         this.blockchainProxy = blockchainProxy;
     }
 
@@ -86,12 +90,16 @@ public class EthereumFacade {
 
     public ContractAbi getAbi(final EthAddress address) {
         SmartContractByteCode code = blockchainProxy.getCode(address);
-        SmartContractMetadata metadata = blockchainProxy.getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
+        SmartContractMetadata metadata = getMetadata(code.getMetadaLink().orElseThrow(() -> new EthereumApiException("no metadata link found for smart contract on address " + address.toString())));
         return metadata.getAbi();
     }
 
     public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
         return blockchainProxy.publish(compile(code, contractName), sender, constructorArgs);
+    }
+
+    public SwarmHash publishMetadataToSwarm(CompiledContract contract) {
+      return swarmService.publish(contract.getMetadata().getValue());
     }
 
     public boolean addressExists(final EthAddress address) {
@@ -123,7 +131,11 @@ public class EthereumFacade {
     }
 
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
-        return blockchainProxy.getMetadata(swarmMetadaLink);
+      try {
+        return swarmService.getMetadata(swarmMetadaLink.getHash());
+      } catch (IOException e) {
+        throw new EthereumApiException("error while getting metadata", e);
+      }
     }
 
     public void shutdown() {

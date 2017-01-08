@@ -4,6 +4,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class EthereumFacadeTest {
     private final BlockchainProxy proxy = new BlockchainProxyTest();
-    private final EthereumFacade ethereum = new EthereumFacade(proxy, new InputTypeHandler(), new OutputTypeHandler());
+    private final EthereumFacade ethereum = new EthereumFacade(proxy, new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
     private final EthAccount sender = null;
 
     @Before

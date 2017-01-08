@@ -3,7 +3,6 @@ package org.adridadou.ethereum.blockchain;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
 import rx.Observable;
 
@@ -37,8 +36,6 @@ public interface BlockchainProxy {
             throw new EthereumApiException("not enough fund for " + address.withLeading0x());
         }
     }
-
-    SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink);
 
     <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls);
 

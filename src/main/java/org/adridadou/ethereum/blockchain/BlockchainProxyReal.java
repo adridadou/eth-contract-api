@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.blockchain;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Map;
@@ -14,9 +13,7 @@ import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
 import org.ethereum.facade.Ethereum;
@@ -34,16 +31,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final SwarmService swarmService;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
     private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
 
-    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
-        this.swarmService = swarmService;
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
         eventHandler.onReady().thenAccept((b) -> ethereum.getBlockchain().flush());
@@ -57,15 +52,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        try {
-            //CompletableFuture.runAsync(() -> publishContractMetadaToSwarm(contract.getMetadata().getValue()));
-            return createContract(contract, sender, constructorArgs);
-        } catch (IOException e) {
-            throw new EthereumApiException("error while publishing the contract", e);
-        }
+        return createContract(contract, sender, constructorArgs);
     }
 
-    private CompletableFuture<EthAddress> createContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<EthAddress> createContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
         CallTransaction.Contract contractAbi = new CallTransaction.Contract(contract.getAbi().getAbi());
         CallTransaction.Function constructor = contractAbi.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
@@ -81,10 +71,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 .toArray();
     }
 
-    private void publishContractMetadaToSwarm(String metadata){
-        swarmService.publish(metadata);
-    }
-
     public BigInteger getNonce(final EthAddress address) {
         BigInteger nonce = ((BlockchainImpl) ethereum.getBlockchain()).getRepository().getNonce(address.address);
         return nonce.add(pendingTransactions.getOrDefault(address, BigInteger.ZERO));
@@ -97,15 +83,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("no code found at the address. please verify that a smart contract is deployed at " + address.withLeading0x());
         }
         return SmartContractByteCode.of(code);
-    }
-
-    @Override
-    public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
-        try {
-            return swarmService.getMetadata(swarmMetadaLink.getHash());
-        } catch (IOException e) {
-            throw new EthereumApiException("error while getting metadata", e);
-        }
     }
 
     @Override

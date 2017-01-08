@@ -4,6 +4,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 
 /**
  * Created by davidroon on 28.05.16.
@@ -11,6 +12,6 @@ import org.adridadou.ethereum.converters.output.OutputTypeHandler;
  */
 public class StandaloneEthereumFacadeProvider {
     public EthereumFacade create() {
-        return new EthereumFacade(new BlockchainProxyTest(), new InputTypeHandler(), new OutputTypeHandler());
+        return new EthereumFacade(new BlockchainProxyTest(), new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
     }
 }
