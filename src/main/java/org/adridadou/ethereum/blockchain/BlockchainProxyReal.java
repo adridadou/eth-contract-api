@@ -112,7 +112,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
             throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
         }
         CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-        if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
+        if(metadata == null) {
+          throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
+        }
+        if (metadata.bin == null || metadata.bin.isEmpty()) {
             throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
         }
         return metadata;
