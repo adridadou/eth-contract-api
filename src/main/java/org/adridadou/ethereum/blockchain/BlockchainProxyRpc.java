@@ -16,11 +16,11 @@ import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.response.*;
 import rx.Observable;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
 
@@ -30,10 +30,9 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  */
 public class BlockchainProxyRpc implements BlockchainProxy {
 
-    private static final int SLEEP_DURATION = 5000;
-    private static final int ATTEMPTS = 120;
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
     private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
+    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
@@ -45,19 +44,16 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
+        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
         return new SmartContractRpc(abi.getAbi(), web3JFacade, sender, address, this);
     }
 
     @Override
     public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        try {
-            return createContract(contract, sender, constructorArgs);
-        } catch (IOException e) {
-            throw new EthereumApiException("error while publishing the contract", e);
-        }
+        return createContract(contract, sender, constructorArgs);
     }
 
-    private CompletableFuture<EthAddress> createContract(CompiledContract compiledContract, EthAccount sender, Object... constructorArgs) throws IOException {
+    private CompletableFuture<EthAddress> createContract(CompiledContract compiledContract, EthAccount sender, Object... constructorArgs) {
         CallTransaction.Contract contract = new CallTransaction.Contract(compiledContract.getAbi().getAbi());
         CallTransaction.Function constructor = contract.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
@@ -68,29 +64,14 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
-        return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash, SLEEP_DURATION, ATTEMPTS)
-                .orElseThrow(() -> new EthereumApiException("Transaction reciept not generated after " + ATTEMPTS + " attempts")));
+        return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash)
+                .orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
     }
 
-    private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash, int sleepDuration, int attempts) {
-        Optional<TransactionReceipt> receiptOptional =
-                sendTransactionReceiptRequest(transactionHash);
-        for (int i = 0; i < attempts; i++) {
-            if (!receiptOptional.isPresent()) {
-                try {
-                    Thread.sleep(sleepDuration);
-                } catch (InterruptedException e) {
-                    throw new EthereumApiException("error while waiting for the transaction receipt", e);
-                }
-                receiptOptional = sendTransactionReceiptRequest(transactionHash);
-            } else {
-                break;
-            }
-        }
-        return receiptOptional;
-    }
-
-    private Optional<TransactionReceipt> sendTransactionReceiptRequest(EthData transactionHash) {
+    private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash) {
+        web3JFacade.observeTransactionsFromBlock()
+                .filter(tx -> EthData.of(tx.getHash()).equals(transactionHash))
+                .toBlocking().first();
         return Optional.ofNullable(web3JFacade.getTransactionReceipt(transactionHash));
     }
 
@@ -131,8 +112,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     @Override
     public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-
-        throw new UnsupportedOperationException("not yet implemented");
+        return web3JFacade.event(contractAddress, eventName, contracts.get(contractAddress), cls);
     }
 
     @Override

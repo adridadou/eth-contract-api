@@ -131,7 +131,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
-                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,"",new ArrayList<>()));
+                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>()));
 
                 return Observable.merge(droppedTxs, blockTxs)
                         .map(params -> {

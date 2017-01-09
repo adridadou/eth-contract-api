@@ -99,7 +99,6 @@ public class Web3JFacade {
         }
     }
 
-
     private <S, T extends Response<S>> S handleError(final T response) {
         if (response.hasError()) {
             throw new EthereumApiException(response.getError().getMessage());
@@ -126,5 +125,11 @@ public class Web3JFacade {
 
     public OutputTypeHandler getOutputTypeHandler() {
         return outputTypeHandler;
+    }
+
+    public Observable<EthBlock.TransactionObject> observeTransactionsFromBlock() {
+        return web3j.blockObservable(true)
+                .flatMap(block -> Observable.from(block.getResult().getTransactions()))
+                .map(txResult -> (EthBlock.TransactionObject)txResult.get());
     }
 }
