@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.TransactionExecutionSummary;
@@ -38,15 +39,23 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
     @Override
     public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
-        onTransactionHandler.onTransaction(new OnTransactionParameters(txReceipt.getTransaction(), state, new ArrayList<>()));
+        TransactionStatus transactionStatus = null;
+
+        switch(state) {
+          case PENDING:
+          case NEW_PENDING: transactionStatus = TransactionStatus.Pending; break;
+          case DROPPED: transactionStatus = TransactionStatus.Dropped; break;
+          case INCLUDED: transactionStatus = TransactionStatus.Included;break;
+        }
+        onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(txReceipt.getTransaction().getHash()), transactionStatus, txReceipt.getError(), new ArrayList<>()));
     }
 
-    @Override
-    public void onTransactionExecuted(TransactionExecutionSummary summary) {
-        onTransactionHandler.onTransaction(new OnTransactionParameters(summary.getTransaction(), PendingTransactionState.INCLUDED, summary.getLogs()));
-    }
+  @Override
+  public void onTransactionExecuted(TransactionExecutionSummary summary) {
+        onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(summary.getTransaction().getHash()), TransactionStatus.Executed, "", new ArrayList<>()));
+  }
 
-    public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
+  public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
         if (receipt.isSuccessful() && receipt.isValid()) {
             return receipt;
         } else {
