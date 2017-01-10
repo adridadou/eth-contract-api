@@ -3,6 +3,7 @@ package org.adridadou.ethereum.blockchain;
 import static org.adridadou.ethereum.values.EthValue.wei;
 import static org.ethereum.config.blockchain.FrontierConfig.FrontierConstants;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 
@@ -13,7 +14,11 @@ import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
+import org.ethereum.solidity.compiler.CompilationResult;
+import org.ethereum.solidity.compiler.CompilationResult.ContractMetadata;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
+import org.ethereum.util.blockchain.StandaloneBlockchain.SolidityContractImpl;
+import org.spongycastle.util.encoders.Hex;
 
 /**
  * Created by davidroon on 08.04.16.
@@ -37,8 +42,17 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
-
+        if(src.isCompiled()){
+        	try {
+				CompilationResult result = CompilationResult.parse(src.getRawJson());
+				ContractMetadata contractMetadata = result.contracts.get(contractName);
+				return mapFromAbi(new ContractAbi(contractMetadata.abi), address, sender);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+    	return new SmartContractTest(blockchain.createExistingContractFromSrc(src.getSource(), contractName, address.address));
     }
 
     @Override
@@ -48,7 +62,24 @@ public class BlockchainProxyTest implements BlockchainProxy {
 
     @Override
     public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), contractName, constructorArgs).getAddress()));
+        if(code.isCompiled()){
+        	CompilationResult result;
+			try {
+				result = CompilationResult.parse(code.getRawJson());
+				ContractMetadata contractMetadata = result.contracts.get(contractName);
+				System.out.println(contractMetadata.bin.length()+"  bytes:"+Hex.decode(contractMetadata.bin).length);
+				
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	
+        	 return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContractFromJson(code.getRawJson(), contractName, constructorArgs).getAddress()));
+        }else
+    	
+    	return CompletableFuture.completedFuture(EthAddress.of(blockchain.submitNewContract(code.getSource(), contractName, constructorArgs).getAddress()));
     }
 
     @Override

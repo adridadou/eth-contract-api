@@ -2,6 +2,9 @@ package org.adridadou.ethereum.converters.output;
 
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
+
+import org.adridadou.ethereum.values.EthAddress;
 
 /**
  * Created by davidroon on 27.04.16.
@@ -15,6 +18,10 @@ public class StringConverter implements OutputTypeConverter {
 
     @Override
     public String convert(Object obj, Type type) {
+    	if(obj.getClass().isArray()){
+    		return EthAddress.of((byte[]) obj).withLeading0x();
+    	}
+    	
         return obj.toString();
 
     }

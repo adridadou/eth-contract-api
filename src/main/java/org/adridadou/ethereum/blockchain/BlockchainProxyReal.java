@@ -89,7 +89,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     private void publishContractMetadaToSwarm(String metadata) throws IOException {
         //TODO: publish the metadata to swarm
-        swarmService.publish(metadata);
+        //swarmService.publish(metadata);
     }
 
     private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {

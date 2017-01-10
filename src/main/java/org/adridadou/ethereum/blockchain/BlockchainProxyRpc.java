@@ -151,7 +151,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
                 ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
-                ByteUtil.longToBytesNoLeadZeroes(gas.longValue()),
+                ByteUtil.longToBytesNoLeadZeroes(gas.longValue()+1000000),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
@@ -189,7 +189,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
         RawTransaction tx = RawTransaction.createContractTransaction(
                 getNonce(sender.getAddress()),
                 gasPrice,
-                gas.add(BigInteger.valueOf(100_000)),
+                BigInteger.valueOf(4703626L),
                 ethValue.inWei(),
                 data.toString());
         EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
