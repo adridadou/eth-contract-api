@@ -74,7 +74,7 @@ public class Keystore {
             return part;
         }
 
-        throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
+        throw new EthereumApiException("error while loading the private key forNetwork the keystore. Most probably a wrong passphrase");
     }
 
     private static byte[] checkMacScrypt(Keystore keystore, String password) {
@@ -91,7 +91,7 @@ public class Keystore {
             return part;
         }
 
-        throw new EthereumApiException("error while loading the private key from the keystore. Most probably a wrong passphrase");
+        throw new EthereumApiException("error while loading the private key forNetwork the keystore. Most probably a wrong passphrase");
     }
 
     private static byte[] concat(byte[] a, byte[] b) {

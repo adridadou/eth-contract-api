@@ -1,10 +1,10 @@
 package org.adridadou.ethereum.blockchain;
 
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
+import rx.Observable;
 
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
@@ -14,14 +14,11 @@ import java.util.concurrent.CompletableFuture;
  * This code is released under Apache 2 license
  */
 public interface BlockchainProxy {
-    SmartContract map(final SoliditySource src, String contractName, EthAddress address, EthAccount sender);
-
     SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, EthAccount sender);
 
-    CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs);
+    CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs);
 
     CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address);
-
     CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender);
 
     EthereumEventHandler events();
@@ -40,7 +37,9 @@ public interface BlockchainProxy {
         }
     }
 
-    SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink);
+    <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls);
+
+    void shutdown();
 }
 
 

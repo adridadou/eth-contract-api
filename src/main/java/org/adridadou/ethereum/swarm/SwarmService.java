@@ -29,12 +29,15 @@ public class SwarmService {
         return new SwarmService(host);
     }
 
-    public SwarmHash publish(final String content) throws IOException {
-        Response response = Request.Post(host + "/bzzr:/")
-                .bodyString(content, ContentType.TEXT_PLAIN)
-                .execute();
-
-        return SwarmHash.of(response.returnContent().asString());
+    public SwarmHash publish(final String content) {
+        try {
+            Response response = Request.Post(host + "/bzzr:/")
+                    .bodyString(content, ContentType.TEXT_PLAIN)
+                    .execute();
+            return SwarmHash.of(response.returnContent().asString());
+        } catch (IOException e) {
+            throw new EthereumApiException("error while publishing the smart contract metadata to Swarm", e);
+        }
     }
 
     public String get(final SwarmHash hash) throws IOException {
@@ -45,7 +48,6 @@ public class SwarmService {
     }
 
     public SmartContractMetadata getMetadata(final SwarmHash hash) throws IOException {
-        //TODO: verify the metadata with the checksum
         String metadata = get(hash);
         try {
             JSONParser parser = new JSONParser();

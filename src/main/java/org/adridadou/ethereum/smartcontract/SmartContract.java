@@ -2,6 +2,7 @@ package org.adridadou.ethereum.smartcontract;
 
 import org.ethereum.core.CallTransaction;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

@@ -42,7 +42,6 @@ public class SmartContractRpc implements SmartContract {
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {
-
         return Optional.ofNullable(contract.getByName(functionName))
                 .map(func -> {
                     EthData result = web3j.constantCall(sender, address, EthData.of(func.encode(args)));

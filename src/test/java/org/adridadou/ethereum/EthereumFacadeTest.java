@@ -4,6 +4,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class EthereumFacadeTest {
     private final BlockchainProxy proxy = new BlockchainProxyTest();
-    private final EthereumFacade ethereum = new EthereumFacade(proxy);
+    private final EthereumFacade ethereum = new EthereumFacade(proxy, new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
     private final EthAccount sender = null;
 
     @Before
@@ -44,8 +45,6 @@ public class EthereumFacadeTest {
         Long[] expected2 = {0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L};
         assertArrayEquals(expected2, myContract.getArray().toArray(new Long[0]));
         assertArrayEquals(expected, myContract.getArray2());
-
-        assertEquals(EthAddress.of("384848594938"), myContract.getOwner());
 
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 

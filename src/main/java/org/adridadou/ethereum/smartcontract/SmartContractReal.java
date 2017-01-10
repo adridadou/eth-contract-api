@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.smartcontract;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +29,15 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * This code is released under Apache 2 license
  */
 public class SmartContractReal implements SmartContract {
-    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100000000000000L;
+    public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100_000_000_000_000L;
     private final EthAddress address;
     private final Contract contract;
     private final Ethereum ethereum;
     private final BlockchainProxyReal bcProxy;
     private final EthAccount sender;
 
-    public SmartContractReal(String abi, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
-        this.contract = new Contract(abi);
+    public SmartContractReal(Contract contract, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
+        this.contract = contract;
         this.ethereum = ethereum;
         this.sender = sender;
         this.bcProxy = bcProxy;
@@ -50,7 +49,11 @@ public class SmartContractReal implements SmartContract {
     }
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
+        TransactionExecutor executor = executeLocally(callBlock, functionName, args);
+        return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
+    }
 
+    private TransactionExecutor executeLocally(Block callBlock, final String functionName, final Object ... args) {
         Transaction tx = CallTransaction.createCallTransaction(0, 0, GAS_LIMIT_FOR_CONSTANT_CALLS,
                 address.toString(), 0, contract.getByName(functionName), args);
         tx.sign(sender.key);
@@ -68,7 +71,7 @@ public class SmartContractReal implements SmartContract {
             executor.go();
             executor.finalization();
 
-            return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
+            return executor;
         } finally {
             repository.rollback();
         }

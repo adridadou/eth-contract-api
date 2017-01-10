@@ -3,6 +3,9 @@ package org.adridadou.ethereum.provider;
 import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.blockchain.Web3JFacade;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -13,10 +16,10 @@ import org.web3j.protocol.http.HttpService;
  */
 public class GenericRpcEthereumFacadeProvider {
     public EthereumFacade create(final String url, final ChainId chainId) {
-        return create(new Web3JFacade(Web3j.build(new HttpService(url))), chainId);
+        return create(new Web3JFacade(Web3j.build(new HttpService(url)), new OutputTypeHandler()), chainId);
     }
 
     public EthereumFacade create(final Web3JFacade web3j, final ChainId chainId) {
-        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId));
+        return new EthereumFacade(new BlockchainProxyRpc(web3j, chainId), new InputTypeHandler(), web3j.getOutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
     }
 }

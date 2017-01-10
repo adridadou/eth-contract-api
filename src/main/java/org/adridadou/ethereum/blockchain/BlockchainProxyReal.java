@@ -1,31 +1,26 @@
 package org.adridadou.ethereum.blockchain;
 
-import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
-import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.handler.EthereumEventHandler;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.event.OnTransactionParameters;
+import org.adridadou.ethereum.event.TransactionStatus;
 import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.smartcontract.SmartContractMetadata;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.BlockchainImpl;
-import org.ethereum.core.CallTransaction;
-import org.ethereum.core.Transaction;
-import org.ethereum.core.TransactionReceipt;
-import org.ethereum.db.ByteArrayWrapper;
+import org.ethereum.core.*;
 import org.ethereum.facade.Ethereum;
-import org.ethereum.solidity.compiler.CompilationResult;
-import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.ethereum.util.ByteUtil;
-import org.spongycastle.util.encoders.Hex;
+import rx.Observable;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
 
@@ -34,79 +29,47 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * This code is released under Apache 2 license
  */
 public class BlockchainProxyReal implements BlockchainProxy {
-
-    private static final long BLOCK_WAIT_LIMIT = 16;
+    public static final BigInteger GAS_LIMIT_FOR_CONSTANT_CALLS = BigInteger.valueOf(100_000_000_000_000L);
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
-    private final SwarmService swarmService;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
+    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
+    private final InputTypeHandler inputTypeHandler;
+    private final OutputTypeHandler outputTypeHandler;
 
-    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, SwarmService swarmService) {
+    public BlockchainProxyReal(Ethereum ethereum, EthereumEventHandler eventHandler, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
-        this.swarmService = swarmService;
+        this.inputTypeHandler = inputTypeHandler;
+        this.outputTypeHandler = outputTypeHandler;
         eventHandler.onReady().thenAccept((b) -> ethereum.getBlockchain().flush());
     }
 
     @Override
-    public SmartContract map(SoliditySource src, String contractName, EthAddress address, EthAccount sender) {
-        CompilationResult.ContractMetadata metadata;
-        try {
-            metadata = compile(src, contractName);
-            return mapFromAbi(new ContractAbi(metadata.abi), address, sender);
-
-        } catch (IOException e) {
-            throw new EthereumApiException("error while mapping a smart contract", e);
-        }
-    }
-
-    @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        return new SmartContractReal(abi.getAbi(), ethereum, sender, address, this);
+        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
+        return new SmartContractReal(contracts.get(address), ethereum, sender, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        try {
-            return createContract(code, contractName, sender, constructorArgs).thenApply(SmartContractReal::getAddress);
-        } catch (IOException e) {
-            throw new EthereumApiException("error while publishing " + contractName + ":", e);
-        }
+    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
+        return createContract(contract, sender, constructorArgs);
     }
 
-    private CompletableFuture<SmartContractReal> createContract(SoliditySource soliditySrc, String contractName, EthAccount sender, Object... constructorArgs) throws IOException {
-        CompilationResult.ContractMetadata metadata = compile(soliditySrc, contractName);
-        CallTransaction.Contract contractAbi = new CallTransaction.Contract(metadata.abi);
+    private CompletableFuture<EthAddress> createContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
+        CallTransaction.Contract contractAbi = new CallTransaction.Contract(contract.getAbi().getAbi());
         CallTransaction.Function constructor = contractAbi.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
             throw new EthereumApiException("No constructor with params found");
         }
-        publishContractMetadaToSwarm(metadata.metadata);
-        byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(Hex.decode(metadata.bin), argsEncoded)), sender)
-                .thenApply(address -> new SmartContractReal(metadata.abi, ethereum, sender, address, this));
+        byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(prepareArguments(constructorArgs));
+        return sendTx(wei(0), EthData.of(ByteUtil.merge(contract.getBinary().data, argsEncoded)), sender);
     }
 
-    private void publishContractMetadaToSwarm(String metadata) throws IOException {
-        //TODO: publish the metadata to swarm
-        swarmService.publish(metadata);
-    }
-
-    private CompilationResult.ContractMetadata compile(SoliditySource src, String contractName) throws IOException {
-        SolidityCompiler.Result result = SolidityCompiler.compile(src.getSource().getBytes(EthereumFacade.CHARSET), true,
-                SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
-        if (result.isFailed()) {
-            throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
-        }
-        CompilationResult res = CompilationResult.parse(result.output);
-        if (res.contracts.isEmpty()) {
-            throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
-        }
-        CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-        if (metadata != null && (metadata.bin == null || metadata.bin.isEmpty())) {
-            throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-        }
-        return metadata;
+    public Object[] prepareArguments(Object[] args) {
+        return Arrays.stream(args)
+                .map(inputTypeHandler::convert)
+                .toArray();
     }
 
     public BigInteger getNonce(final EthAddress address) {
@@ -117,17 +80,26 @@ public class BlockchainProxyReal implements BlockchainProxy {
     @Override
     public SmartContractByteCode getCode(EthAddress address) {
         byte[] code = ((BlockchainImpl) ethereum.getBlockchain()).getRepository().getCode(address.address);
-
+        if(code.length == 0) {
+            throw new EthereumApiException("no code found at the address. please verify that a smart contract is deployed at " + address.withLeading0x());
+        }
         return SmartContractByteCode.of(code);
     }
 
     @Override
-    public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
-        try {
-            return swarmService.getMetadata(swarmMetadaLink.getHash());
-        } catch (IOException e) {
-            throw new EthereumApiException("error while getting metadata", e);
-        }
+    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
+        return Optional.ofNullable(contracts.get(contractAddress)).map(contract -> eventHandler.observeTransactions()
+                    .filter(params -> EthAddress.of(params.receipt.getTransaction().getReceiveAddress()).equals(contractAddress))
+                    .flatMap(params -> Observable.from(params.logs))
+                    .map(contract::parseEvent)
+                    .filter(invocation -> eventName.equals(invocation.function.name))
+                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls))
+        ).orElseThrow(() -> new EthereumApiException("no contract registered at " + contractAddress.withLeading0x() + ". You need to register it first with its ABI (createContractProxy)."));
+    }
+
+    @Override
+    public void shutdown() {
+        ethereum.close();
     }
 
     @Override
@@ -136,7 +108,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
     }
 
-    @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address) {
         return this.sendTxInternal(value, data, sender, address)
                 .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
@@ -145,29 +116,34 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
             BigInteger nonce = getNonce(account.getAddress());
-            Transaction tx = new Transaction(
-                    ByteUtil.bigIntegerToBytes(nonce),
-                    ByteUtil.longToBytesNoLeadZeroes(ethereum.getGasPrice()),
-                    ByteUtil.longToBytesNoLeadZeroes(3_000_000),
-                    toAddress.address,
-                    ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
-                    data.data,
-                    ethereum.getChainIdForNextBlock());
+            Transaction txLocal = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
+            txLocal.sign(account.key);
+
+            BigInteger gasLimit = estimateGas(getBlockchain().getBestBlock(), txLocal).add(BigInteger.valueOf(100_000));
+            Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
+
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(account.getAddress());
-            long currentBlock = eventHandler.getCurrentBlockNumber();
 
-            Predicate<TransactionReceipt> findReceipt = (TransactionReceipt receipt) -> new ByteArrayWrapper(receipt.getTransaction().getHash()).equals(new ByteArrayWrapper(tx.getHash()));
+            return CompletableFuture.supplyAsync(() -> {
+                Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Arrays.equals(params.txHash.data, tx.getHash()) && params.status == TransactionStatus.Dropped);
+                Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
+                        .flatMap(params -> Observable.from(params.receipts))
+                        .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
+                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>()));
 
-            return CompletableFuture.supplyAsync(() -> eventHandler.observeBlocks()
-                    .filter(params -> params.receipts.stream().anyMatch(findReceipt) || params.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT)
-                    .map(params -> {
-                        Optional<TransactionReceipt> receipt = params.receipts.stream().filter(findReceipt).findFirst();
-                        decreasePendingTransactionCounter(account.getAddress());
-                        return receipt.map(eventHandler::checkForErrors)
-                                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("the transaction has not been added to any block after waiting for " + BLOCK_WAIT_LIMIT));
-                    }).toBlocking().first());
+                return Observable.merge(droppedTxs, blockTxs)
+                        .map(params -> {
+                            TransactionReceipt receipt = params.receipt;
+                            decreasePendingTransactionCounter(account.getAddress());
+                            if(params.status == TransactionStatus.Dropped) {
+                                throw new EthereumApiException("the transaction has been dropped! - " + params.error);
+                            }
+                            return eventHandler.checkForErrors(receipt);
+                        }).toBlocking().first();
+
+            });
         });
     }
 
@@ -193,4 +169,34 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private void increasePendingTransactionCounter(EthAddress address) {
         pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).add(BigInteger.ONE));
     }
+
+    protected void finalize() {
+        ethereum.close();
+    }
+
+  private BigInteger estimateGas(Block callBlock, Transaction tx) {
+    Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
+    try {
+      TransactionExecutor executor = new TransactionExecutor
+        (tx, callBlock.getCoinbase(), repository, getBlockchain().getBlockStore(),
+          getBlockchain().getProgramInvokeFactory(), callBlock)
+        .setLocalCall(true);
+
+      executor.init();
+      executor.execute();
+      executor.go();
+      executor.finalization();
+      long gasUsed = executor.getReceipt().isSuccessful() ? executor.getGasUsed() : 0;
+      return BigInteger.valueOf(gasUsed);
+    } finally {
+      repository.rollback();
+    }
+  }
+
+  private BlockchainImpl getBlockchain() {
+    return (BlockchainImpl) ethereum.getBlockchain();
+  }
+  private Repository getRepository() {
+    return getBlockchain().getRepository();
+  }
 }
