@@ -4,7 +4,7 @@ package org.adridadou.ethereum;
 import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.provider.EthereumFacadeProvider;
-import org.adridadou.ethereum.provider.GenericRpcEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.EthereumFacadeRpcProvider;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
  */
 public class RpcEthereumTest {
 
-    private final GenericRpcEthereumFacadeProvider provider = new GenericRpcEthereumFacadeProvider();
+    private final EthereumFacadeRpcProvider provider = new EthereumFacadeRpcProvider();
     private final Web3JFacade web3j = mock(Web3JFacade.class);
     private final SoliditySource contract = new SoliditySource(
             "pragma solidity ^0.4.6;" +

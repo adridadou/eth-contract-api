@@ -76,25 +76,25 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(sender, data);
+        BigInteger gasLimit = web3JFacade.estimateGas(account, data);
 
-        increasePendingTransactionCounter(sender.getAddress());
+        increasePendingTransactionCounter(account.getAddress());
 
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
-                ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
+                ByteUtil.bigIntegerToBytes(getNonce(account.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gasLimit.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
                 (byte) chainId.id);
-        tx.sign(sender.key);
+        tx.sign(account.key);
 
         return CompletableFuture.supplyAsync(() -> {
             web3JFacade.sendTransaction(EthData.of(tx.getEncoded()));
-            decreasePendingTransactionCounter(sender.getAddress());
+            decreasePendingTransactionCounter(account.getAddress());
             return new EthExecutionResult(new byte[0]);
         });
     }

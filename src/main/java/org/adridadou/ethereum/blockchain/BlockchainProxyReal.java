@@ -30,6 +30,7 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  */
 public class BlockchainProxyReal implements BlockchainProxy {
     public static final BigInteger GAS_LIMIT_FOR_CONSTANT_CALLS = BigInteger.valueOf(100_000_000_000_000L);
+    private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
@@ -125,16 +126,21 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(account.getAddress());
+            long currentBlock = eventHandler.getCurrentBlockNumber();
 
             return CompletableFuture.supplyAsync(() -> {
                 Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Arrays.equals(params.txHash.data, tx.getHash()) && params.status == TransactionStatus.Dropped);
+                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
                         .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>()));
 
-                return Observable.merge(droppedTxs, blockTxs)
+                return Observable.merge(droppedTxs, blockTxs, timeoutBlock)
                         .map(params -> {
+                            if(params == null) {
+                                throw new EthereumApiException("the transaction has not been included in the last " + BLOCK_WAIT_LIMIT + " blocks");
+                            }
                             TransactionReceipt receipt = params.receipt;
                             decreasePendingTransactionCounter(account.getAddress());
                             if(params.status == TransactionStatus.Dropped) {
@@ -186,7 +192,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
       executor.execute();
       executor.go();
       executor.finalization();
-      long gasUsed = executor.getReceipt().isSuccessful() ? executor.getGasUsed() : 0;
+      if(!executor.getReceipt().isSuccessful()) {
+          throw new EthereumApiException("The function throws");
+      }
+      long gasUsed = executor.getGasUsed();
       return BigInteger.valueOf(gasUsed);
     } finally {
       repository.rollback();
