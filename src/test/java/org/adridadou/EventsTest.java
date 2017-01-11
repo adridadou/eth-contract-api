@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -44,9 +45,9 @@ public class EventsTest {
         EthAddress address = publishAndMapContract(ethereum);
         ContractEvents myContract = ethereum.createContractProxy(contract, "contractEvents", address, mainAccount, ContractEvents.class);
 
-        ethereum.observeEvents(address, "MyEvent", MyEvent.class).forEach(event -> System.out.println("******" + event.toString()));
-
-        myContract.createEvent("my event is here").get();
+        CompletableFuture<Void> future = myContract.createEvent("my event is here");
+        assertEquals("my event is here", ethereum.observeEvents(address, "MyEvent", MyEvent.class).toBlocking().first().value);
+        future.get();
         ethereum.shutdown();
 
     }

@@ -103,6 +103,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     @Override
     public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
         return Optional.ofNullable(contracts.get(contractAddress)).map(contract -> eventHandler.observeTransactions()
+                    .filter(params -> params.receipt != null)
                     .filter(params -> EthAddress.of(params.receipt.getTransaction().getReceiveAddress()).equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
@@ -206,7 +207,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
       executor.go();
       executor.finalization();
       if(!executor.getReceipt().isSuccessful()) {
-          throw new EthereumApiException("The function throws");
+          throw new EthereumApiException(executor.getReceipt().getError());
       }
       long gasUsed = executor.getGasUsed();
       return BigInteger.valueOf(gasUsed);

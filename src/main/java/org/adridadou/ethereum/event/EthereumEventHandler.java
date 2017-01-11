@@ -49,7 +49,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
           case INCLUDED: transactionStatus = TransactionStatus.Included;break;
         }
         Transaction transaction = txReceipt.getTransaction();
-        onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(transaction.getHash()), transactionStatus, txReceipt.getError(), new ArrayList<>(), transaction.getSender(), transaction.getReceiveAddress()));
+        onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(transaction.getHash()), transactionStatus, txReceipt.getError(), txReceipt.getLogInfoList(), transaction.getSender(), transaction.getReceiveAddress()));
     }
 
   @Override

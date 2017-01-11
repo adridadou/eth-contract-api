@@ -27,7 +27,7 @@ public class OnTransactionParameters {
         this.error = error;
         this.logs = logs;
         this.sender = EthAddress.of(sender);
-        this.receiver = Optional.ofNullable(receiver).map(bytes ->  EthAddress.of(bytes)).orElse(null);
+        this.receiver = Optional.ofNullable(receiver).map(EthAddress::of).orElse(null);
         this.isContractCreation = this.receiver == null || this.receiver.isEmpty();
     }
 
