@@ -1,10 +1,11 @@
 package org.adridadou.ethereum.values;
 
+import java.util.Arrays;
+
 import com.google.common.base.Preconditions;
 import org.ethereum.crypto.ECKey;
+import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
-
-import java.util.Arrays;
 
 /**
  * Created by davidroon on 19.04.16.
@@ -69,6 +70,10 @@ public class EthAddress {
     }
 
     public static EthAddress empty() {
-        return EthAddress.of(new byte[0]);
+        return EthAddress.of(ByteUtil.EMPTY_BYTE_ARRAY);
+    }
+
+    public boolean isEmpty() {
+        return Arrays.equals(this.address, ByteUtil.EMPTY_BYTE_ARRAY);
     }
 }

@@ -1,9 +1,24 @@
 package org.adridadou.ethereum.blockchain;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
+import java.math.BigInteger;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
-import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.CompiledContract;
+import org.adridadou.ethereum.values.ContractAbi;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthExecutionResult;
+import org.adridadou.ethereum.values.EthValue;
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -13,16 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.request.RawTransaction;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import rx.Observable;
-
-import java.math.BigInteger;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.adridadou.ethereum.values.EthValue.wei;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -65,7 +73,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
         return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash)
-                .orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
+                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash) {

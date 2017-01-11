@@ -1,5 +1,7 @@
 package org.adridadou.ethereum.blockchain;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,16 +15,27 @@ import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.event.OnTransactionParameters;
 import org.adridadou.ethereum.event.TransactionStatus;
-import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.smartcontract.SmartContractReal;
+import org.adridadou.ethereum.values.CompiledContract;
+import org.adridadou.ethereum.values.ContractAbi;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthExecutionResult;
+import org.adridadou.ethereum.values.EthValue;
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.*;
+import org.ethereum.core.Block;
+import org.ethereum.core.BlockchainImpl;
+import org.ethereum.core.CallTransaction;
+import org.ethereum.core.Repository;
+import org.ethereum.core.Transaction;
+import org.ethereum.core.TransactionExecutor;
+import org.ethereum.core.TransactionReceipt;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.util.ByteUtil;
 import rx.Observable;
-
-import static org.adridadou.ethereum.values.EthValue.wei;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -131,7 +144,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
-                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>()));
+                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>(), receipt.getTransaction().getSender(), receipt.getTransaction().getReceiveAddress()));
 
                 return Observable.merge(droppedTxs, blockTxs)
                         .map(params -> {

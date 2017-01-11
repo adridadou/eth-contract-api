@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
+import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutionSummary;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.facade.Ethereum;
@@ -47,12 +48,14 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
           case DROPPED: transactionStatus = TransactionStatus.Dropped; break;
           case INCLUDED: transactionStatus = TransactionStatus.Included;break;
         }
-        onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(txReceipt.getTransaction().getHash()), transactionStatus, txReceipt.getError(), new ArrayList<>()));
+        Transaction transaction = txReceipt.getTransaction();
+        onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(transaction.getHash()), transactionStatus, txReceipt.getError(), new ArrayList<>(), transaction.getSender(), transaction.getReceiveAddress()));
     }
 
   @Override
   public void onTransactionExecuted(TransactionExecutionSummary summary) {
-        onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(summary.getTransaction().getHash()), TransactionStatus.Executed, "", new ArrayList<>()));
+      Transaction transaction = summary.getTransaction();
+      onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(transaction.getHash()), TransactionStatus.Executed, "", new ArrayList<>(), transaction.getSender(), transaction.getReceiveAddress()));
   }
 
   public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
