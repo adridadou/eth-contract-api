@@ -102,9 +102,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-        return Optional.ofNullable(contracts.get(contractAddress)).map(contract -> eventHandler.observeTransactions()
+        return Optional.ofNullable(contracts.get(contractAddress))
+                .map(contract -> eventHandler.observeTransactions()
                     .filter(params -> params.receipt != null)
-                    .filter(params -> EthAddress.of(params.receipt.getTransaction().getReceiveAddress()).equals(contractAddress))
+                    .filter(params -> params.receiver.equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
                     .filter(invocation -> eventName.equals(invocation.function.name))
