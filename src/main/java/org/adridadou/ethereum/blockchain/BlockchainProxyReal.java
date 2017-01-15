@@ -98,15 +98,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-        return Optional.ofNullable(contracts.get(contractAddress))
-                .map(contract -> eventHandler.observeTransactions()
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
+        CallTransaction.Contract contract = new CallTransaction.Contract(abi.getAbi());
+        return eventHandler.observeTransactions()
                     .filter(params -> params.receiver.equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
                     .filter(invocation -> eventName.equals(invocation.function.name))
-                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls))
-        ).orElseThrow(() -> new EthereumApiException("no contract registered at " + contractAddress.withLeading0x() + ". You need to register it first with its ABI (createContractProxy)."));
+                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls));
     }
 
     @Override
