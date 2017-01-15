@@ -4,7 +4,6 @@ import org.adridadou.ethereum.values.Payable;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by davidroon on 18.11.16.
