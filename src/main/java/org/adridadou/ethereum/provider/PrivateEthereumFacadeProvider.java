@@ -115,6 +115,7 @@ public class PrivateEthereumFacadeProvider {
             // no need for discovery in that small network
             return EthereumJConfigs.privateMiner()
                     .dbDirectory(DatabaseDirectory.db(dbName))
+                    .listenPort(55555)
                     .build().toString();
         }
 
