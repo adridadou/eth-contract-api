@@ -116,7 +116,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
         for (CallTransaction.Function func : solidityMethods) {
 
-            if(func.name.isEmpty()){
+            if(func.name == null || func.name.isEmpty()){
                 continue;
             }
             Optional.ofNullable(methods.get(func.name)).ifPresent(method -> {
