@@ -6,6 +6,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
+import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -27,7 +28,7 @@ public class EthereumProviderTest {
 
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {
-        SoliditySource contract = new SoliditySource(
+        SoliditySource contractSource = new SoliditySource(
                 "pragma solidity ^0.4.6;" +
                         "contract myContract {" +
                         "  int i1;" +
@@ -35,17 +36,17 @@ public class EthereumProviderTest {
                         "    return 23;" +
                         "  }" +
                         "}");
+        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract");
+        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
 
-        EthAddress address = ethereum.publishContract(contract, "myContract", sender).get();
-
-        MyContract proxy = ethereum.createContractProxy(contract, "myContract", address, sender, MyContract.class);
+        MyContract proxy = ethereum.createContractProxy(compiledContract, address, sender, MyContract.class);
 
         assertEquals(23, proxy.myMethod());
     }
 
     @Test
     public void checkCreateTx() throws IOException, ExecutionException, InterruptedException {
-        SoliditySource contract = new SoliditySource(
+        SoliditySource contractSource = new SoliditySource(
                 "pragma solidity ^0.4.6;" +
                         "contract myContract2 {" +
                         "  int i1;" +
@@ -53,9 +54,11 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}");
 
-        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
+        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract2");
 
-        BlaBla proxy = ethereum.createContractProxy(contract, "myContract2", address, sender, BlaBla.class);
+        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
+
+        BlaBla proxy = ethereum.createContractProxy(compiledContract, address, sender, BlaBla.class);
         proxy.myMethod(12);
 
         assertEquals(12, proxy.getI1());

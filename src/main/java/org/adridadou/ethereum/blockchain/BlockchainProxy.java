@@ -37,7 +37,7 @@ public interface BlockchainProxy {
         }
     }
 
-    <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls);
+    <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls);
 
     void shutdown();
 }

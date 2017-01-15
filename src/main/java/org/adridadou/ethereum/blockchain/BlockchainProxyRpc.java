@@ -6,7 +6,6 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -40,7 +39,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
     private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
-    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
@@ -52,7 +50,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
         return new SmartContractRpc(abi.getAbi(), web3JFacade, sender, address, this);
     }
 
@@ -119,8 +116,8 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-        return web3JFacade.event(contractAddress, eventName, contracts.get(contractAddress), cls);
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
+        return web3JFacade.event(contractAddress, eventName, new CallTransaction.Contract(abi.getAbi()), cls);
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +46,6 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
-    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
 
@@ -61,8 +59,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
-        return new SmartContractReal(contracts.get(address), ethereum, sender, address, this);
+        return new SmartContractReal(new CallTransaction.Contract(abi.getAbi()), ethereum, sender, address, this);
     }
 
     @Override

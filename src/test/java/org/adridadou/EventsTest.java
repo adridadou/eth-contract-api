@@ -3,6 +3,7 @@ package org.adridadou;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 public class EventsTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final EthAccount mainAccount = AccountProvider.from("cow");
-    private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contractEvents.sol").toURI()));
+    private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contractEvents.sol").toURI()));
 
     public EventsTest() throws URISyntaxException {
     }
@@ -35,7 +36,8 @@ public class EventsTest {
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "contractEvents", mainAccount);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "contractEvents");
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
     }
 
@@ -43,10 +45,11 @@ public class EventsTest {
     public void main_example_how_the_lib_works() throws Exception {
         final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
-        ContractEvents myContract = ethereum.createContractProxy(contract, "contractEvents", address, mainAccount, ContractEvents.class);
+        CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents");
+        ContractEvents myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, ContractEvents.class);
 
         CompletableFuture<Void> future = myContract.createEvent("my event is here");
-        assertEquals("my event is here", ethereum.observeEvents(address, "MyEvent", MyEvent.class).toBlocking().first().value);
+        assertEquals("my event is here", ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class).toBlocking().first().value);
         future.get();
         ethereum.shutdown();
 

@@ -29,7 +29,7 @@ public class TestnetConnectionTest {
     private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final EthAccount mainAccount = AccountProvider.from("cow");
-    private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
+    private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
     public TestnetConnectionTest() throws URISyntaxException {
     }
@@ -47,13 +47,14 @@ public class TestnetConnectionTest {
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", mainAccount);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
     }
 
     private void testMethodCalls(MyContract2 myContract, EthAddress address, EthereumFacade ethereum) throws Exception {
         assertEquals("", myContract.getI1());
-        System.out.println("*** calling contract myMethod");
+        System.out.println("*** calling contractSource myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
         Future<Integer> future2 = myContract.myMethod("this is a test2");
         assertEquals(12, future.get().intValue());
@@ -69,7 +70,7 @@ public class TestnetConnectionTest {
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
         assertEquals("", myContract.getI2());
-        System.out.println("*** calling contract myMethod2 async");
+        System.out.println("*** calling contractSource myMethod2 async");
         myContract.myMethod2("async call").get();
 
         assertEquals("async call", myContract.getI2());
@@ -87,7 +88,8 @@ public class TestnetConnectionTest {
     public void main_example_how_the_lib_works() throws Exception {
         final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, mainAccount, MyContract2.class);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
 
         testMethodCalls(myContract, address, ethereum);
 

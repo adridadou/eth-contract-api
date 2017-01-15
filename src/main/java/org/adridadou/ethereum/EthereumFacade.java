@@ -54,9 +54,9 @@ public class EthereumFacade {
         return this;
     }
 
-    public <T> T createContractProxy(SoliditySource src, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface) {
+    public <T> T createContractProxy(CompiledContract contract, EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, compile(src, contractName), address, account);
+        handler.register(proxy, contractInterface, compile(contract.getSource(), contract.getName()), address, account);
         return proxy;
     }
 
@@ -80,13 +80,10 @@ public class EthereumFacade {
         return new Builder<>(contractInterface, address, abi);
     }
 
-    public <T> Builder<T> createContractProxy(SoliditySource source, String contractName, EthAddress address, Class<T> contractInterface) {
-        return new Builder<>(contractInterface, address, getAbi(source, contractName));
+    public <T> Builder<T> createContractProxy(CompiledContract contract, EthAddress address, Class<T> contractInterface) {
+        return new Builder<>(contractInterface, address, contract.getAbi()
+        );
     }
-
-  public ContractAbi getAbi(final SoliditySource source, String contractName) {
-        return compile(source,contractName).getAbi();
-  }
 
     public ContractAbi getAbi(final EthAddress address) {
         SmartContractByteCode code = blockchainProxy.getCode(address);
@@ -94,8 +91,8 @@ public class EthereumFacade {
         return metadata.getAbi();
     }
 
-    public CompletableFuture<EthAddress> publishContract(SoliditySource code, String contractName, EthAccount sender, Object... constructorArgs) {
-        return blockchainProxy.publish(compile(code, contractName), sender, constructorArgs);
+    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
+        return blockchainProxy.publish(contract, sender, constructorArgs);
     }
 
     public SwarmHash publishMetadataToSwarm(CompiledContract contract) {
@@ -166,8 +163,8 @@ public class EthereumFacade {
       }
   }
 
-    public <T> Observable<T> observeEvents(EthAddress address, String eventName, Class<T> cls) {
-        return blockchainProxy.observeEvents(address,eventName, cls);
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress address, String eventName, Class<T> cls) {
+        return blockchainProxy.observeEvents(abi, address,eventName, cls);
     }
 
 
