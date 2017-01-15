@@ -94,6 +94,11 @@ public class SmartContractReal implements SmartContract {
         return callFunction(wei(0), functionName, args);
     }
 
+    @Override
+    public CompletableFuture<Object[]> callFunction(String functionName, EthValue value, Object... arguments) {
+        return callFunction(value, functionName, arguments);
+    }
+
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
             EthData functionCallBytes = EthData.of(func.encode(args));

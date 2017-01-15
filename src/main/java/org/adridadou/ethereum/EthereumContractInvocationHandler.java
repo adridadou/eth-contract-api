@@ -53,7 +53,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
-        } else {
+        } else if(method.getReturnType().equals(Payable.class)) {
+            return new Payable(contract, methodName, arguments, method, this);
+        }
+        else {
             return convertResult(contract.callConstFunction(methodName, arguments), method);
         }
     }
@@ -65,7 +68,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 .toArray();
     }
 
-    private Object convertResult(Object[] result, Method method) {
+    public Object convertResult(Object[] result, Method method) {
         if (result.length == 0) {
             return outputTypeHandler.convertResult(null, method.getReturnType(), method.getGenericReturnType());
         }
@@ -112,9 +115,27 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
 
         for (CallTransaction.Function func : solidityMethods) {
-            if (methods.get(func.name) != null && func.inputs.length != methods.get(func.name).getParameterCount()) {
-                throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
+
+            if(func.name.isEmpty()){
+                continue;
             }
+            Optional.ofNullable(methods.get(func.name)).ifPresent(method -> {
+                if (func.inputs.length != method.getParameterCount()) {
+                    throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
+                }
+
+                if(func.payable != method.getReturnType().equals(Payable.class)) {
+                    throw new EthereumApiException("ABI definition of " + func.name + " for payable is " + func.payable + " but return type is " + method.getReturnType().getSimpleName() + ". Return type should be Payable if and only if the function is payable");
+                }
+
+                if(func.constant && methods.get(func.name).getReturnType().equals(CompletableFuture.class)) {
+                    throw new EthereumApiException( func.name + " is defined as constant but return type is CompletableFuture. This is only for non constant functions");
+                }
+
+                if(!func.constant && !(method.getReturnType().equals(CompletableFuture.class) || method.getReturnType().equals(Payable.class))) {
+                    throw new EthereumApiException( func.name + " is not defined as constant but return type is " + method.getReturnType().getSimpleName()+ ". non constant function return type should be CompletableFuture<" + method.getReturnType().getSimpleName()+ "> instead.");
+                }
+            });
         }
     }
 }

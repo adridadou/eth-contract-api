@@ -73,6 +73,8 @@ public class TestnetConnectionTest {
         System.out.println("*** calling contractSource myMethod2 async");
         myContract.myMethod2("async call").get();
 
+        myContract.myMethod3("async call").with(ether(3)).get();
+
         assertEquals("async call", myContract.getI2());
 
         assertEquals(EnumTest.VAL2, myContract.getEnumValue());
@@ -148,6 +150,8 @@ public class TestnetConnectionTest {
         CompletableFuture<Integer> myMethod(String value);
 
         CompletableFuture<Void> myMethod2(String value);
+
+        Payable<Void> myMethod3(String value);
 
         EnumTest getEnumValue();
 

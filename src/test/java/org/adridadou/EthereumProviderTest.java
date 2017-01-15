@@ -13,6 +13,7 @@ import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -32,7 +33,7 @@ public class EthereumProviderTest {
                 "pragma solidity ^0.4.6;" +
                         "contract myContract {" +
                         "  int i1;" +
-                        "  function myMethod() returns (int) {" +
+                        "  function myMethod() constant returns (int) {" +
                         "    return 23;" +
                         "  }" +
                         "}");
@@ -69,7 +70,7 @@ public class EthereumProviderTest {
     }
 
     private interface BlaBla {
-        void myMethod(int value);
+        CompletableFuture<Void> myMethod(int value);
 
         int getI1();
     }

@@ -38,6 +38,7 @@ public class OutputTypeHandler {
                 new ListConverter(this),
                 new ArrayConverter(this),
                 new CompletableFutureConverter(this),
+                new PayableConverter(this),
                 new SetConverter(this));
     }
 
