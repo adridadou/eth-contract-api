@@ -54,6 +54,9 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
   @Override
   public void onTransactionExecuted(TransactionExecutionSummary summary) {
+      summary.getInternalTransactions().forEach(internalTransaction -> {
+          onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(internalTransaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), internalTransaction.getSender(), internalTransaction.getReceiveAddress()));
+      });
       Transaction transaction = summary.getTransaction();
       onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(transaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), transaction.getSender(), transaction.getReceiveAddress()));
   }
