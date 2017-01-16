@@ -104,7 +104,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
                     .filter(params -> params.receiver.equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
-                    .filter(invocation -> eventName.equals(invocation.function.name))
+                    .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
                     .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls));
     }
 
