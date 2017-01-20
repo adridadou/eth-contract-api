@@ -47,7 +47,7 @@ public class EventsTest {
     }
 
     @Test
-    public void main_example_how_the_lib_works() throws Exception {
+    public void eventTests() throws Exception {
         final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents");
