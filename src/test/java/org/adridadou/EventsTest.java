@@ -9,7 +9,6 @@ import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,7 +23,13 @@ import static org.junit.Assert.assertEquals;
 public class EventsTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final EthAccount mainAccount = AccountProvider.from("cow");
-    private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contractEvents.sol").toURI()));
+    private SoliditySource contractSource = SoliditySource.from("pragma solidity ^0.4.7;" +
+            "contract contractEvents {" +
+            "event MyEvent(string value);" +
+            "function createEvent(string value) {" +
+            "    MyEvent(value);" +
+            "}" +
+            "}");
 
     public EventsTest() throws URISyntaxException {
     }

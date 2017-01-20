@@ -13,7 +13,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -112,23 +111,24 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it from your interface");
         }
 
-        Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
+        Map<String, List<Method>> methods = interfaceMethods.stream().collect(Collectors.groupingBy(Method::getName));
 
         for (CallTransaction.Function func : solidityMethods) {
 
             if(func.name == null || func.name.isEmpty()){
                 continue;
             }
-            Optional.ofNullable(methods.get(func.name)).ifPresent(method -> {
-                if (func.inputs.length != method.getParameterCount()) {
-                    throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
-                }
+
+            Optional.ofNullable(methods.get(func.name)).ifPresent(methodList -> {
+                Method method = methodList.stream().filter(m -> m.getParameterCount() == func.inputs.length)
+                        .findFirst()
+                        .orElseThrow(() -> new EthereumApiException("No function " + func.name + " found with " + func.inputs.length + " parameters on contract " + contractInterface.getName()));
 
                 if(func.payable != method.getReturnType().equals(Payable.class)) {
                     throw new EthereumApiException("ABI definition of " + func.name + " for payable is " + func.payable + " but return type is " + method.getReturnType().getSimpleName() + ". Return type should be Payable if and only if the function is payable");
                 }
 
-                if(func.constant && methods.get(func.name).getReturnType().equals(CompletableFuture.class)) {
+                if(func.constant && method.getReturnType().equals(CompletableFuture.class)) {
                     throw new EthereumApiException( func.name + " is defined as constant but return type is CompletableFuture. This is only for non constant functions");
                 }
 

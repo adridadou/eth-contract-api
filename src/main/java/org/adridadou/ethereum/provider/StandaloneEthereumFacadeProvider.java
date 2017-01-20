@@ -11,7 +11,7 @@ import org.adridadou.ethereum.swarm.SwarmService;
  * This code is released under Apache 2 license
  */
 public class StandaloneEthereumFacadeProvider {
-    public EthereumFacade create() {
+    public static EthereumFacade create() {
         return new EthereumFacade(new BlockchainProxyTest(), new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
     }
 }
