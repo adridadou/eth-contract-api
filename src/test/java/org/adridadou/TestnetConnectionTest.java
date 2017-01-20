@@ -26,7 +26,6 @@ import java.util.concurrent.Future;
  * This code is released under Apache 2 license
  */
 public class TestnetConnectionTest {
-    private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final EthAccount mainAccount = AccountProvider.from("cow");
     private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
@@ -37,7 +36,7 @@ public class TestnetConnectionTest {
     private EthereumFacade fromRopsten() {
         EthereumFacadeProvider.Builder ethereumProvider = EthereumFacadeProvider.forNetwork(ropsten());
         ethereumProvider.extendConfig().fastSync(true);
-        return ethereumProvider.create();
+        return ethereumProvider.createReal();
     }
 
     private EthereumFacade fromPrivateNetwork() {

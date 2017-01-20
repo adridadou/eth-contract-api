@@ -39,8 +39,8 @@ public class EthereumFacade {
     public EthereumFacade(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler, SwarmService swarmService) {
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
-      this.swarmService = swarmService;
-      this.handler = new EthereumContractInvocationHandler(blockchainProxy, inputTypeHandler, outputTypeHandler);
+        this.swarmService = swarmService;
+        this.handler = new EthereumContractInvocationHandler(blockchainProxy, inputTypeHandler, outputTypeHandler);
         this.blockchainProxy = blockchainProxy;
     }
 

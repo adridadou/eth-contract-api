@@ -1,14 +1,19 @@
 package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
-import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
+import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
+import org.adridadou.ethereum.blockchain.EthereumJTest;
+import org.adridadou.ethereum.blockchain.Ethereumj;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
+import org.ethereum.listener.EthereumListener;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,14 +29,20 @@ import static org.junit.Assert.assertTrue;
  * This code is released under Apache 2 license
  */
 public class EthereumFacadeTest {
-    private final BlockchainProxy proxy = new BlockchainProxyTest();
-    private final EthereumFacade ethereum = new EthereumFacade(proxy, new InputTypeHandler(), new OutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST));
-    private final EthAccount sender = null;
+    private final Ethereumj ethereumj = new EthereumJTest();
+    private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
+    private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
+    private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
+    private final BlockchainProxy proxy = new BlockchainProxyReal(ethereumj,handler,inputTypeHandler,outputTypeHandler);
+    private final EthereumFacade ethereum = new EthereumFacade(proxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+    private final EthAccount sender = AccountProvider.from("hello");
 
     @Before
     public void before() {
         ethereum.addInputHandlers(InputTypeHandler.JAVA_INPUT_CONVERTERS)
                 .addOutputHandlers(OutputTypeHandler.JAVA_OUTPUT_CONVERTERS);
+
+        handler.onSyncDone(EthereumListener.SyncState.COMPLETE);
     }
 
     @Test

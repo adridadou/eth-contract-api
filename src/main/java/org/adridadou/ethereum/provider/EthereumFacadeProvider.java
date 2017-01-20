@@ -2,17 +2,13 @@ package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.blockchain.BlockchainConfig;
-import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
+import org.adridadou.ethereum.blockchain.*;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
-import org.adridadou.ethereum.event.OnBlockHandler;
-import org.adridadou.ethereum.event.OnTransactionHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
-import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
 import org.springframework.context.annotation.Bean;
 
@@ -51,14 +47,17 @@ public class EthereumFacadeProvider {
             return configBuilder;
         }
 
-        public EthereumFacade create() {
-            return create(new OnBlockHandler(), new OnTransactionHandler());
+        public EthereumFacade createReal(){
+            return create(new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class)));
         }
 
-        public EthereumFacade create(OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
+        public EthereumFacade createTest() {
+            return create(new EthereumJTest());
+        }
+
+        public EthereumFacade create(Ethereumj ethereum) {
             GenericConfig.config = configBuilder.build().toString();
-            Ethereum ethereum = EthereumFactory.createEthereum(GenericConfig.class);
-            EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum, onBlockHandler, onTransactionHandler);
+            EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
             return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
