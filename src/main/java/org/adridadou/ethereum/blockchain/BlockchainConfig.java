@@ -153,9 +153,5 @@ public class BlockchainConfig {
             this.behavior = behavior;
             return this;
         }
-
-        public ChainId getChainId() {
-            return networkId;
-        }
     }
 }
