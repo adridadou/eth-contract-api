@@ -12,6 +12,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
+import org.adridadou.exception.EthereumApiException;
 import org.adridadou.exception.FunctionNotFoundException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
@@ -50,6 +51,9 @@ public class SmartContractReal implements SmartContract {
 
     public Object[] callConstFunction(Block callBlock, String functionName, Object... args) {
         TransactionExecutor executor = executeLocally(callBlock, functionName, args);
+        if(!executor.getReceipt().isSuccessful()) {
+            throw new EthereumApiException(executor.getReceipt().getError());
+        }
         return contract.getByName(functionName).decodeResult(executor.getResult().getHReturn());
     }
 
@@ -88,6 +92,11 @@ public class SmartContractReal implements SmartContract {
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
         return callFunction(wei(0), functionName, args);
+    }
+
+    @Override
+    public CompletableFuture<Object[]> callFunction(String functionName, EthValue value, Object... arguments) {
+        return callFunction(value, functionName, arguments);
     }
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {

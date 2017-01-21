@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
+import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
 import org.ethereum.util.blockchain.SolidityCallResult;
@@ -32,6 +33,11 @@ public class SmartContractTest implements SmartContract {
             future.complete(result.getReturnValues());
         }
         return future;
+    }
+
+    @Override
+    public CompletableFuture<Object[]> callFunction(String methodName, EthValue value, Object... arguments) {
+        return callFunction(methodName, arguments);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.smartcontract;
 
+import org.adridadou.ethereum.values.EthValue;
 import org.ethereum.core.CallTransaction;
 
 import java.math.BigInteger;
@@ -12,6 +13,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface SmartContract {
     CompletableFuture<Object[]> callFunction(String methodName, Object... arguments);
+
+    CompletableFuture<Object[]> callFunction(String methodName, EthValue value, Object... arguments);
 
     Object[] callConstFunction(String methodName, Object... arguments);
 

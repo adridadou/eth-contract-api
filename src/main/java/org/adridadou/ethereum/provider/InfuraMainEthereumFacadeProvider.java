@@ -10,6 +10,6 @@ import org.adridadou.ethereum.values.config.InfuraKey;
 public class InfuraMainEthereumFacadeProvider {
 
     public EthereumFacade create(final InfuraKey key) {
-        return new GenericRpcEthereumFacadeProvider().create("https://main.infura.io/" + key.key, EthereumFacadeProvider.MAIN_CHAIN_ID);
+        return new EthereumFacadeRpcProvider().create("https://main.infura.io/" + key.key, EthereumFacadeProvider.MAIN_CHAIN_ID);
     }
 }

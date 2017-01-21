@@ -1,10 +1,11 @@
 package org.adridadou.ethereum.blockchain;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,16 +14,27 @@ import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.event.OnTransactionParameters;
 import org.adridadou.ethereum.event.TransactionStatus;
-import org.adridadou.ethereum.smartcontract.SmartContractReal;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.smartcontract.SmartContractReal;
+import org.adridadou.ethereum.values.CompiledContract;
+import org.adridadou.ethereum.values.ContractAbi;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthExecutionResult;
+import org.adridadou.ethereum.values.EthValue;
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.core.*;
+import org.ethereum.core.Block;
+import org.ethereum.core.BlockchainImpl;
+import org.ethereum.core.CallTransaction;
+import org.ethereum.core.Repository;
+import org.ethereum.core.Transaction;
+import org.ethereum.core.TransactionExecutor;
+import org.ethereum.core.TransactionReceipt;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.util.ByteUtil;
 import rx.Observable;
-
-import static org.adridadou.ethereum.values.EthValue.wei;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -30,10 +42,10 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  */
 public class BlockchainProxyReal implements BlockchainProxy {
     public static final BigInteger GAS_LIMIT_FOR_CONSTANT_CALLS = BigInteger.valueOf(100_000_000_000_000L);
+    private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereum ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
-    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
 
@@ -47,8 +59,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
-        return new SmartContractReal(contracts.get(address), ethereum, sender, address, this);
+        return new SmartContractReal(new CallTransaction.Contract(abi.getAbi()), ethereum, sender, address, this);
     }
 
     @Override
@@ -87,14 +98,14 @@ public class BlockchainProxyReal implements BlockchainProxy {
     }
 
     @Override
-    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-        return Optional.ofNullable(contracts.get(contractAddress)).map(contract -> eventHandler.observeTransactions()
-                    .filter(params -> EthAddress.of(params.receipt.getTransaction().getReceiveAddress()).equals(contractAddress))
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
+        CallTransaction.Contract contract = new CallTransaction.Contract(abi.getAbi());
+        return eventHandler.observeTransactions()
+                    .filter(params -> params.receiver.equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
-                    .filter(invocation -> eventName.equals(invocation.function.name))
-                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls))
-        ).orElseThrow(() -> new EthereumApiException("no contract registered at " + contractAddress.withLeading0x() + ". You need to register it first with its ABI (createContractProxy)."));
+                    .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
+                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls));
     }
 
     @Override
@@ -125,16 +136,21 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
             ethereum.submitTransaction(tx);
             increasePendingTransactionCounter(account.getAddress());
+            long currentBlock = eventHandler.getCurrentBlockNumber();
 
             return CompletableFuture.supplyAsync(() -> {
                 Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Arrays.equals(params.txHash.data, tx.getHash()) && params.status == TransactionStatus.Dropped);
+                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
-                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>()));
+                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>(), receipt.getTransaction().getSender(), receipt.getTransaction().getReceiveAddress()));
 
-                return Observable.merge(droppedTxs, blockTxs)
+                return Observable.merge(droppedTxs, blockTxs, timeoutBlock)
                         .map(params -> {
+                            if(params == null) {
+                                throw new EthereumApiException("the transaction has not been included in the last " + BLOCK_WAIT_LIMIT + " blocks");
+                            }
                             TransactionReceipt receipt = params.receipt;
                             decreasePendingTransactionCounter(account.getAddress());
                             if(params.status == TransactionStatus.Dropped) {
@@ -186,7 +202,10 @@ public class BlockchainProxyReal implements BlockchainProxy {
       executor.execute();
       executor.go();
       executor.finalization();
-      long gasUsed = executor.getReceipt().isSuccessful() ? executor.getGasUsed() : 0;
+      if(!executor.getReceipt().isSuccessful()) {
+          throw new EthereumApiException(executor.getReceipt().getError());
+      }
+      long gasUsed = executor.getGasUsed();
       return BigInteger.valueOf(gasUsed);
     } finally {
       repository.rollback();

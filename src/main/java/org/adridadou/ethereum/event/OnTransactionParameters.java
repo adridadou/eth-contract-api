@@ -1,10 +1,12 @@
 package org.adridadou.ethereum.event;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.ethereum.core.TransactionReceipt;
 import org.ethereum.vm.LogInfo;
-
-import java.util.List;
 
 public class OnTransactionParameters {
 
@@ -13,14 +15,20 @@ public class OnTransactionParameters {
     public final TransactionStatus status;
     public final String error;
     public final List<LogInfo> logs;
+    public final EthAddress sender;
+    public final EthAddress receiver;
+    public final Boolean isContractCreation;
 
 
-    public OnTransactionParameters(TransactionReceipt receipt, EthData txHash, TransactionStatus status, String error, List<LogInfo> logs) {
+    public OnTransactionParameters(TransactionReceipt receipt, EthData txHash, TransactionStatus status, String error, List<LogInfo> logs, byte[] sender, byte[] receiver) {
         this.receipt = receipt;
         this.txHash = txHash;
         this.status = status;
         this.error = error;
         this.logs = logs;
+        this.sender = EthAddress.of(sender);
+        this.receiver = Optional.ofNullable(receiver).map(EthAddress::of).orElse(EthAddress.empty());
+        this.isContractCreation = this.receiver == null || this.receiver.isEmpty();
     }
 
     @Override

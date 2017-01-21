@@ -81,7 +81,7 @@ public class BlockchainProxyTest implements BlockchainProxy {
     }
 
     @Override
-    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
         throw new UnsupportedOperationException("not yet implemented");
     }
 

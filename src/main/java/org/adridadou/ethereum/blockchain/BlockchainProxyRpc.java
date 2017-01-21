@@ -1,9 +1,23 @@
 package org.adridadou.ethereum.blockchain;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
+import java.math.BigInteger;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.smartcontract.SmartContractRpc;
-import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.CompiledContract;
+import org.adridadou.ethereum.values.ContractAbi;
+import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthExecutionResult;
+import org.adridadou.ethereum.values.EthValue;
+import org.adridadou.ethereum.values.SmartContractByteCode;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -13,16 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.request.RawTransaction;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import rx.Observable;
-
-import java.math.BigInteger;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.adridadou.ethereum.values.EthValue.wei;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -32,7 +39,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
     private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
-    private final Map<EthAddress, CallTransaction.Contract> contracts = new ConcurrentHashMap<>();
     private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
@@ -44,7 +50,6 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        contracts.put(address, new CallTransaction.Contract(abi.getAbi()));
         return new SmartContractRpc(abi.getAbi(), web3JFacade, sender, address, this);
     }
 
@@ -65,7 +70,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
         return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash)
-                .orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
+                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash) {
@@ -76,25 +81,25 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(sender, data);
+        BigInteger gasLimit = web3JFacade.estimateGas(account, data);
 
-        increasePendingTransactionCounter(sender.getAddress());
+        increasePendingTransactionCounter(account.getAddress());
 
         org.ethereum.core.Transaction tx = new org.ethereum.core.Transaction(
-                ByteUtil.bigIntegerToBytes(getNonce(sender.getAddress())),
+                ByteUtil.bigIntegerToBytes(getNonce(account.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gasLimit.longValue()),
                 Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
                 (byte) chainId.id);
-        tx.sign(sender.key);
+        tx.sign(account.key);
 
         return CompletableFuture.supplyAsync(() -> {
             web3JFacade.sendTransaction(EthData.of(tx.getEncoded()));
-            decreasePendingTransactionCounter(sender.getAddress());
+            decreasePendingTransactionCounter(account.getAddress());
             return new EthExecutionResult(new byte[0]);
         });
     }
@@ -111,8 +116,8 @@ public class BlockchainProxyRpc implements BlockchainProxy {
     }
 
     @Override
-    public <T> Observable<T> observeEvents(EthAddress contractAddress, String eventName, Class<T> cls) {
-        return web3JFacade.event(contractAddress, eventName, contracts.get(contractAddress), cls);
+    public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
+        return web3JFacade.event(contractAddress, eventName, new CallTransaction.Contract(abi.getAbi()), cls);
     }
 
     @Override

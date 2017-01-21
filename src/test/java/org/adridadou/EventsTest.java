@@ -3,17 +3,18 @@ package org.adridadou;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
 import org.junit.Test;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 
 import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by davidroon on 20.04.16.
@@ -22,7 +23,13 @@ import static org.adridadou.ethereum.values.EthValue.ether;
 public class EventsTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private final EthAccount mainAccount = AccountProvider.from("cow");
-    private SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contractEvents.sol").toURI()));
+    private SoliditySource contractSource = SoliditySource.from("pragma solidity ^0.4.7;" +
+            "contract contractEvents {" +
+            "event MyEvent(string value);" +
+            "function createEvent(string value) {" +
+            "    MyEvent(value);" +
+            "}" +
+            "}");
 
     public EventsTest() throws URISyntaxException {
     }
@@ -34,19 +41,21 @@ public class EventsTest {
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "contractEvents", mainAccount);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "contractEvents");
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
     }
 
     @Test
-    public void main_example_how_the_lib_works() throws Exception {
+    public void eventTests() throws Exception {
         final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
-        ContractEvents myContract = ethereum.createContractProxy(contract, "contractEvents", address, mainAccount, ContractEvents.class);
+        CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents");
+        ContractEvents myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, ContractEvents.class);
 
-        ethereum.observeEvents(address, "MyEvent", MyEvent.class).forEach(event -> System.out.println("******" + event.toString()));
-
-        myContract.createEvent("my event is here").get();
+        CompletableFuture<Void> future = myContract.createEvent("my event is here");
+        assertEquals("my event is here", ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class).toBlocking().first().value);
+        future.get();
         ethereum.shutdown();
 
     }

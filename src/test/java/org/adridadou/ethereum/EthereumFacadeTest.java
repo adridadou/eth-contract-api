@@ -5,6 +5,7 @@ import org.adridadou.ethereum.blockchain.BlockchainProxyTest;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
+import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
@@ -35,9 +36,10 @@ public class EthereumFacadeTest {
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
-        SoliditySource contract = SoliditySource.from(new File("src/test/resources/contract2.sol"));
-        EthAddress address = ethereum.publishContract(contract, "myContract2", sender).get();
-        MyContract2 myContract = ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
+        SoliditySource contractSource = SoliditySource.from(new File("src/test/resources/contract2.sol"));
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, sender, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());

@@ -9,7 +9,7 @@ import org.adridadou.ethereum.values.config.*;
  */
 public class InfuraRopstenEthereumFacadeProvider {
 
-    public EthereumFacade create(final InfuraKey key) {
-        return new GenericRpcEthereumFacadeProvider().create("https://ropsten.infura.io/" + key.key, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
+    public static EthereumFacade create(final InfuraKey key) {
+        return new EthereumFacadeRpcProvider().create("https://ropsten.infura.io/" + key.key, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
     }
 }

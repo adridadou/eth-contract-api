@@ -49,6 +49,10 @@ public class EthValue implements Comparable<EthValue> {
                 .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
     }
 
+    public boolean isEmpty(){
+        return inWei().signum() != 1;
+    }
+
     @Override
     public int compareTo(EthValue o) {
         return value.compareTo(o.value);

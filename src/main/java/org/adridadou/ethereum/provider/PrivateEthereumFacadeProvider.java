@@ -22,6 +22,8 @@ import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 
 import java.io.File;
@@ -33,6 +35,7 @@ import java.util.concurrent.ExecutionException;
  * This code is released under Apache 2 license
  */
 public class PrivateEthereumFacadeProvider {
+    private final Logger log = LoggerFactory.getLogger(PrivateEthereumFacadeProvider.class);
     private final EthAccount mainAccount = AccountProvider.from("cow");
 
     public EthereumFacade create(final PrivateNetworkConfig config) {
@@ -57,10 +60,11 @@ public class PrivateEthereumFacadeProvider {
 
         if (!dagCached) {
             try {
+                new File("cachedDag").mkdirs();
                 FileUtils.copyFile(new File(config.getDbName() + "/mine-dag.dat"), new File("cachedDag/mine-dag.dat"));
                 FileUtils.copyFile(new File(config.getDbName() + "/mine-dag-light.dat"), new File("cachedDag/mine-dag-light.dat"));
             } catch (IOException e) {
-                throw new EthereumApiException("error while copying dag files to dagCached", e);
+                log.warn("couldn't copy files: " + e.getMessage());
             }
         }
 
@@ -111,6 +115,7 @@ public class PrivateEthereumFacadeProvider {
             // no need for discovery in that small network
             return EthereumJConfigs.privateMiner()
                     .dbDirectory(DatabaseDirectory.db(dbName))
+                    .listenPort(55555)
                     .build().toString();
         }
 
