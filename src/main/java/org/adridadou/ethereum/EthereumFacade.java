@@ -55,20 +55,16 @@ public class EthereumFacade {
     }
 
     public <T> T createContractProxy(CompiledContract contract, EthAddress address, EthAccount account, Class<T> contractInterface) {
-        T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, compile(contract.getSource(), contract.getName()), address, account);
-        return proxy;
+        return createContractProxy(contract.getAbi(), address, account, contractInterface);
+    }
+
+    public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) {
+        return createContractProxy(getAbi(address), address, account, contractInterface);
     }
 
     public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount account, Class<T> contractInterface) {
         T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
         handler.register(proxy, contractInterface, abi, address, account);
-        return proxy;
-    }
-
-    public <T> T createContractProxy(EthAddress address, EthAccount account, Class<T> contractInterface) {
-        T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-        handler.register(proxy, contractInterface, getAbi(address), address, account);
         return proxy;
     }
 

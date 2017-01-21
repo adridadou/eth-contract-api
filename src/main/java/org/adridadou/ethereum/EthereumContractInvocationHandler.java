@@ -77,17 +77,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         return outputTypeHandler.convertSpecificType(result, method.getReturnType());
     }
 
-    protected <T> void register(T proxy, Class<T> contractInterface, CompiledContract compiledContract, EthAddress address, EthAccount account) {
-
-        SmartContract smartContract = ethereumProxy.mapFromAbi(compiledContract.getAbi(), address, account);
-
-        verifyContract(smartContract, contractInterface);
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
-        Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(account, smartContract);
-        contracts.put(address, proxies);
-    }
-
     protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
         SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
