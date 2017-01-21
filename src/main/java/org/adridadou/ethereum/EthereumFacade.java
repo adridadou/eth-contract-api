@@ -167,7 +167,6 @@ public class EthereumFacade {
         return blockchainProxy.observeEvents(abi, address,eventName, cls);
     }
 
-
     public class Builder<T> {
 
         private final Class<T> contractInterface;

@@ -41,16 +41,14 @@ public class EventsTest {
     }
 
     @Test
-    public void main_example_how_the_lib_works() throws Exception {
+    public void createTests() throws Exception {
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents");
         ContractEvents myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, ContractEvents.class);
         Observable<MyEvent> observeEvent = ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class);
-        CompletableFuture<Void> future = myContract.createEvent("my event is here");
-        assertEquals("my event is here", observeEvent.toBlocking().first().value );
-        future.get();
+        myContract.createEvent("my event is here").get();
+        observeEvent.forEach(event -> assertEquals("my event is here", event.value));
         ethereum.shutdown();
-
     }
 
     private interface ContractEvents {
