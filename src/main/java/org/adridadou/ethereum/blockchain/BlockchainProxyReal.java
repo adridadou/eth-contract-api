@@ -131,32 +131,33 @@ public class BlockchainProxyReal implements BlockchainProxy {
             Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
 
-            ethereum.submitTransaction(tx);
-            increasePendingTransactionCounter(account.getAddress());
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
-            return CompletableFuture.supplyAsync(() -> {
+            CompletableFuture<TransactionReceipt> result = CompletableFuture.supplyAsync(() -> {
                 Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Arrays.equals(params.txHash.data, tx.getHash()) && params.status == TransactionStatus.Dropped);
                 Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), tx.getHash()))
-                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()),TransactionStatus.Executed,receipt.getError(),new ArrayList<>(), receipt.getTransaction().getSender(), receipt.getTransaction().getReceiveAddress()));
+                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()), TransactionStatus.Executed, receipt.getError(), new ArrayList<>(), receipt.getTransaction().getSender(), receipt.getTransaction().getReceiveAddress()));
 
                 return Observable.merge(droppedTxs, blockTxs, timeoutBlock)
                         .map(params -> {
-                            if(params == null) {
+                            if (params == null) {
                                 throw new EthereumApiException("the transaction has not been included in the last " + BLOCK_WAIT_LIMIT + " blocks");
                             }
                             TransactionReceipt receipt = params.receipt;
                             decreasePendingTransactionCounter(account.getAddress());
-                            if(params.status == TransactionStatus.Dropped) {
+                            if (params.status == TransactionStatus.Dropped) {
                                 throw new EthereumApiException("the transaction has been dropped! - " + params.error);
                             }
                             return eventHandler.checkForErrors(receipt);
                         }).toBlocking().first();
 
             });
+            ethereum.submitTransaction(tx);
+            increasePendingTransactionCounter(account.getAddress());
+            return result;
         });
     }
 

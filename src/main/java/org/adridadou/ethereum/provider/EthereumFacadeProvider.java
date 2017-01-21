@@ -10,6 +10,7 @@ import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.EthereumFactory;
+import org.ethereum.listener.EthereumListener;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -35,6 +36,12 @@ public class EthereumFacadeProvider {
         }
     }
 
+    public static EthereumFacade forTest(EthereumJTest ethereumj){
+        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
+        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        return new Builder(BlockchainConfig.builder()).create(ethereumj, ethereumListener);
+    }
+
     public static class Builder {
 
         private final BlockchainConfig.Builder configBuilder;
@@ -48,16 +55,16 @@ public class EthereumFacadeProvider {
         }
 
         public EthereumFacade createReal(){
-            return create(new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class)));
+            EthereumJReal ethereum = new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class));
+            return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
-        public EthereumFacade createTest() {
-            return create(new EthereumJTest());
+        public EthereumFacade createTest(Ethereumj ethereum) {
+            return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
-        public EthereumFacade create(Ethereumj ethereum) {
+        public EthereumFacade create(Ethereumj ethereum, EthereumEventHandler ethereumListener) {
             GenericConfig.config = configBuilder.build().toString();
-            EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereum);
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
             return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));

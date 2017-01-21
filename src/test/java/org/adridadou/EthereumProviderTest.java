@@ -4,7 +4,6 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.blockchain.BlockchainProxy;
 import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
 import org.adridadou.ethereum.blockchain.EthereumJTest;
-import org.adridadou.ethereum.blockchain.Ethereumj;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
@@ -13,6 +12,8 @@ import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
+import org.ethereum.listener.EthereumListener;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,12 +27,18 @@ import static org.junit.Assert.assertEquals;
  * This code is released under Apache 2 license
  */
 public class EthereumProviderTest {
-    private final Ethereumj ethereumj = new EthereumJTest();
+    private final EthereumJTest ethereumj = new EthereumJTest();
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-    private final BlockchainProxy bcProxy = new BlockchainProxyReal(ethereumj, new EthereumEventHandler(ethereumj), inputTypeHandler, outputTypeHandler);
-    private final EthAccount sender = null;
+    private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
+    private final BlockchainProxy bcProxy = new BlockchainProxyReal(ethereumj, handler, inputTypeHandler, outputTypeHandler);
+    private final EthAccount sender = ethereumj.defaultAccount();
     private final EthereumFacade ethereum = new EthereumFacade(bcProxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+
+    @Before
+    public void before() {
+        handler.onSyncDone(EthereumListener.SyncState.COMPLETE);
+    }
 
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {

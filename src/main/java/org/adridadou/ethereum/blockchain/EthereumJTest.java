@@ -1,6 +1,8 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.keystore.AccountProvider;
+import org.adridadou.ethereum.values.EthAccount;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.Transaction;
@@ -25,6 +27,10 @@ public class EthereumJTest implements Ethereumj{
 
         this.blockchain = new StandaloneBlockchain();
         blockchain.withAutoblock(true);
+    }
+
+    public EthAccount defaultAccount() {
+        return AccountProvider.from(this.blockchain.getSender());
     }
 
     @Override

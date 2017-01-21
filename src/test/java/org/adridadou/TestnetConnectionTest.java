@@ -1,6 +1,7 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.EthereumJTest;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.*;
@@ -27,7 +28,7 @@ import java.util.concurrent.Future;
  */
 public class TestnetConnectionTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
-    private final EthAccount mainAccount = AccountProvider.from("cow");
+    private EthAccount mainAccount = AccountProvider.from("cow");
     private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
     public TestnetConnectionTest() throws URISyntaxException {
@@ -43,6 +44,12 @@ public class TestnetConnectionTest {
         return privateNetwork.create(config()
                 .reset(true)
                 .initialBalance(mainAccount, ether(10)));
+    }
+
+    private EthereumFacade fromTest() {
+        EthereumJTest ethereum = new EthereumJTest();
+        mainAccount = ethereum.defaultAccount();
+        return EthereumFacadeProvider.forTest(ethereum);
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
@@ -87,7 +94,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        final EthereumFacade ethereum = fromPrivateNetwork();
+        final EthereumFacade ethereum = fromTest();
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
