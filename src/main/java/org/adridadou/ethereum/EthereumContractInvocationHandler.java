@@ -1,7 +1,7 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
-import org.adridadou.ethereum.blockchain.BlockchainProxy;
+import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
-    private final BlockchainProxy blockchainProxy;
+    private final EthereumProxy ethereumProxy;
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
 
-    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
-        this.blockchainProxy = blockchainProxy;
+    EthereumContractInvocationHandler(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+        this.ethereumProxy = ethereumProxy;
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
     }
@@ -79,7 +79,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
     protected <T> void register(T proxy, Class<T> contractInterface, CompiledContract compiledContract, EthAddress address, EthAccount account) {
 
-        SmartContract smartContract = blockchainProxy.mapFromAbi(compiledContract.getAbi(), address, account);
+        SmartContract smartContract = ethereumProxy.mapFromAbi(compiledContract.getAbi(), address, account);
 
         verifyContract(smartContract, contractInterface);
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
@@ -89,7 +89,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
-        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, account);
+        SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));

@@ -37,7 +37,7 @@ import rx.Observable;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class BlockchainProxyReal implements BlockchainProxy {
+public class EthereumProxyEthereumJ implements EthereumProxy {
     public static final BigInteger GAS_LIMIT_FOR_CONSTANT_CALLS = BigInteger.valueOf(100_000_000_000_000L);
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final Ethereumj ethereum;
@@ -46,7 +46,7 @@ public class BlockchainProxyReal implements BlockchainProxy {
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
 
-    public BlockchainProxyReal(Ethereumj ethereum, EthereumEventHandler eventHandler, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+    public EthereumProxyEthereumJ(Ethereumj ethereum, EthereumEventHandler eventHandler, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
         this.ethereum = ethereum;
         this.eventHandler = eventHandler;
         this.inputTypeHandler = inputTypeHandler;

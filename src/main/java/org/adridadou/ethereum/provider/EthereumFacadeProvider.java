@@ -67,7 +67,7 @@ public class EthereumFacadeProvider {
             GenericConfig.config = configBuilder.build().toString();
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-            return new EthereumFacade(new BlockchainProxyReal(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+            return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
         }
     }
 }

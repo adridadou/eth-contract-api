@@ -145,6 +145,14 @@
                         <exclude>**/values/**</exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
