@@ -17,7 +17,15 @@ public class EthValue implements Comparable<EthValue> {
     }
 
     public static EthValue ether(final BigInteger value) {
-        return new EthValue(value.multiply(ETHER_CONVERSION.toBigInteger()));
+        return wei(value.multiply(ETHER_CONVERSION.toBigInteger()));
+    }
+
+    public static EthValue ether(final Double value) {
+        return ether((BigDecimal.valueOf(value)));
+    }
+
+    public static EthValue ether(final BigDecimal value) {
+        return wei(ETHER_CONVERSION.multiply(value).toBigInteger());
     }
 
     public static EthValue ether(final long value) {
@@ -39,6 +47,10 @@ public class EthValue implements Comparable<EthValue> {
     public BigDecimal inEth() {
         return value
                 .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
+    }
+
+    public boolean isEmpty(){
+        return inWei().signum() != 1;
     }
 
     @Override

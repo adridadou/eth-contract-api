@@ -1,20 +1,22 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
-import org.adridadou.ethereum.provider.PrivateNetworkConfig;
+import org.adridadou.ethereum.blockchain.TestConfig;
+import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.*;
 
+import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
-import org.adridadou.ethereum.values.SoliditySource;
 import org.adridadou.exception.EthereumApiException;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -26,38 +28,43 @@ import java.util.concurrent.Future;
  * This code is released under Apache 2 license
  */
 public class TestnetConnectionTest {
-    private final StandaloneEthereumFacadeProvider standalone = new StandaloneEthereumFacadeProvider();
-    private final TestnetEthereumFacadeProvider testnet = new TestnetEthereumFacadeProvider();
-    private final RopstenEthereumFacadeProvider ropsten = new RopstenEthereumFacadeProvider();
-    private final MainEthereumFacadeProvider main = new MainEthereumFacadeProvider();
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
+    private EthAccount mainAccount = AccountProvider.from("cow");
+    private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
-    private EthAccount sender;
-    private EthereumFacade ethereum;
-
-    private void init() throws Exception {
-        sender = privateNetwork.getKey("cow").decode("");
-        ethereum = privateNetwork.create(PrivateNetworkConfig.config()
-                .initialBalance(sender, ether(10))
-        );
+    public TestnetConnectionTest() throws URISyntaxException {
     }
 
-    private MyContract2 publishAndMapContract() throws Exception {
-        SoliditySource contract = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
-        EthAddress address = futureAddress.get();
-
-        return ethereum.createContractProxy(contract, "myContract2", address, sender, MyContract2.class);
+    private EthereumFacade fromRopsten() {
+        EthereumFacadeProvider.Builder ethereumProvider = EthereumFacadeProvider.forNetwork(ropsten());
+        ethereumProvider.extendConfig().fastSync(true);
+        return ethereumProvider.create();
     }
 
-    private void testMethodCalls(MyContract2 myContract) throws Exception {
+    private EthereumFacade fromPrivateNetwork() {
+        return privateNetwork.create(config()
+                .reset(true)
+                .initialBalance(mainAccount, ether(100)));
+    }
+
+    private EthereumFacade fromTest() {
+        return EthereumFacadeProvider.forTest(TestConfig.builder()
+                .balance(mainAccount, ether(100))
+                .build());
+    }
+
+    private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
+        return futureAddress.get();
+    }
+
+    private void testMethodCalls(MyContract2 myContract, EthAddress address, EthereumFacade ethereum) throws Exception {
         assertEquals("", myContract.getI1());
-        System.out.println("*** calling contract myMethod");
+        System.out.println("*** calling contractSource myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
-        Future<Integer> future2 = myContract.myMethod("this is a test2");
         assertEquals(12, future.get().intValue());
-        assertEquals(12, future2.get().intValue());
-        assertEquals("this is a test2", myContract.getI1());
+        assertEquals("this is a test", myContract.getI1());
         assertTrue(myContract.getT());
 
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -68,12 +75,17 @@ public class TestnetConnectionTest {
         assertEquals(new MyReturnType(true, "hello", 34), myContract.getM());
 
         assertEquals("", myContract.getI2());
-        System.out.println("*** calling contract myMethod2 async");
+        System.out.println("*** calling contractSource myMethod2 async");
         myContract.myMethod2("async call").get();
+
+        myContract.myMethod3("async call").with(ether(3)).get();
 
         assertEquals("async call", myContract.getI2());
 
         assertEquals(EnumTest.VAL2, myContract.getEnumValue());
+
+        assertEquals(new Date(150_000), myContract.getInitTime(new Date(150_000)));
+        assertEquals(mainAccount.getAddress(), myContract.getAccountAddress(mainAccount));
         try {
             myContract.throwMe().get();
             fail("the call should fail!");
@@ -84,9 +96,16 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        init();
-        MyContract2 myContract = publishAndMapContract();
-        testMethodCalls(myContract);
+        final EthereumFacade ethereum = fromTest();
+        EthAddress address = publishAndMapContract(ethereum);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
+
+        testMethodCalls(myContract, address, ethereum);
+
+        assertEquals(mainAccount.getAddress(), myContract.getOwner());
+        ethereum.shutdown();
+
     }
 
     public static class MyReturnType {
@@ -140,6 +159,8 @@ public class TestnetConnectionTest {
 
         CompletableFuture<Void> myMethod2(String value);
 
+        Payable<Void> myMethod3(String value);
+
         EnumTest getEnumValue();
 
         String getI1();
@@ -156,5 +177,10 @@ public class TestnetConnectionTest {
 
         CompletableFuture<Void> throwMe();
 
+        EthAddress getOwner();
+
+        Date getInitTime(final Date date);
+
+        EthAddress getAccountAddress(final EthAccount account);
     }
 }

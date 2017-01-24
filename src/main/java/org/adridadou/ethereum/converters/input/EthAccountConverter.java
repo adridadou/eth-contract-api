@@ -6,7 +6,7 @@ import org.adridadou.ethereum.values.EthAccount;
  * Created by davidroon on 13.11.16.
  * This code is released under Apache 2 license
  */
-public class EthAccountConverter implements InputTypeConverter<byte[]> {
+public class EthAccountConverter implements InputTypeConverter {
     @Override
     public boolean isOfType(Class<?> cls) {
         return cls.equals(EthAccount.class);

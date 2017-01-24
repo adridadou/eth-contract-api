@@ -11,6 +11,10 @@ public class InfuraKey {
         this.key = key;
     }
 
+    public static InfuraKey of(String key) {
+        return new InfuraKey(key);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

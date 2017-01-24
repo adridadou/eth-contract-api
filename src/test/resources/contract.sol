@@ -19,6 +19,11 @@ contract myContract2 {
       return true;
     }
 
+    function myMethod3(string value) payable returns (bool success) {
+          i2 = value;
+          return true;
+        }
+
     function getEnumValue() constant returns (uint) {return 1;}
 	function getI1() constant returns (string) {return i1;}
 	function getI2() constant returns (string) {return i2;}
@@ -39,5 +44,13 @@ contract myContract2 {
 
     function throwMe() {
         throw;
+    }
+
+    function getInitTime(uint time) constant returns(uint) {
+        return time;
+    }
+
+    function getAccountAddress(address addr) constant returns (address) {
+        return addr;
     }
 }

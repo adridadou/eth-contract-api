@@ -1,23 +1,18 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
-import org.adridadou.ethereum.blockchain.BlockchainProxy;
+import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.exception.ContractNotFoundException;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
-import org.ethereum.solidity.compiler.CompilationResult;
-import org.ethereum.solidity.compiler.SolidityCompiler;
 
-import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -28,14 +23,14 @@ import java.util.stream.Collectors;
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
-    private final BlockchainProxy blockchainProxy;
+    private final EthereumProxy ethereumProxy;
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
 
-    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
-        this.blockchainProxy = blockchainProxy;
+    EthereumContractInvocationHandler(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+        this.ethereumProxy = ethereumProxy;
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
     }
@@ -57,7 +52,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
                 return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
-        } else {
+        } else if(method.getReturnType().equals(Payable.class)) {
+            return new Payable(contract, methodName, arguments, method, this);
+        }
+        else {
             return convertResult(contract.callConstFunction(methodName, arguments), method);
         }
     }
@@ -69,86 +67,29 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                 .toArray();
     }
 
-    private Object convertResult(Object[] result, Method method) {
+    public Object convertResult(Object[] result, Method method) {
         if (result.length == 0) {
-            return convertResult(null, method.getReturnType(), method.getGenericReturnType());
+            return outputTypeHandler.convertResult(null, method.getReturnType(), method.getGenericReturnType());
         }
         if (result.length == 1) {
-            return convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
+            return outputTypeHandler.convertResult(result[0], method.getReturnType(), method.getGenericReturnType());
         }
-        return convertSpecificType(result, method.getReturnType());
+        return outputTypeHandler.convertSpecificType(result, method.getReturnType());
     }
 
-    private Object convertSpecificType(Object[] result, Class<?> returnType) {
-        Object[] params = new Object[result.length];
-
-        Constructor constr = lookForNonEmptyConstructor(returnType, result);
-
-        for (int i = 0; i < result.length; i++) {
-            params[i] = convertResult(result[i], constr.getParameterTypes()[i], constr.getGenericParameterTypes()[i]);
-        }
-
-        try {
-            return constr.newInstance(params);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new EthereumApiException("error while converting to a specific type", e);
-        }
-    }
-
-    private Object convertResult(Object result, Class<?> returnType, Type genericType) {
-        return outputTypeHandler.getConverter(returnType)
-                .map(converter -> converter.convert(result, returnType.isArray() ? returnType.getComponentType() : genericType))
-                .orElseGet(() -> convertSpecificType(new Object[]{result}, returnType));
-    }
-
-    private Constructor lookForNonEmptyConstructor(Class<?> returnType, Object[] result) {
-        for (Constructor constructor : returnType.getConstructors()) {
-            if (constructor.getParameterCount() > 0) {
-                if (constructor.getParameterCount() != result.length) {
-                    throw new IllegalArgumentException("the number of arguments don't match for type " + returnType.getSimpleName() + ". Constructor has " + constructor.getParameterCount() + " and result has " + result.length);
-                }
-                return constructor;
-            }
-        }
-        throw new IllegalArgumentException("no constructor with arguments found! for type " + returnType.getSimpleName());
-    }
-
-    <T> void register(T proxy, Class<T> contractInterface, SoliditySource code, String contractName, EthAddress address, EthAccount sender) throws IOException {
-        final Map<String, CompilationResult.ContractMetadata> contractsFound = compile(code.getSource()).contracts;
-        CompilationResult.ContractMetadata found = null;
-        for (Map.Entry<String, CompilationResult.ContractMetadata> entry : contractsFound.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(contractName)) {
-                if (found != null) {
-                    throw new EthereumApiException("more than one Contract found for " + contractInterface.getSimpleName());
-                }
-                found = entry.getValue();
-            }
-        }
-        if (found == null) {
-            throw new ContractNotFoundException("no contract found for " + contractInterface.getSimpleName());
-        }
-        SmartContract smartContract = blockchainProxy.map(code, contractName, address, sender);
-
-        verifyContract(smartContract, contractInterface);
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
-        Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(sender, smartContract);
-        contracts.put(address, proxies);
-    }
-
-    <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount sender) {
-        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, sender);
+    protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
+        SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, sender));
+        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
         Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(sender, smartContract);
+        proxies.put(account, smartContract);
         contracts.put(address, proxies);
     }
 
     private void verifyContract(SmartContract smartContract, Class<?> contractInterface) {
         Set<Method> interfaceMethods = Sets.newHashSet(contractInterface.getMethods());
-        Set<CallTransaction.Function> solidityMethods = smartContract.getFunctions().stream().filter(f -> f != null).collect(Collectors.toSet());
+        Set<CallTransaction.Function> solidityMethods = smartContract.getFunctions().stream().filter(Objects::nonNull).collect(Collectors.toSet());
 
         Set<String> interfaceMethodNames = interfaceMethods.stream().map(Method::getName).collect(Collectors.toSet());
         Set<String> solidityFuncNames = solidityMethods.stream().map(d -> d.name).collect(Collectors.toSet());
@@ -156,21 +97,34 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Sets.SetView<String> superfluous = Sets.difference(interfaceMethodNames, solidityFuncNames);
 
         if (!superfluous.isEmpty()) {
-            throw new EthereumApiException("superflous function definition in interface " + contractInterface.getName() + ":" + superfluous.toString());
+            throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it from your interface");
         }
 
-        Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
+        Map<String, List<Method>> methods = interfaceMethods.stream().collect(Collectors.groupingBy(Method::getName));
 
         for (CallTransaction.Function func : solidityMethods) {
-            if (methods.get(func.name) != null && func.inputs.length != methods.get(func.name).getParameterCount()) {
-                throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
-            }
-        }
-    }
 
-    private CompilationResult compile(final String contract) throws IOException {
-        SolidityCompiler.Result res = SolidityCompiler.compile(
-                contract.getBytes(EthereumFacade.CHARSET), true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.INTERFACE);
-        return CompilationResult.parse(res.output);
+            if(func.name == null || func.name.isEmpty()){
+                continue;
+            }
+
+            Optional.ofNullable(methods.get(func.name)).ifPresent(methodList -> {
+                Method method = methodList.stream().filter(m -> m.getParameterCount() == func.inputs.length)
+                        .findFirst()
+                        .orElseThrow(() -> new EthereumApiException("No function " + func.name + " found with " + func.inputs.length + " parameters on contract " + contractInterface.getName()));
+
+                if(func.payable != method.getReturnType().equals(Payable.class)) {
+                    throw new EthereumApiException("ABI definition of " + func.name + " for payable is " + func.payable + " but return type is " + method.getReturnType().getSimpleName() + ". Return type should be Payable if and only if the function is payable");
+                }
+
+                if(func.constant && method.getReturnType().equals(CompletableFuture.class)) {
+                    throw new EthereumApiException( func.name + " is defined as constant but return type is CompletableFuture. This is only for non constant functions");
+                }
+
+                if(!func.constant && !(method.getReturnType().equals(CompletableFuture.class) || method.getReturnType().equals(Payable.class))) {
+                    throw new EthereumApiException( func.name + " is not defined as constant but return type is " + method.getReturnType().getSimpleName()+ ". non constant function return type should be CompletableFuture<" + method.getReturnType().getSimpleName()+ "> instead.");
+                }
+            });
+        }
     }
 }

@@ -1,7 +1,7 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
+import org.adridadou.ethereum.blockchain.EthereumProxyRpc;
 import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -26,10 +26,10 @@ public class SmartContractRpc implements SmartContract {
     private final EthAddress address;
     private final Contract contract;
     private final Web3JFacade web3j;
-    private final BlockchainProxyRpc bcProxy;
+    private final EthereumProxyRpc bcProxy;
     private final EthAccount sender;
 
-    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, BlockchainProxyRpc bcProxy) {
+    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, EthereumProxyRpc bcProxy) {
         this.contract = new Contract(abi);
         this.web3j = web3j;
         this.sender = sender;
@@ -42,7 +42,6 @@ public class SmartContractRpc implements SmartContract {
     }
 
     public Object[] callConstFunction(String functionName, Object... args) {
-
         return Optional.ofNullable(contract.getByName(functionName))
                 .map(func -> {
                     EthData result = web3j.constantCall(sender, address, EthData.of(func.encode(args)));
@@ -52,6 +51,11 @@ public class SmartContractRpc implements SmartContract {
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {
         return callFunction(wei(0), functionName, args);
+    }
+
+    @Override
+    public CompletableFuture<Object[]> callFunction(String functionName, EthValue value, Object... arguments) {
+        return callFunction(value, functionName, arguments);
     }
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {

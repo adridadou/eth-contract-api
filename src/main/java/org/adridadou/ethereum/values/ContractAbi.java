@@ -15,6 +15,10 @@ public class ContractAbi {
         return abi;
     }
 
+    public static ContractAbi of(final String abi) {
+        return new ContractAbi(abi);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
