@@ -75,7 +75,7 @@ public class EthereumProviderTest {
         EthAddress address = ethereum.publishContract(compiledContract, sender).get();
 
         BlaBla proxy = ethereum.createContractProxy(compiledContract, address, sender, BlaBla.class);
-        proxy.myMethod(12);
+        proxy.myMethod(12).get();
 
         assertEquals(12, proxy.getI1());
     }

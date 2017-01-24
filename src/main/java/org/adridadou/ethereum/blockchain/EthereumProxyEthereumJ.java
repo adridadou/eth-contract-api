@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
@@ -155,9 +156,15 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
                         }).toBlocking().first();
 
             });
-            ethereum.submitTransaction(tx);
+            CompletableFuture<Void> submitTx = CompletableFuture.runAsync(() -> {
+                try {
+                    ethereum.submitTransaction(tx).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new EthereumApiException("error while submitting the transaction", e);
+                }
+            });
             increasePendingTransactionCounter(account.getAddress());
-            return result;
+            return submitTx.thenCompose(txResult -> result);
         });
     }
 

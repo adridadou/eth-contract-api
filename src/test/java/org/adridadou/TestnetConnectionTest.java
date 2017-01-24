@@ -63,10 +63,8 @@ public class TestnetConnectionTest {
         assertEquals("", myContract.getI1());
         System.out.println("*** calling contractSource myMethod");
         Future<Integer> future = myContract.myMethod("this is a test");
-        Future<Integer> future2 = myContract.myMethod("this is a test2");
         assertEquals(12, future.get().intValue());
-        assertEquals(12, future2.get().intValue());
-        assertEquals("this is a test2", myContract.getI1());
+        assertEquals("this is a test", myContract.getI1());
         assertTrue(myContract.getT());
 
         Integer[] expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};

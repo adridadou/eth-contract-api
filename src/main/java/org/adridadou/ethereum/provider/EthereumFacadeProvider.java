@@ -57,12 +57,12 @@ public class EthereumFacadeProvider {
         }
 
         public EthereumFacade createReal(){
+            GenericConfig.config = configBuilder.build().toString();
             EthereumJReal ethereum = new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class));
             return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
         public EthereumFacade create(Ethereumj ethereum, EthereumEventHandler ethereumListener) {
-            GenericConfig.config = configBuilder.build().toString();
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
             return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());

@@ -40,14 +40,13 @@ public class EventsTest {
     }
 
     @Test
-    //TODO: fix blockign issue
     public void createTests() throws Exception {
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents").get();
         ContractEvents myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, ContractEvents.class);
         Observable<MyEvent> observeEvent = ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class);
         myContract.createEvent("my event is here");
-        observeEvent.forEach(event -> assertEquals("my event is here", event.value));
+        assertEquals("my event is here", observeEvent.toBlocking().first().value);
         ethereum.shutdown();
 
     }

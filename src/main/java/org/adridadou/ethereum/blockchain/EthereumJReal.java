@@ -6,6 +6,9 @@ import org.ethereum.facade.Blockchain;
 import org.ethereum.facade.Ethereum;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by davidroon on 20.01.17.
@@ -33,8 +36,14 @@ public class EthereumJReal implements Ethereumj{
     }
 
     @Override
-    public void submitTransaction(Transaction tx) {
-        ethereum.submitTransaction(tx);
+    public Future<Void> submitTransaction(Transaction tx) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                ethereum.submitTransaction(tx).get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

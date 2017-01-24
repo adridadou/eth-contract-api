@@ -10,6 +10,8 @@ import org.ethereum.facade.Blockchain;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * Created by davidroon on 20.01.17.
@@ -57,8 +59,8 @@ public class EthereumJTest implements Ethereumj{
     }
 
     @Override
-    public void submitTransaction(Transaction tx) {
-        blockchain.submitTransaction(tx);
+    public Future<Void> submitTransaction(Transaction tx) {
+        return CompletableFuture.runAsync(() -> blockchain.submitTransaction(tx));
     }
 
     @Override
