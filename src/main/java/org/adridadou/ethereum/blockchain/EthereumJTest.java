@@ -33,7 +33,7 @@ public class EthereumJTest implements Ethereumj{
                 .withGasPrice(config.getGasPrice());
 
         config.getBalances().entrySet()
-                .forEach(entry -> blockchain.sendEther(entry.getKey().getAddress().address, entry.getValue().inWei()));
+                .forEach(entry -> blockchain.withAccountBalance(entry.getKey().getAddress().address, entry.getValue().inWei()));
 
         blockchain.withCurrentTime(config.getInitialTime());
         blockchain.withAutoblock(true);

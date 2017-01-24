@@ -38,7 +38,7 @@ public class TestnetConnectionTest {
     private EthereumFacade fromRopsten() {
         EthereumFacadeProvider.Builder ethereumProvider = EthereumFacadeProvider.forNetwork(ropsten());
         ethereumProvider.extendConfig().fastSync(true);
-        return ethereumProvider.createReal();
+        return ethereumProvider.create();
     }
 
     private EthereumFacade fromPrivateNetwork() {
