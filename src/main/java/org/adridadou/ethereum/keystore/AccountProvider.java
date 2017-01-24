@@ -27,6 +27,10 @@ public class AccountProvider {
         return new EthAccount(ECKey.fromPrivate(Hex.decode(privateKey)));
     }
 
+    public static EthAccount from(final ECKey ecKey) {
+        return new EthAccount(ecKey);
+    }
+
     public static EthAccount from(final String id) {
         return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
     }

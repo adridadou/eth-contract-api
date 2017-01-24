@@ -48,7 +48,7 @@ public class RpcEthereumTest {
         when(web3j.constantCall(eq(account), eq(address), any(EthData.class))).thenReturn(EthData.of(new byte[0]));
 
         EthereumFacade ethereum = provider.create(web3j, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         Contract service = ethereum.createContractProxy(compiledContract, address, account, Contract.class);
 
         service.myMethod(23).get();

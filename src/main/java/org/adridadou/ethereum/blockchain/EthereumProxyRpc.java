@@ -35,15 +35,15 @@ import rx.Observable;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class BlockchainProxyRpc implements BlockchainProxy {
+public class EthereumProxyRpc implements EthereumProxy {
 
-    private static final Logger log = LoggerFactory.getLogger(BlockchainProxyRpc.class);
+    private static final Logger log = LoggerFactory.getLogger(EthereumProxyRpc.class);
     private final Map<EthAddress, BigInteger> pendingTransactions = new CopyOnWriteMap<>();
     private final ChainId chainId;
 
     private final Web3JFacade web3JFacade;
 
-    public BlockchainProxyRpc(Web3JFacade web3jFacade, ChainId chainId) {
+    public EthereumProxyRpc(Web3JFacade web3jFacade, ChainId chainId) {
         this.web3JFacade = web3jFacade;
         this.chainId = chainId;
     }
@@ -70,7 +70,7 @@ public class BlockchainProxyRpc implements BlockchainProxy {
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
         return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash)
-                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
+                .orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash) {

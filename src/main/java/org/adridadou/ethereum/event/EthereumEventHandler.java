@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.adridadou.ethereum.blockchain.Ethereumj;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutionSummary;
 import org.ethereum.core.TransactionReceipt;
-import org.ethereum.facade.Ethereum;
 import org.ethereum.listener.EthereumListenerAdapter;
 import org.spongycastle.util.encoders.Hex;
 import rx.Observable;
@@ -25,10 +25,10 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
     private final OnTransactionHandler onTransactionHandler;
     private long currentBlockNumber;
 
-    public EthereumEventHandler(Ethereum ethereum, OnBlockHandler onBlockHandler, OnTransactionHandler onTransactionHandler) {
+    public EthereumEventHandler(Ethereumj ethereum) {
         ethereum.addListener(this);
-        this.onBlockHandler = onBlockHandler;
-        this.onTransactionHandler = onTransactionHandler;
+        this.onBlockHandler = new OnBlockHandler();
+        this.onTransactionHandler = new OnTransactionHandler();
         currentBlockNumber = ethereum.getBlockchain().getBestBlock().getNumber();
     }
 
@@ -54,9 +54,9 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
 
   @Override
   public void onTransactionExecuted(TransactionExecutionSummary summary) {
-      summary.getInternalTransactions().forEach(internalTransaction -> {
-          onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(internalTransaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), internalTransaction.getSender(), internalTransaction.getReceiveAddress()));
-      });
+      summary.getInternalTransactions()
+              .forEach(internalTransaction -> onTransactionHandler
+                      .on(new OnTransactionParameters(null, EthData.of(internalTransaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), internalTransaction.getSender(), internalTransaction.getReceiveAddress())));
       Transaction transaction = summary.getTransaction();
       onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(transaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), transaction.getSender(), transaction.getReceiveAddress()));
   }
