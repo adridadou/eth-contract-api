@@ -70,7 +70,7 @@ public class EthereumProxyRpc implements EthereumProxy {
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
         return CompletableFuture.supplyAsync(() -> getTransactionReceipt(transactionHash)
-                .<EthereumApiException>orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
+                .orElseThrow(() -> new EthereumApiException("Transaction receipt not found!")));
     }
 
     private Optional<TransactionReceipt> getTransactionReceipt(EthData transactionHash) {

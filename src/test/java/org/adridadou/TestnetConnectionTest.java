@@ -1,7 +1,7 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.blockchain.EthereumJTest;
+import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.*;
@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -43,17 +44,17 @@ public class TestnetConnectionTest {
     private EthereumFacade fromPrivateNetwork() {
         return privateNetwork.create(config()
                 .reset(true)
-                .initialBalance(mainAccount, ether(10)));
+                .initialBalance(mainAccount, ether(100)));
     }
 
     private EthereumFacade fromTest() {
-        EthereumJTest ethereum = new EthereumJTest();
-        mainAccount = ethereum.defaultAccount();
-        return EthereumFacadeProvider.forTest(ethereum);
+        return EthereumFacadeProvider.forTest(TestConfig.builder()
+                .balance(mainAccount, ether(100))
+                .build());
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
     }
@@ -84,6 +85,9 @@ public class TestnetConnectionTest {
         assertEquals("async call", myContract.getI2());
 
         assertEquals(EnumTest.VAL2, myContract.getEnumValue());
+
+        assertEquals(new Date(150_000), myContract.getInitTime(new Date(150_000)));
+        assertEquals(mainAccount.getAddress(), myContract.getAccountAddress(mainAccount));
         try {
             myContract.throwMe().get();
             fail("the call should fail!");
@@ -96,7 +100,7 @@ public class TestnetConnectionTest {
     public void main_example_how_the_lib_works() throws Exception {
         final EthereumFacade ethereum = fromTest();
         EthAddress address = publishAndMapContract(ethereum);
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2");
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
 
         testMethodCalls(myContract, address, ethereum);
@@ -176,5 +180,9 @@ public class TestnetConnectionTest {
         CompletableFuture<Void> throwMe();
 
         EthAddress getOwner();
+
+        Date getInitTime(final Date date);
+
+        EthAddress getAccountAddress(final EthAccount account);
     }
 }

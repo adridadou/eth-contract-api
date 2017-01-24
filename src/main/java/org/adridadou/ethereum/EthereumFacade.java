@@ -35,11 +35,13 @@ public class EthereumFacade {
     private final InputTypeHandler inputTypeHandler;
     private final EthereumProxy ethereumProxy;
     private final SwarmService swarmService;
+    private final SolidityCompiler solidityCompiler;
 
-    public EthereumFacade(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler, SwarmService swarmService) {
+    public EthereumFacade(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler, SwarmService swarmService, SolidityCompiler solidityCompiler) {
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
         this.swarmService = swarmService;
+        this.solidityCompiler = solidityCompiler;
         this.handler = new EthereumContractInvocationHandler(ethereumProxy, inputTypeHandler, outputTypeHandler);
         this.ethereumProxy = ethereumProxy;
     }
@@ -135,9 +137,12 @@ public class EthereumFacade {
         ethereumProxy.shutdown();
     }
 
-  public CompiledContract compile(SoliditySource src, String contractName) {
+    public CompletableFuture<CompiledContract> compile(SoliditySource src, String contractName) {
+        return CompletableFuture.supplyAsync(() -> compileInternal(src,contractName));
+    }
+    private CompiledContract compileInternal(SoliditySource src, String contractName) {
       try {
-          SolidityCompiler.Result result = SolidityCompiler.getInstance().compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
+          SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
             SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
           if (result.isFailed()) {
               throw new EthereumApiException("Contract compilation failed:\n" + result.errors);

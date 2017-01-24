@@ -22,6 +22,7 @@ import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
+import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -72,7 +73,7 @@ public class PrivateEthereumFacadeProvider {
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-        final EthereumFacade facade = new EthereumFacade(new EthereumProxyEthereumJ(ethereumj, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+        final EthereumFacade facade = new EthereumFacade(new EthereumProxyEthereumJ(ethereumj, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 
         //This event does not trigger when you are the miner
         ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);

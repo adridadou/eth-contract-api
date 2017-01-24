@@ -28,7 +28,7 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class SmartContractReal implements SmartContract {
+public class SmartContractEthereumJ implements SmartContract {
     public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100_000_000_000_000L;
     private final EthAddress address;
     private final Contract contract;
@@ -36,7 +36,7 @@ public class SmartContractReal implements SmartContract {
     private final EthereumProxyEthereumJ bcProxy;
     private final EthAccount sender;
 
-    public SmartContractReal(Contract contract, Ethereumj ethereum, EthAccount sender, EthAddress address, EthereumProxyEthereumJ bcProxy) {
+    public SmartContractEthereumJ(Contract contract, Ethereumj ethereum, EthAccount sender, EthAddress address, EthereumProxyEthereumJ bcProxy) {
         this.contract = contract;
         this.ethereum = ethereum;
         this.sender = sender;

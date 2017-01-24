@@ -11,6 +11,7 @@ import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.EthereumFactory;
 import org.ethereum.listener.EthereumListener;
+import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -36,7 +37,8 @@ public class EthereumFacadeProvider {
         }
     }
 
-    public static EthereumFacade forTest(EthereumJTest ethereumj){
+    public static EthereumFacade forTest(TestConfig config){
+        EthereumJTest ethereumj = new EthereumJTest(config);
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
         ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
         return new Builder(BlockchainConfig.builder()).create(ethereumj, ethereumListener);
@@ -59,15 +61,11 @@ public class EthereumFacadeProvider {
             return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
-        public EthereumFacade createTest(Ethereumj ethereum) {
-            return create(ethereum, new EthereumEventHandler(ethereum));
-        }
-
         public EthereumFacade create(Ethereumj ethereum, EthereumEventHandler ethereumListener) {
             GenericConfig.config = configBuilder.build().toString();
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-            return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+            return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
         }
     }
 }

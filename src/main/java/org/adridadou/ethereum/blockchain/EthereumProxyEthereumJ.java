@@ -13,7 +13,7 @@ import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
-import org.adridadou.ethereum.smartcontract.SmartContractReal;
+import org.adridadou.ethereum.smartcontract.SmartContractEthereumJ;
 import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.ContractAbi;
 import org.adridadou.ethereum.values.EthAccount;
@@ -56,7 +56,7 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
 
     @Override
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        return new SmartContractReal(new CallTransaction.Contract(abi.getAbi()), ethereum, sender, address, this);
+        return new SmartContractEthereumJ(new CallTransaction.Contract(abi.getAbi()), ethereum, sender, address, this);
     }
 
     @Override

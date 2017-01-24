@@ -4,6 +4,7 @@ import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.blockchain.EthereumProxyEthereumJ;
 import org.adridadou.ethereum.blockchain.EthereumJTest;
+import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
@@ -13,6 +14,7 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
 import org.ethereum.listener.EthereumListener;
+import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,13 +29,13 @@ import static org.junit.Assert.assertEquals;
  * This code is released under Apache 2 license
  */
 public class EthereumProviderTest {
-    private final EthereumJTest ethereumj = new EthereumJTest();
+    private final EthereumJTest ethereumj = new EthereumJTest(TestConfig.builder().build());
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
     private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
     private final EthereumProxy bcProxy = new EthereumProxyEthereumJ(ethereumj, handler, inputTypeHandler, outputTypeHandler);
     private final EthAccount sender = ethereumj.defaultAccount();
-    private final EthereumFacade ethereum = new EthereumFacade(bcProxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST));
+    private final EthereumFacade ethereum = new EthereumFacade(bcProxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 
     @Before
     public void before() {
@@ -50,7 +52,7 @@ public class EthereumProviderTest {
                         "    return 23;" +
                         "  }" +
                         "}");
-        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract");
+        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract").get();
         EthAddress address = ethereum.publishContract(compiledContract, sender).get();
 
         MyContract proxy = ethereum.createContractProxy(compiledContract, address, sender, MyContract.class);
@@ -68,7 +70,7 @@ public class EthereumProviderTest {
                         "  function getI1() constant returns (int) {return i1;}" +
                         "}");
 
-        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract2");
+        CompiledContract compiledContract = ethereum.compile(contractSource,"myContract2").get();
 
         EthAddress address = ethereum.publishContract(compiledContract, sender).get();
 

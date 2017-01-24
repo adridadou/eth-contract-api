@@ -17,7 +17,7 @@ import java.math.BigInteger;
 public class EthereumJTest implements Ethereumj{
     private final StandaloneBlockchain blockchain;
 
-    public EthereumJTest() {
+    public EthereumJTest(TestConfig config) {
         SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
             @Override
             public BigInteger getMINIMUM_DIFFICULTY() {
@@ -26,6 +26,14 @@ public class EthereumJTest implements Ethereumj{
         }));
 
         this.blockchain = new StandaloneBlockchain();
+        blockchain
+                .withGasLimit(config.getGasLimit())
+                .withGasPrice(config.getGasPrice());
+
+        config.getBalances().entrySet()
+                .forEach(entry -> blockchain.sendEther(entry.getKey().getAddress().address, entry.getValue().inWei()));
+
+        blockchain.withCurrentTime(config.getInitialTime());
         blockchain.withAutoblock(true);
     }
 
