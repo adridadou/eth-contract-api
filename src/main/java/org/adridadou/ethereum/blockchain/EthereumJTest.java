@@ -3,6 +3,7 @@ package org.adridadou.ethereum.blockchain;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.core.Transaction;
@@ -10,14 +11,17 @@ import org.ethereum.facade.Blockchain;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * Created by davidroon on 20.01.17.
  */
 public class EthereumJTest implements Ethereumj{
     private final StandaloneBlockchain blockchain;
+    private final TestConfig config;
+    private final BlockingQueue<Transaction> transactions = new ArrayBlockingQueue<>(100);
 
     public EthereumJTest(TestConfig config) {
         SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
@@ -30,13 +34,24 @@ public class EthereumJTest implements Ethereumj{
         this.blockchain = new StandaloneBlockchain();
         blockchain
                 .withGasLimit(config.getGasLimit())
-                .withGasPrice(config.getGasPrice());
+                .withGasPrice(config.getGasPrice())
+                .withCurrentTime(config.getInitialTime());
 
         config.getBalances().entrySet()
                 .forEach(entry -> blockchain.withAccountBalance(entry.getKey().getAddress().address, entry.getValue().inWei()));
 
-        blockchain.withCurrentTime(config.getInitialTime());
-        blockchain.withAutoblock(true);
+        CompletableFuture.runAsync(() -> {
+            try {
+                while(true) {
+                    blockchain.submitTransaction(transactions.take());
+                    blockchain.createBlock();
+                }
+            } catch (InterruptedException e) {
+                throw new EthereumApiException("error while polling transactions for test env", e);
+            }
+        });
+
+        this.config = config;
     }
 
     public EthAccount defaultAccount() {
@@ -55,12 +70,12 @@ public class EthereumJTest implements Ethereumj{
 
     @Override
     public long getGasPrice() {
-        return 0;
+        return config.getGasPrice();
     }
 
     @Override
-    public Future<Void> submitTransaction(Transaction tx) {
-        return CompletableFuture.runAsync(() -> blockchain.submitTransaction(tx));
+    public void submitTransaction(Transaction tx) {
+        transactions.add(tx);
     }
 
     @Override
