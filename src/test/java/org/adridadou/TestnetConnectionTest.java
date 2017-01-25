@@ -1,16 +1,18 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
+import org.adridadou.ethereum.blockchain.BlockchainConfig;
 import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.*;
 
 import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
-import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
+import org.adridadou.ethereum.values.config.DatabaseDirectory;
+import org.adridadou.ethereum.values.config.GenesisPath;
 import org.adridadou.exception.EthereumApiException;
 import org.junit.Test;
 
@@ -42,9 +44,12 @@ public class TestnetConnectionTest {
     }
 
     private EthereumFacade fromPrivateNetwork() {
-        return privateNetwork.create(config()
-                .reset(true)
-                .initialBalance(mainAccount, ether(100)));
+        return EthereumFacadeProvider.forNetwork(BlockchainConfig.builder()
+                .peerActiveUrl("enode://localhost:30303")
+                .genesis(GenesisPath.path("private-genesis.json"))
+                .dbDirectory(DatabaseDirectory.db("db-adridadou"))
+                .listenPort(55555)
+        ).create();
     }
 
     private EthereumFacade fromTest() {

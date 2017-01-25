@@ -17,7 +17,7 @@ public interface Ethereumj {
 
     long getGasPrice();
 
-    Future<Void> submitTransaction(Transaction tx);
+    void submitTransaction(Transaction tx);
 
     Transaction createTransaction(BigInteger nonce, BigInteger bigInteger, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger bigInteger1, byte[] data);
 

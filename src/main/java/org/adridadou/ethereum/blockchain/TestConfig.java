@@ -46,7 +46,7 @@ public class TestConfig {
 
     public static class Builder {
         private long gasLimit = 4_700_000;
-        private long gasPrice = 0;
+        private long gasPrice = 50_000_000_000L;
         private final Map<EthAccount, EthValue> balances = new HashMap<>();
         private Date initialTime = new Date();
 
