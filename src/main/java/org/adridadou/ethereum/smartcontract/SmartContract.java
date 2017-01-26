@@ -3,7 +3,6 @@ package org.adridadou.ethereum.smartcontract;
 import org.adridadou.ethereum.values.EthValue;
 import org.ethereum.core.CallTransaction;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

@@ -1,7 +1,7 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
-import org.adridadou.ethereum.blockchain.BlockchainProxy;
+import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.smartcontract.SmartContract;
@@ -13,7 +13,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -24,14 +23,14 @@ import java.util.stream.Collectors;
 public class EthereumContractInvocationHandler implements InvocationHandler {
 
     private final Map<EthAddress, Map<EthAccount, SmartContract>> contracts = new HashMap<>();
-    private final BlockchainProxy blockchainProxy;
+    private final EthereumProxy ethereumProxy;
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
 
 
-    EthereumContractInvocationHandler(BlockchainProxy blockchainProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
-        this.blockchainProxy = blockchainProxy;
+    EthereumContractInvocationHandler(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
+        this.ethereumProxy = ethereumProxy;
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
     }
@@ -78,19 +77,8 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         return outputTypeHandler.convertSpecificType(result, method.getReturnType());
     }
 
-    protected <T> void register(T proxy, Class<T> contractInterface, CompiledContract compiledContract, EthAddress address, EthAccount account) {
-
-        SmartContract smartContract = blockchainProxy.mapFromAbi(compiledContract.getAbi(), address, account);
-
-        verifyContract(smartContract, contractInterface);
-        info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
-        Map<EthAccount, SmartContract> proxies = contracts.getOrDefault(address, new HashMap<>());
-        proxies.put(account, smartContract);
-        contracts.put(address, proxies);
-    }
-
     protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
-        SmartContract smartContract = blockchainProxy.mapFromAbi(abi, address, account);
+        SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
         info.put(new ProxyWrapper(proxy), new SmartContractInfo(address, account));
@@ -112,23 +100,24 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it from your interface");
         }
 
-        Map<String, Method> methods = interfaceMethods.stream().collect(Collectors.toMap(Method::getName, Function.identity()));
+        Map<String, List<Method>> methods = interfaceMethods.stream().collect(Collectors.groupingBy(Method::getName));
 
         for (CallTransaction.Function func : solidityMethods) {
 
             if(func.name == null || func.name.isEmpty()){
                 continue;
             }
-            Optional.ofNullable(methods.get(func.name)).ifPresent(method -> {
-                if (func.inputs.length != method.getParameterCount()) {
-                    throw new EthereumApiException("parameter count mismatch for " + func.name + " on contract " + contractInterface.getName());
-                }
+
+            Optional.ofNullable(methods.get(func.name)).ifPresent(methodList -> {
+                Method method = methodList.stream().filter(m -> m.getParameterCount() == func.inputs.length)
+                        .findFirst()
+                        .orElseThrow(() -> new EthereumApiException("No function " + func.name + " found with " + func.inputs.length + " parameters on contract " + contractInterface.getName()));
 
                 if(func.payable != method.getReturnType().equals(Payable.class)) {
                     throw new EthereumApiException("ABI definition of " + func.name + " for payable is " + func.payable + " but return type is " + method.getReturnType().getSimpleName() + ". Return type should be Payable if and only if the function is payable");
                 }
 
-                if(func.constant && methods.get(func.name).getReturnType().equals(CompletableFuture.class)) {
+                if(func.constant && method.getReturnType().equals(CompletableFuture.class)) {
                     throw new EthereumApiException( func.name + " is defined as constant but return type is CompletableFuture. This is only for non constant functions");
                 }
 

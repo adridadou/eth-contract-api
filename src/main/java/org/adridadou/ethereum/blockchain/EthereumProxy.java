@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
  * Created by davidroon on 08.04.16.
  * This code is released under Apache 2 license
  */
-public interface BlockchainProxy {
+public interface EthereumProxy {
     SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, EthAccount sender);
 
     CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs);

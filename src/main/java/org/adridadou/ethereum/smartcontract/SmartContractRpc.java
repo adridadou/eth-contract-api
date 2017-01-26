@@ -1,7 +1,7 @@
 package org.adridadou.ethereum.smartcontract;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.blockchain.BlockchainProxyRpc;
+import org.adridadou.ethereum.blockchain.EthereumProxyRpc;
 import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -26,10 +26,10 @@ public class SmartContractRpc implements SmartContract {
     private final EthAddress address;
     private final Contract contract;
     private final Web3JFacade web3j;
-    private final BlockchainProxyRpc bcProxy;
+    private final EthereumProxyRpc bcProxy;
     private final EthAccount sender;
 
-    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, BlockchainProxyRpc bcProxy) {
+    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, EthereumProxyRpc bcProxy) {
         this.contract = new Contract(abi);
         this.web3j = web3j;
         this.sender = sender;
