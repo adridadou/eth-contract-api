@@ -148,11 +148,11 @@ public class BlockchainProxyReal implements BlockchainProxy {
 
                 return Observable.merge(droppedTxs, blockTxs, timeoutBlock)
                         .map(params -> {
+                            decreasePendingTransactionCounter(account.getAddress());
                             if(params == null) {
                                 throw new EthereumApiException("the transaction has not been included in the last " + BLOCK_WAIT_LIMIT + " blocks");
                             }
                             TransactionReceipt receipt = params.receipt;
-                            decreasePendingTransactionCounter(account.getAddress());
                             if(params.status == TransactionStatus.Dropped) {
                                 throw new EthereumApiException("the transaction has been dropped! - " + params.error);
                             }
