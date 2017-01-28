@@ -99,6 +99,27 @@ public class TestnetConnectionTest {
         }
     }
 
+    /**
+    @Test
+    public void enduranceTestPrivate() throws Exception {
+        final EthereumFacade ethereum = privateNetwork.create(PrivateNetworkConfig.config());
+        EthAddress address = publishAndMapContract(ethereum);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
+
+        for (int i=0; i<40000; i++){
+            myContract.myMethod("call" + i).exceptionally((e) -> {
+                System.out.println("******* error:" + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            });
+            Thread.sleep(100);
+        }
+        Thread.sleep(40000);
+
+        ethereum.shutdown();
+    }
+     **/
+
     @Test
     public void main_example_how_the_lib_works() throws Exception {
         final EthereumFacade ethereum = fromTest();

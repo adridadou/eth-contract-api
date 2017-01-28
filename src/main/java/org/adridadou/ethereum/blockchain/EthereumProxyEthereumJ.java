@@ -176,16 +176,13 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
             });
         });
         eventHandler.observeBlocks()
-            .forEach(params -> {
-                params.block.getTransactionsList().stream()
-                    .map(tx -> EthAddress.of(tx.getSender()))
-                    .forEach(currentAddress -> {
-                        Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
+            .forEach(params -> params.block.getTransactionsList().stream()
+                .map(tx -> EthAddress.of(tx.getSender()))
+                .forEach(currentAddress -> Optional.ofNullable(pendingTransactions.get(currentAddress))
+                        .ifPresent(counter -> {
                             pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
                             nonces.put(currentAddress, getRepository().getNonce(currentAddress.address));
-                        });
-                    });
-            });
+                })));
     }
 
     @Override
