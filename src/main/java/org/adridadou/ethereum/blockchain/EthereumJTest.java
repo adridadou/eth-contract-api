@@ -79,8 +79,8 @@ public class EthereumJTest implements Ethereumj{
     }
 
     @Override
-    public Transaction createTransaction(BigInteger nonce, BigInteger gasPrice, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger value, byte[] data) {
-        return blockchain.createTransaction(nonce.longValue(),address, value.longValue(), data);
+    public Transaction createTransaction(EthAccount sender, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger value, byte[] data) {
+        return blockchain.createTransaction(sender.key, nonce.longValue(),address, value, data);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.values.EthAccount;
 import org.ethereum.core.Transaction;
 import org.ethereum.facade.Blockchain;
 import org.ethereum.facade.Ethereum;
@@ -38,7 +39,7 @@ public class EthereumJReal implements Ethereumj{
     }
 
     @Override
-    public Transaction createTransaction(BigInteger nonce, BigInteger gasPrice, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger value, byte[] data) {
+    public Transaction createTransaction(EthAccount sender, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger value, byte[] data) {
         return ethereum.createTransaction(nonce,gasPrice,gasLimitForConstantCalls,address,value, data);
     }
 

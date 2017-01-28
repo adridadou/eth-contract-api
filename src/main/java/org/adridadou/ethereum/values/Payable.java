@@ -27,7 +27,8 @@ public class Payable<T> {
     }
 
     public CompletableFuture<T> with(EthValue value) {
-        return (CompletableFuture<T>)contract.callFunction(methodName,value, arguments).thenApply(result -> ethereumContractInvocationHandler.convertResult(result,method));
+        return (CompletableFuture<T>)contract.callFunction(methodName,value, arguments)
+                .thenApply(result -> ethereumContractInvocationHandler.convertResult(result,method));
     }
 
 }

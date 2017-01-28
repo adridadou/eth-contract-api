@@ -16,6 +16,23 @@ public class EthValue implements Comparable<EthValue> {
         this.value = new BigDecimal(value);
     }
 
+    public BigInteger inWei() {
+        return value.toBigInteger();
+    }
+
+    public BigDecimal inEth() {
+        return value
+                .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
+    }
+
+    public EthValue plus(EthValue value) {
+        return new EthValue(this.value.add(value.value).toBigInteger());
+    }
+
+    public EthValue minus(EthValue value) {
+        return new EthValue(this.value.subtract(value.value).toBigInteger());
+    }
+
     public static EthValue ether(final BigInteger value) {
         return wei(value.multiply(ETHER_CONVERSION.toBigInteger()));
     }
@@ -36,21 +53,12 @@ public class EthValue implements Comparable<EthValue> {
         return wei(BigInteger.valueOf(value));
     }
 
+    public static EthValue wei(final long value) {
+        return wei(BigInteger.valueOf(value));
+    }
+
     public static EthValue wei(final BigInteger value) {
         return new EthValue(value);
-    }
-
-    public BigInteger inWei() {
-        return value.toBigInteger();
-    }
-
-    public BigDecimal inEth() {
-        return value
-                .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
-    }
-
-    public boolean isEmpty(){
-        return inWei().signum() != 1;
     }
 
     @Override

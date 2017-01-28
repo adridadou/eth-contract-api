@@ -54,7 +54,7 @@ public class TestnetConnectionTest {
 
     private EthereumFacade fromTest() {
         return EthereumFacadeProvider.forTest(TestConfig.builder()
-                .balance(mainAccount, ether(100))
+                .balance(mainAccount, ether(10000000))
                 .build());
     }
 
@@ -83,7 +83,9 @@ public class TestnetConnectionTest {
         System.out.println("*** calling contractSource myMethod2 async");
         myContract.myMethod2("async call").get();
 
-        myContract.myMethod3("async call").with(ether(3)).get();
+        myContract.myMethod3("async call").with(ether(150)).get();
+
+        assertEquals(ether(150), ethereum.getBalance(address));
 
         assertEquals("async call", myContract.getI2());
 
@@ -98,6 +100,27 @@ public class TestnetConnectionTest {
             assertEquals(EthereumApiException.class, ex.getCause().getClass());
         }
     }
+
+    /**
+    @Test
+    public void enduranceTestPrivate() throws Exception {
+        final EthereumFacade ethereum = privateNetwork.create(PrivateNetworkConfig.config());
+        EthAddress address = publishAndMapContract(ethereum);
+        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
+
+        for (int i=0; i<40000; i++){
+            myContract.myMethod("call" + i).exceptionally((e) -> {
+                System.out.println("******* error:" + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            });
+            Thread.sleep(100);
+        }
+        Thread.sleep(40000);
+
+        ethereum.shutdown();
+    }
+     **/
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
