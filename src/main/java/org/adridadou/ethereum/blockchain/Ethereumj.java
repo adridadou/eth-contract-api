@@ -1,6 +1,7 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.values.EthAccount;
 import org.ethereum.core.Transaction;
 import org.ethereum.facade.Blockchain;
 
@@ -19,7 +20,7 @@ public interface Ethereumj {
 
     void submitTransaction(Transaction tx);
 
-    Transaction createTransaction(BigInteger nonce, BigInteger bigInteger, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger bigInteger1, byte[] data);
+    Transaction createTransaction(EthAccount sender, BigInteger nonce, BigInteger bigInteger, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger bigInteger1, byte[] data);
 
     void addListener(EthereumEventHandler ethereumEventHandler);
 }

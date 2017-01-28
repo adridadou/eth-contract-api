@@ -127,13 +127,12 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
-
-            Transaction txLocal = ethereum.createTransaction(BigInteger.ONE,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
+            Transaction txLocal = ethereum.createTransaction(account, BigInteger.ONE,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
             txLocal.sign(account.key);
 
             BigInteger gasLimit = estimateGas(getBlockchain().getBestBlock(), txLocal).add(BigInteger.valueOf(100_000));
             BigInteger nonce = getNonce(account.getAddress());
-            Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
+            Transaction tx = ethereum.createTransaction(account, nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
 
             long currentBlock = eventHandler.getCurrentBlockNumber();

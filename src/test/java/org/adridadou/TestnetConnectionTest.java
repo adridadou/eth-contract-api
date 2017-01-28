@@ -54,7 +54,7 @@ public class TestnetConnectionTest {
 
     private EthereumFacade fromTest() {
         return EthereumFacadeProvider.forTest(TestConfig.builder()
-                .balance(mainAccount, ether(100))
+                .balance(mainAccount, ether(10000000))
                 .build());
     }
 
@@ -83,7 +83,9 @@ public class TestnetConnectionTest {
         System.out.println("*** calling contractSource myMethod2 async");
         myContract.myMethod2("async call").get();
 
-        myContract.myMethod3("async call").with(ether(3)).get();
+        myContract.myMethod3("async call").with(ether(150)).get();
+
+        assertEquals(ether(150), ethereum.getBalance(address));
 
         assertEquals("async call", myContract.getI2());
 
