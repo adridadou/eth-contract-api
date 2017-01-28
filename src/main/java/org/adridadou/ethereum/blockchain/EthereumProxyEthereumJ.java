@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,6 +44,7 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
     private final Ethereumj ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
+    private final Map<EthAddress, BigInteger> nonces = new ConcurrentHashMap<>();
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
 
@@ -52,6 +54,7 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
         eventHandler.onReady().thenAccept((b) -> getBlockchain().flush());
+        updateNonce();
     }
 
     @Override
@@ -81,7 +84,8 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
     }
 
     public BigInteger getNonce(final EthAddress address) {
-        BigInteger nonce = getBlockchain().getRepository().getNonce(address.address);
+        nonces.computeIfAbsent(address, addr ->  getRepository().getNonce(addr.address));
+        BigInteger nonce = nonces.get(address);
         return nonce.add(pendingTransactions.getOrDefault(address, BigInteger.ZERO));
     }
 
@@ -123,11 +127,12 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.onReady().thenCompose((b) -> {
-            BigInteger nonce = getNonce(account.getAddress());
-            Transaction txLocal = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
+
+            Transaction txLocal = ethereum.createTransaction(BigInteger.ONE,BigInteger.valueOf(ethereum.getGasPrice()),GAS_LIMIT_FOR_CONSTANT_CALLS, toAddress.address,value.inWei(),data.data);
             txLocal.sign(account.key);
 
             BigInteger gasLimit = estimateGas(getBlockchain().getBestBlock(), txLocal).add(BigInteger.valueOf(100_000));
+            BigInteger nonce = getNonce(account.getAddress());
             Transaction tx = ethereum.createTransaction(nonce,BigInteger.valueOf(ethereum.getGasPrice()),gasLimit, toAddress.address,value.inWei(),data.data);
             tx.sign(account.key);
 
@@ -147,7 +152,6 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
                                 throw new EthereumApiException("the transaction has not been included in the last " + BLOCK_WAIT_LIMIT + " blocks");
                             }
                             TransactionReceipt receipt = params.receipt;
-                            decreasePendingTransactionCounter(account.getAddress());
                             if (params.status == TransactionStatus.Dropped) {
                                 throw new EthereumApiException("the transaction has been dropped! - " + params.error);
                             }
@@ -159,6 +163,29 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
             increasePendingTransactionCounter(account.getAddress());
             return result;
         });
+    }
+
+    private void updateNonce() {
+        eventHandler.observeTransactions()
+                .filter(tx -> tx.status == TransactionStatus.Dropped)
+                .forEach(params -> {
+            EthAddress currentAddress = EthAddress.of(params.receipt.getTransaction().getSender());
+            Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
+                pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
+                nonces.put(currentAddress, getRepository().getNonce(currentAddress.address));
+            });
+        });
+        eventHandler.observeBlocks()
+            .forEach(params -> {
+                params.block.getTransactionsList().stream()
+                    .map(tx -> EthAddress.of(tx.getSender()))
+                    .forEach(currentAddress -> {
+                        Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
+                            pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
+                            nonces.put(currentAddress, getRepository().getNonce(currentAddress.address));
+                        });
+                    });
+            });
     }
 
     @Override
@@ -174,10 +201,6 @@ public class EthereumProxyEthereumJ implements EthereumProxy {
     @Override
     public EthValue getBalance(EthAddress address) {
         return wei(getRepository().getBalance(address.address));
-    }
-
-    private void decreasePendingTransactionCounter(EthAddress address) {
-        pendingTransactions.put(address, pendingTransactions.getOrDefault(address, BigInteger.ZERO).subtract(BigInteger.ONE));
     }
 
     private void increasePendingTransactionCounter(EthAddress address) {
