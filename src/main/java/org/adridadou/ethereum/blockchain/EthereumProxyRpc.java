@@ -83,7 +83,7 @@ public class EthereumProxyRpc implements EthereumProxy {
     @Override
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(account, data);
+        BigInteger gasLimit = web3JFacade.estimateGas(account, data).add(BigInteger.valueOf(500_000));
 
         increasePendingTransactionCounter(account.getAddress());
 
@@ -128,7 +128,7 @@ public class EthereumProxyRpc implements EthereumProxy {
     @Override
     public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(sender, data);
+        BigInteger gasLimit = web3JFacade.estimateGas(sender, data).add(BigInteger.valueOf(500_000));
 
         increasePendingTransactionCounter(sender.getAddress());
 

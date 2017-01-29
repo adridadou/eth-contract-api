@@ -1,18 +1,16 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.blockchain.BlockchainConfig;
 import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.*;
 
 import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
-import org.adridadou.ethereum.values.config.DatabaseDirectory;
-import org.adridadou.ethereum.values.config.GenesisPath;
 import org.adridadou.exception.EthereumApiException;
 import org.junit.Test;
 
@@ -44,12 +42,9 @@ public class TestnetConnectionTest {
     }
 
     private EthereumFacade fromPrivateNetwork() {
-        return EthereumFacadeProvider.forNetwork(BlockchainConfig.builder()
-                .peerActiveUrl("enode://localhost:30303")
-                .genesis(GenesisPath.path("private-genesis.json"))
-                .dbDirectory(DatabaseDirectory.db("db-adridadou"))
-                .listenPort(55555)
-        ).create();
+        return privateNetwork.create(config()
+                .reset(true)
+                .initialBalance(mainAccount, ether(10)));
     }
 
     private EthereumFacade fromTest() {
@@ -101,30 +96,9 @@ public class TestnetConnectionTest {
         }
     }
 
-    /**
-    @Test
-    public void enduranceTestPrivate() throws Exception {
-        final EthereumFacade ethereum = privateNetwork.create(PrivateNetworkConfig.config());
-        EthAddress address = publishAndMapContract(ethereum);
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
-        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
-
-        for (int i=0; i<40000; i++){
-            myContract.myMethod("call" + i).exceptionally((e) -> {
-                System.out.println("******* error:" + e.getMessage());
-                throw new RuntimeException(e.getMessage(), e);
-            });
-            Thread.sleep(100);
-        }
-        Thread.sleep(40000);
-
-        ethereum.shutdown();
-    }
-     **/
-
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        final EthereumFacade ethereum = fromTest();
+        final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
