@@ -45,7 +45,11 @@ public class EthereumJReal implements Ethereumj{
 
     @Override
     public EthData submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
-        return null;
+        Transaction tx = ethereum.createTransaction(nonce, getGasPrice(), estimateGas(account, address, value, data), address.address, value.inWei(), data.data);
+        tx.sign(account.key);
+        ethereum.submitTransaction(tx);
+
+        return EthData.of(tx.getHash());
     }
 
     @Override
