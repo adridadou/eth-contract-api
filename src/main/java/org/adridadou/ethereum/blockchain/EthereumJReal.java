@@ -14,18 +14,13 @@ import static org.adridadou.ethereum.values.EthValue.wei;
 /**
  * Created by davidroon on 20.01.17.
  */
-public class EthereumJReal implements Ethereumj{
+public class EthereumJReal implements EthereumBackend {
     private final Ethereum ethereum;
     private final LocalExecutionServiceImpl localExecutionService;
 
     public EthereumJReal(Ethereum ethereum, ChainId chainId) {
         this.ethereum = ethereum;
         this.localExecutionService = new LocalExecutionServiceImpl((BlockchainImpl)ethereum.getBlockchain(), chainId);
-    }
-
-    @Override
-    public void close() {
-        ethereum.close();
     }
 
     @Override

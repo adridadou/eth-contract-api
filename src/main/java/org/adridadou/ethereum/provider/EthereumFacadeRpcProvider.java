@@ -1,10 +1,13 @@
 package org.adridadou.ethereum.provider;
 
-import org.adridadou.ethereum.blockchain.EthereumProxyRpc;
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.blockchain.EthereumRPC;
+import org.adridadou.ethereum.blockchain.EthereumProxy;
+import org.adridadou.ethereum.blockchain.EthereumRpcEventGenerator;
 import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.solidity.compiler.SolidityCompiler;
@@ -21,6 +24,9 @@ public class EthereumFacadeRpcProvider {
     }
 
     public EthereumFacade create(final Web3JFacade web3j, final ChainId chainId) {
-        return new EthereumFacade(new EthereumProxyRpc(web3j, chainId), new InputTypeHandler(), web3j.getOutputTypeHandler(), SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
+        EthereumRPC ethereumJ = new EthereumRPC(web3j, new EthereumRpcEventGenerator());
+        InputTypeHandler inputTypeHandler = new InputTypeHandler();
+        OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
+        return new EthereumFacade(new EthereumProxy(ethereumJ, new EthereumEventHandler(ethereumJ), inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
     }
 }

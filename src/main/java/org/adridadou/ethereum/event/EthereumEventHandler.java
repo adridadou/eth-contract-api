@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.adridadou.ethereum.blockchain.Ethereumj;
+import org.adridadou.ethereum.blockchain.EthereumBackend;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
@@ -25,7 +25,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
     private final OnTransactionHandler onTransactionHandler;
     private long currentBlockNumber;
 
-    public EthereumEventHandler(Ethereumj ethereum) {
+    public EthereumEventHandler(EthereumBackend ethereum) {
         ethereum.addListener(this);
         this.onBlockHandler = new OnBlockHandler();
         this.onTransactionHandler = new OnTransactionHandler();

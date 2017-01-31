@@ -9,18 +9,13 @@ import java.math.BigInteger;
 /**
  * Created by davidroon on 20.01.17.
  */
-public class EthereumJRPC implements Ethereumj{
+public class EthereumRPC implements EthereumBackend {
     private final Web3JFacade web3JFacade;
     private final EthereumRpcEventGenerator ethereumRpcEventGenerator;
 
-    public EthereumJRPC(Web3JFacade web3JFacade, EthereumRpcEventGenerator ethereumRpcEventGenerator) {
+    public EthereumRPC(Web3JFacade web3JFacade, EthereumRpcEventGenerator ethereumRpcEventGenerator) {
         this.web3JFacade = web3JFacade;
         this.ethereumRpcEventGenerator = ethereumRpcEventGenerator;
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Created by davidroon on 20.01.17.
  */
-public class EthereumJTest implements Ethereumj{
+public class EthereumJTest implements EthereumBackend {
     private final StandaloneBlockchain blockchain;
     private final TestConfig config;
     private final BlockingQueue<Transaction> transactions = new ArrayBlockingQueue<>(100);
@@ -62,11 +62,6 @@ public class EthereumJTest implements Ethereumj{
 
     public EthAccount defaultAccount() {
         return AccountProvider.from(this.blockchain.getSender());
-    }
-
-    @Override
-    public void close() {
-
     }
 
     @Override

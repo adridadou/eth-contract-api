@@ -47,8 +47,6 @@ public class EventsTest {
         Observable<MyEvent> observeEvent = ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class);
         myContract.createEvent("my event is here");
         assertEquals("my event is here", observeEvent.toBlocking().first().value);
-        ethereum.shutdown();
-
     }
 
     private interface ContractEvents {

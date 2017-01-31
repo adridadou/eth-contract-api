@@ -8,9 +8,7 @@ import java.math.BigInteger;
 /**
  * Created by davidroon on 20.01.17.
  */
-public interface Ethereumj {
-    void close();
-
+public interface EthereumBackend {
     BigInteger getGasPrice();
 
     EthValue getBalance(EthAddress address);

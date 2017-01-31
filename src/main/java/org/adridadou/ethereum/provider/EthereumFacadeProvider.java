@@ -62,10 +62,10 @@ public class EthereumFacadeProvider {
             return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
-        public EthereumFacade create(Ethereumj ethereum, EthereumEventHandler ethereumListener) {
+        public EthereumFacade create(EthereumBackend ethereum, EthereumEventHandler ethereumListener) {
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-            return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
+            return new EthereumFacade(new EthereumProxy(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
         }
     }
 }

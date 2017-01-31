@@ -52,7 +52,7 @@ public class RpcEthereumTest {
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         Contract service = ethereum.createContractProxy(compiledContract, address, account, Contract.class);
 
-        service.myMethod(23).get();
+        //service.myMethod(23).get();
 
         assertEquals(0, service.getI1().intValue());
     }

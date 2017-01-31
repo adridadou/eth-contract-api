@@ -98,7 +98,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        final EthereumFacade ethereum = fromTest();
+        final EthereumFacade ethereum = fromPrivateNetwork();
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);
@@ -106,8 +106,6 @@ public class TestnetConnectionTest {
         testMethodCalls(myContract, address, ethereum);
 
         assertEquals(mainAccount.getAddress(), myContract.getOwner());
-        ethereum.shutdown();
-
     }
 
     public static class MyReturnType {

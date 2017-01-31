@@ -2,7 +2,6 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.blockchain.EthereumProxy;
-import org.adridadou.ethereum.blockchain.EthereumProxyEthereumJ;
 import org.adridadou.ethereum.blockchain.EthereumJTest;
 import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
@@ -33,7 +32,7 @@ public class EthereumProviderTest {
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
     private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
-    private final EthereumProxy bcProxy = new EthereumProxyEthereumJ(ethereumj, handler, inputTypeHandler, outputTypeHandler);
+    private final EthereumProxy bcProxy = new EthereumProxy(ethereumj, handler, inputTypeHandler, outputTypeHandler);
     private final EthAccount account = ethereumj.defaultAccount();
     private final EthereumFacade ethereum = new EthereumFacade(bcProxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 

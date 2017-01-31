@@ -133,10 +133,6 @@ public class EthereumFacade {
       }
     }
 
-    public void shutdown() {
-        ethereumProxy.shutdown();
-    }
-
     public CompletableFuture<CompiledContract> compile(SoliditySource src, String contractName) {
         return CompletableFuture.supplyAsync(() -> compileInternal(src,contractName));
     }
