@@ -17,7 +17,7 @@ import org.web3j.protocol.http.HttpService;
  */
 public class EthereumFacadeRpcProvider {
     public EthereumFacade create(final String url, final ChainId chainId) {
-        return create(new Web3JFacade(Web3j.build(new HttpService(url)), new OutputTypeHandler()), chainId);
+        return create(new Web3JFacade(Web3j.build(new HttpService(url)), new OutputTypeHandler(), chainId), chainId);
     }
 
     public EthereumFacade create(final Web3JFacade web3j, final ChainId chainId) {

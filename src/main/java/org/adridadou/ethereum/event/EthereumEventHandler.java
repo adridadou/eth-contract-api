@@ -29,7 +29,7 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
         ethereum.addListener(this);
         this.onBlockHandler = new OnBlockHandler();
         this.onTransactionHandler = new OnTransactionHandler();
-        currentBlockNumber = ethereum.getBlockchain().getBestBlock().getNumber();
+        currentBlockNumber = ethereum.getCurrentBlockNumber();
     }
 
     @Override

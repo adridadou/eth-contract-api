@@ -89,8 +89,8 @@ public class EthereumFacade {
         return metadata.getAbi();
     }
 
-    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        return ethereumProxy.publish(contract, sender, constructorArgs);
+    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount account, Object... constructorArgs) {
+        return ethereumProxy.publish(contract, account, constructorArgs);
     }
 
     public SwarmHash publishMetadataToSwarm(CompiledContract contract) {

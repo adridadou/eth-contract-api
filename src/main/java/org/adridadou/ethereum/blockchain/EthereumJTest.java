@@ -2,12 +2,16 @@ package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.provider.LocalExecutionServiceImpl;
+import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
+import org.ethereum.core.Block;
+import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
-import org.ethereum.facade.Blockchain;
+import org.ethereum.core.TransactionExecutor;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
@@ -22,6 +26,7 @@ public class EthereumJTest implements Ethereumj{
     private final StandaloneBlockchain blockchain;
     private final TestConfig config;
     private final BlockingQueue<Transaction> transactions = new ArrayBlockingQueue<>(100);
+    private final LocalExecutionServiceImpl localExecutionService;
 
     public EthereumJTest(TestConfig config) {
         SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
@@ -40,6 +45,7 @@ public class EthereumJTest implements Ethereumj{
         config.getBalances().entrySet()
                 .forEach(entry -> blockchain.withAccountBalance(entry.getKey().getAddress().address, entry.getValue().inWei()));
 
+        localExecutionService = new LocalExecutionServiceImpl(blockchain.getBlockchain(), ChainId.id(1));
         CompletableFuture.runAsync(() -> {
             try {
                 while(true) {
@@ -59,32 +65,84 @@ public class EthereumJTest implements Ethereumj{
     }
 
     @Override
-    public Blockchain getBlockchain() {
-        return blockchain.getBlockchain();
-    }
-
-    @Override
     public void close() {
 
     }
 
     @Override
-    public long getGasPrice() {
-        return config.getGasPrice();
+    public BigInteger getGasPrice() {
+        return BigInteger.valueOf(config.getGasPrice());
     }
 
     @Override
-    public void submitTransaction(Transaction tx) {
+    public EthValue getBalance(EthAddress address) {
+        return EthValue.wei(blockchain.getBlockchain().getRepository().getBalance(address.address));
+    }
+
+    @Override
+    public boolean addressExists(EthAddress address) {
+        return blockchain.getBlockchain().getRepository().isExist(address.address);
+    }
+
+    @Override
+    public EthData submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
+        Transaction tx = createTransaction(account, nonce, address, value, data);
         transactions.add(tx);
+
+        return EthData.of(tx.getHash());
     }
 
-    @Override
-    public Transaction createTransaction(EthAccount sender, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger value, byte[] data) {
-        return blockchain.createTransaction(sender.key, nonce.longValue(),address, value, data);
+    private Transaction createTransaction(EthAccount account, BigInteger nonce, EthAddress address, EthValue value, EthData data) {
+        return blockchain.createTransaction(account.key, nonce.longValue(),address.address, value.inWei(), data.data);
     }
 
     @Override
     public void addListener(EthereumEventHandler ethereumEventHandler) {
         blockchain.addEthereumListener(ethereumEventHandler);
+    }
+
+    @Override
+    public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
+        Transaction tx = createTransaction(account, getNonce(account.getAddress()), address, value, data);
+        Block callBlock = blockchain.getBlockchain().getBestBlock();
+        Repository repository = blockchain.getBlockchain().getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
+        try {
+            TransactionExecutor executor = new TransactionExecutor
+                    (tx, callBlock.getCoinbase(), repository, blockchain.getBlockchain().getBlockStore(),
+                    blockchain.getBlockchain().getProgramInvokeFactory(), callBlock)
+                    .setLocalCall(true);
+
+            executor.init();
+            executor.execute();
+            executor.go();
+            executor.finalization();
+            if(!executor.getReceipt().isSuccessful()) {
+                throw new EthereumApiException(executor.getReceipt().getError());
+            }
+            long gasUsed = executor.getGasUsed();
+            return BigInteger.valueOf(gasUsed);
+        } finally {
+            repository.rollback();
+        }
+    }
+
+    @Override
+    public BigInteger getNonce(EthAddress currentAddress) {
+        return blockchain.getBlockchain().getRepository().getNonce(currentAddress.address);
+    }
+
+    @Override
+    public long getCurrentBlockNumber() {
+        return 0;
+    }
+
+    @Override
+    public SmartContractByteCode getCode(EthAddress address) {
+        return SmartContractByteCode.of(blockchain.getBlockchain().getRepository().getCode(address.address));
+    }
+
+    @Override
+    public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
+        return localExecutionService.executeLocally(account, address,value, data, getNonce(account.getAddress()));
     }
 }

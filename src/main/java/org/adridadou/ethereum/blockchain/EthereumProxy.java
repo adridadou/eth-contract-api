@@ -14,12 +14,12 @@ import java.util.concurrent.CompletableFuture;
  * This code is released under Apache 2 license
  */
 public interface EthereumProxy {
-    SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, EthAccount sender);
+    SmartContract mapFromAbi(final ContractAbi abi, EthAddress address, EthAccount account);
 
-    CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs);
+    CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount account, Object... constructorArgs);
 
-    CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount sender, EthAddress address);
-    CompletableFuture<EthAddress> sendTx(final EthValue ethValue, final EthData data, final EthAccount sender);
+    CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress address);
+    CompletableFuture<EthAddress> publishContract(final EthValue ethValue, final EthData data, final EthAccount account);
 
     EthereumEventHandler events();
 

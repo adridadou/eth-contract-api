@@ -35,7 +35,7 @@ public class EthereumFacadeTest {
     private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
     private final EthereumProxy proxy = new EthereumProxyEthereumJ(ethereumj,handler,inputTypeHandler,outputTypeHandler);
     private final EthereumFacade ethereum = new EthereumFacade(proxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
-    private final EthAccount sender = ethereumj.defaultAccount();
+    private final EthAccount account = ethereumj.defaultAccount();
 
     @Before
     public void before() {
@@ -46,8 +46,8 @@ public class EthereumFacadeTest {
     public void testReturnTypeConverters() throws Throwable {
         SoliditySource contractSource = SoliditySource.from(new File("src/test/resources/contract2.sol"));
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
-        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
-        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, sender, MyContract2.class);
+        EthAddress address = ethereum.publishContract(compiledContract, account).get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, account, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());

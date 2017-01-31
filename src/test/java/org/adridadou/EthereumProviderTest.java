@@ -34,7 +34,7 @@ public class EthereumProviderTest {
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
     private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
     private final EthereumProxy bcProxy = new EthereumProxyEthereumJ(ethereumj, handler, inputTypeHandler, outputTypeHandler);
-    private final EthAccount sender = ethereumj.defaultAccount();
+    private final EthAccount account = ethereumj.defaultAccount();
     private final EthereumFacade ethereum = new EthereumFacade(bcProxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 
     @Before
@@ -53,9 +53,9 @@ public class EthereumProviderTest {
                         "  }" +
                         "}");
         CompiledContract compiledContract = ethereum.compile(contractSource,"myContract").get();
-        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
+        EthAddress address = ethereum.publishContract(compiledContract, account).get();
 
-        MyContract proxy = ethereum.createContractProxy(compiledContract, address, sender, MyContract.class);
+        MyContract proxy = ethereum.createContractProxy(compiledContract, address, account, MyContract.class);
 
         assertEquals(23, proxy.myMethod());
     }
@@ -72,9 +72,9 @@ public class EthereumProviderTest {
 
         CompiledContract compiledContract = ethereum.compile(contractSource,"myContract2").get();
 
-        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
+        EthAddress address = ethereum.publishContract(compiledContract, account).get();
 
-        BlaBla proxy = ethereum.createContractProxy(compiledContract, address, sender, BlaBla.class);
+        BlaBla proxy = ethereum.createContractProxy(compiledContract, address, account, BlaBla.class);
         proxy.myMethod(12).get();
 
         assertEquals(12, proxy.getI1());

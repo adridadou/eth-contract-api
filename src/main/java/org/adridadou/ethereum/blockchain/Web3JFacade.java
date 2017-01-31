@@ -1,12 +1,11 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
-import org.adridadou.ethereum.values.EthData;
-import org.adridadou.ethereum.values.SmartContractByteCode;
+import org.adridadou.ethereum.values.*;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
+import org.ethereum.util.ByteUtil;
 import org.ethereum.vm.LogInfo;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -29,10 +28,12 @@ import java.util.ArrayList;
 public class Web3JFacade {
     private final Web3j web3j;
     private final OutputTypeHandler outputTypeHandler;
+    private final ChainId chainId;
 
-    public Web3JFacade(final Web3j web3j, OutputTypeHandler outputTypeHandler) {
+    public Web3JFacade(final Web3j web3j, OutputTypeHandler outputTypeHandler, ChainId chainId) {
         this.web3j = web3j;
         this.outputTypeHandler = outputTypeHandler;
+        this.chainId = chainId;
     }
 
     public EthData constantCall(final EthAccount account, final EthAddress address, final EthData data) {
@@ -67,9 +68,9 @@ public class Web3JFacade {
         }
     }
 
-    public BigInteger estimateGas(EthAccount sender, EthData data) {
+    public BigInteger estimateGas(EthAccount account, EthAddress address, EthValue value, EthData data) {
         try {
-            return Numeric.decodeQuantity(handleError(web3j.ethEstimateGas(Transaction.createEthCallTransaction(sender.getAddress().withLeading0x(), data.toString())).send()));
+            return Numeric.decodeQuantity(handleError(web3j.ethEstimateGas(new Transaction(account.getAddress().withLeading0x(), null, null, null, address.withLeading0x(),value.inWei(),  data.toString())).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
@@ -131,5 +132,23 @@ public class Web3JFacade {
         return web3j.blockObservable(true)
                 .flatMap(block -> Observable.from(block.getResult().getTransactions()))
                 .map(txResult -> (EthBlock.TransactionObject)txResult.get());
+    }
+
+    public long getCurrentBlockNumber() {
+        try {
+            return web3j.ethBlockNumber().send().getBlockNumber().longValue();
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
+    }
+
+    public org.ethereum.core.Transaction createTransaction(BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, EthAddress address, EthValue value, EthData data) {
+        byte[] nonceBytes = ByteUtil.bigIntegerToBytes(nonce);
+        byte[] gasPriceBytes = ByteUtil.bigIntegerToBytes(gasPrice);
+        byte[] gasBytes = ByteUtil.bigIntegerToBytes(gasLimit);
+        byte[] valueBytes = ByteUtil.bigIntegerToBytes(value.inWei());
+
+        return new org.ethereum.core.Transaction(nonceBytes, gasPriceBytes, gasBytes,
+                address.address, valueBytes, data.data, chainId.id);
     }
 }

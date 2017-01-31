@@ -27,12 +27,12 @@ public class SmartContractRpc implements SmartContract {
     private final Contract contract;
     private final Web3JFacade web3j;
     private final EthereumProxyRpc bcProxy;
-    private final EthAccount sender;
+    private final EthAccount account;
 
-    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount sender, EthAddress address, EthereumProxyRpc bcProxy) {
+    public SmartContractRpc(String abi, Web3JFacade web3j, EthAccount account, EthAddress address, EthereumProxyRpc bcProxy) {
         this.contract = new Contract(abi);
         this.web3j = web3j;
-        this.sender = sender;
+        this.account = account;
         this.bcProxy = bcProxy;
         this.address = address;
     }
@@ -41,10 +41,10 @@ public class SmartContractRpc implements SmartContract {
         return Lists.newArrayList(contract.functions);
     }
 
-    public Object[] callConstFunction(String functionName, Object... args) {
+    public Object[] callConstFunction(String functionName, EthValue value, Object... args) {
         return Optional.ofNullable(contract.getByName(functionName))
                 .map(func -> {
-                    EthData result = web3j.constantCall(sender, address, EthData.of(func.encode(args)));
+                    EthData result = web3j.constantCall(account, address, EthData.of(func.encode(args)));
                     return func.decodeResult(result.data);
                 }).orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
@@ -60,7 +60,7 @@ public class SmartContractRpc implements SmartContract {
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
         return Optional.ofNullable(contract.getByName(functionName))
-                .map(func -> bcProxy.sendTx(value, EthData.of(func.encode(args)), sender, address)
+                .map(func -> bcProxy.sendTx(value, EthData.of(func.encode(args)), account, address)
                 .thenApply(receipt -> Optional.ofNullable(receipt.getResult())
                         .map(result -> contract.getByName(functionName).decodeResult(result)).orElse(null)))
                 .orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));

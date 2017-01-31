@@ -49,23 +49,23 @@ public class EthereumProxyRpc implements EthereumProxy {
     }
 
     @Override
-    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount sender) {
-        return new SmartContractRpc(abi.getAbi(), web3JFacade, sender, address, this);
+    public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount account) {
+        return new SmartContractRpc(abi.getAbi(), web3JFacade, account, address, this);
     }
 
     @Override
-    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        return createContract(contract, sender, constructorArgs);
+    public CompletableFuture<EthAddress> publish(CompiledContract contract, EthAccount account, Object... constructorArgs) {
+        return createContract(contract, account, constructorArgs);
     }
 
-    private CompletableFuture<EthAddress> createContract(CompiledContract compiledContract, EthAccount sender, Object... constructorArgs) {
+    private CompletableFuture<EthAddress> createContract(CompiledContract compiledContract, EthAccount account, Object... constructorArgs) {
         CallTransaction.Contract contract = new CallTransaction.Contract(compiledContract.getAbi().getAbi());
         CallTransaction.Function constructor = contract.getConstructor();
         if (constructor == null && constructorArgs.length > 0) {
             throw new EthereumApiException("No constructor with params found");
         }
         byte[] argsEncoded = constructor == null ? new byte[0] : constructor.encodeArguments(constructorArgs);
-        return sendTx(wei(0), EthData.of(ByteUtil.merge(compiledContract.getBinary().data, argsEncoded)), sender);
+        return publishContract(wei(0), EthData.of(ByteUtil.merge(compiledContract.getBinary().data, argsEncoded)), account);
     }
 
     private CompletableFuture<TransactionReceipt> waitForTransactionReceipt(EthData transactionHash) {
@@ -81,9 +81,9 @@ public class EthereumProxyRpc implements EthereumProxy {
     }
 
     @Override
-    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
+    public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress address) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(account, data).add(BigInteger.valueOf(500_000));
+        BigInteger gasLimit = web3JFacade.estimateGas(account, address, value, data).add(BigInteger.valueOf(500_000));
 
         increasePendingTransactionCounter(account.getAddress());
 
@@ -91,10 +91,10 @@ public class EthereumProxyRpc implements EthereumProxy {
                 ByteUtil.bigIntegerToBytes(getNonce(account.getAddress())),
                 ByteUtil.longToBytesNoLeadZeroes(gasPrice.longValue()),
                 ByteUtil.longToBytesNoLeadZeroes(gasLimit.longValue()),
-                Optional.ofNullable(toAddress).map(addr -> addr.address).orElse(null),
+                Optional.ofNullable(address).map(addr -> addr.address).orElse(null),
                 ByteUtil.longToBytesNoLeadZeroes(value.inWei().longValue()),
                 data.data,
-                (byte) chainId.id);
+                chainId.id);
         tx.sign(account.key);
 
         return CompletableFuture.supplyAsync(() -> {
@@ -126,23 +126,23 @@ public class EthereumProxyRpc implements EthereumProxy {
     }
 
     @Override
-    public CompletableFuture<EthAddress> sendTx(EthValue ethValue, EthData data, EthAccount sender) {
+    public CompletableFuture<EthAddress> publishContract(EthValue ethValue, EthData data, EthAccount account) {
         BigInteger gasPrice = web3JFacade.getGasPrice();
-        BigInteger gasLimit = web3JFacade.estimateGas(sender, data).add(BigInteger.valueOf(500_000));
+        BigInteger gasLimit = web3JFacade.estimateGas(account, EthAddress.empty(), EthValue.wei(0), data).add(BigInteger.valueOf(500_000));
 
-        increasePendingTransactionCounter(sender.getAddress());
+        increasePendingTransactionCounter(account.getAddress());
 
         RawTransaction tx = RawTransaction.createContractTransaction(
-                getNonce(sender.getAddress()),
+                getNonce(account.getAddress()),
                 gasPrice,
                 gasLimit,
                 ethValue.inWei(),
                 data.toString());
-        EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, sender.credentials));
+        EthData signedTx = EthData.of(TransactionEncoder.signMessage(tx, account.credentials));
         EthData result = web3JFacade.sendTransaction(signedTx);
         return this.handleTransaction(result)
                 .thenApply(receipt -> {
-                    decreasePendingTransactionCounter(sender.getAddress());
+                    decreasePendingTransactionCounter(account.getAddress());
                     return EthAddress.of(receipt.getContractAddress().orElse(null));
                 });
     }

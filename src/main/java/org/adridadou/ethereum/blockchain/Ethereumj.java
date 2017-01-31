@@ -1,26 +1,33 @@
 package org.adridadou.ethereum.blockchain;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
-import org.adridadou.ethereum.values.EthAccount;
-import org.ethereum.core.Transaction;
-import org.ethereum.facade.Blockchain;
+import org.adridadou.ethereum.values.*;
 
 import java.math.BigInteger;
-import java.util.concurrent.Future;
 
 /**
  * Created by davidroon on 20.01.17.
  */
 public interface Ethereumj {
-    Blockchain getBlockchain();
-
     void close();
 
-    long getGasPrice();
+    BigInteger getGasPrice();
 
-    void submitTransaction(Transaction tx);
+    EthValue getBalance(EthAddress address);
 
-    Transaction createTransaction(EthAccount sender, BigInteger nonce, BigInteger bigInteger, BigInteger gasLimitForConstantCalls, byte[] address, BigInteger bigInteger1, byte[] data);
+    boolean addressExists(EthAddress address);
+
+    EthData submit(final EthAccount account, final EthAddress address,final EthValue value, final EthData data, final BigInteger nonce);
 
     void addListener(EthereumEventHandler ethereumEventHandler);
+
+    BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
+
+    BigInteger getNonce(EthAddress currentAddress);
+
+    long getCurrentBlockNumber();
+
+    SmartContractByteCode getCode(EthAddress address);
+
+    EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
 }

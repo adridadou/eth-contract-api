@@ -11,6 +11,7 @@ import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.ethereum.values.config.DatabaseDirectory;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
@@ -57,7 +58,7 @@ public class PrivateEthereumFacadeProvider {
 
         MinerConfig.dbName = config.getDbName();
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        Ethereumj ethereumj = new EthereumJReal(ethereum);
+        Ethereumj ethereumj = new EthereumJReal(ethereum, ChainId.id(1));
         ethereum.initSyncing();
 
         if (!dagCached) {

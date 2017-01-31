@@ -15,6 +15,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
+
 
 /**
  * Created by davidroon on 31.03.16.
@@ -39,7 +41,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         final String methodName = method.getName();
         SmartContractInfo contractInfo = info.get(new ProxyWrapper(proxy));
-        SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
+        SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getAccount());
         Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
             try {
@@ -56,7 +58,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             return new Payable(contract, methodName, arguments, method, this);
         }
         else {
-            return convertResult(contract.callConstFunction(methodName, arguments), method);
+            return convertResult(contract.callConstFunction(methodName, wei(0), arguments), method);
         }
     }
 

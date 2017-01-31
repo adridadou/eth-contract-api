@@ -14,6 +14,7 @@ import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static org.adridadou.ethereum.values.EthValue.wei;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,7 +30,7 @@ public class RpcEthereumTest {
     private final EthereumFacadeRpcProvider provider = new EthereumFacadeRpcProvider();
     private final Web3JFacade web3j = mock(Web3JFacade.class);
     private final SoliditySource contractSource = new SoliditySource(
-            "pragma solidity ^0.4.6;" +
+            "pragma solidity ^0.4.8;" +
                     "contract myContract2 {" +
                     "  int i1;" +
                     "  function myMethod(int value) {i1 = value;}" +
@@ -44,7 +45,7 @@ public class RpcEthereumTest {
         when(web3j.getOutputTypeHandler()).thenReturn(new OutputTypeHandler());
         when(web3j.getTransactionCount(account.getAddress())).thenReturn(BigInteger.TEN);
         when(web3j.getGasPrice()).thenReturn(BigInteger.TEN);
-        when(web3j.estimateGas(eq(account), any(EthData.class))).thenReturn(BigInteger.TEN);
+        when(web3j.estimateGas(eq(account), eq(address), eq(wei(0)), any(EthData.class))).thenReturn(BigInteger.TEN);
         when(web3j.constantCall(eq(account), eq(address), any(EthData.class))).thenReturn(EthData.of(new byte[0]));
 
         EthereumFacade ethereum = provider.create(web3j, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);

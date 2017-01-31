@@ -15,7 +15,7 @@ public interface SmartContract {
 
     CompletableFuture<Object[]> callFunction(String methodName, EthValue value, Object... arguments);
 
-    Object[] callConstFunction(String methodName, Object... arguments);
+    Object[] callConstFunction(String methodName, EthValue value, Object... arguments);
 
     List<CallTransaction.Function> getFunctions();
 }

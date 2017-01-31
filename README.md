@@ -85,7 +85,7 @@ First you need to read the source. The source is represented by
 
 Then you can pass the new source object to publish it to the network:
 ````
-        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", sender);
+        CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(contract, "myContract2", account);
 ````
 
 The method takes as parameters:
@@ -110,7 +110,7 @@ contract myContract2 {
 	address owner;
 
 	function myContract2() {
-	    owner = msg.sender;
+	    owner = msg.account;
 	}
 
   	function myMethod(string value) returns (uint) {
@@ -172,8 +172,8 @@ Then the other parameters are:
 * The interface class used to interface with the smart contract
 
 ````
-public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount sender, Class<T> contractInterface)
-public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount sender, Class<T> contractInterface)
+public <T> T createContractProxy(SoliditySource code, String contractName, EthAddress address, EthAccount account, Class<T> contractInterface)
+public <T> T createContractProxy(ContractAbi abi, EthAddress address, EthAccount account, Class<T> contractInterface)
 ````
 
 The interface is then validated against the ABI to make sure that they are compatible.
