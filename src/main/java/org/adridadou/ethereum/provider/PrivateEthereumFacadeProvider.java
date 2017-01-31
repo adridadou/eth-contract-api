@@ -4,7 +4,7 @@ import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.blockchain.EthereumBackend;
 import org.adridadou.ethereum.blockchain.EthereumProxy;
-import org.adridadou.ethereum.blockchain.EthereumJReal;
+import org.adridadou.ethereum.blockchain.EthereumReal;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
@@ -58,7 +58,7 @@ public class PrivateEthereumFacadeProvider {
 
         MinerConfig.dbName = config.getDbName();
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        EthereumBackend ethereumBackend = new EthereumJReal(ethereum, ChainId.id(1));
+        EthereumBackend ethereumBackend = new EthereumReal(ethereum, ChainId.id(1));
         ethereum.initSyncing();
 
         if (!dagCached) {

@@ -2,7 +2,7 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.blockchain.EthereumProxy;
-import org.adridadou.ethereum.blockchain.EthereumJTest;
+import org.adridadou.ethereum.blockchain.EthereumTest;
 import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
  * This code is released under Apache 2 license
  */
 public class EthereumProviderTest {
-    private final EthereumJTest ethereumj = new EthereumJTest(TestConfig.builder().build());
+    private final EthereumTest ethereumj = new EthereumTest(TestConfig.builder().build());
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
     private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);

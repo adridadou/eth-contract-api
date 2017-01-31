@@ -22,13 +22,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Created by davidroon on 20.01.17.
  */
-public class EthereumJTest implements EthereumBackend {
+public class EthereumTest implements EthereumBackend {
     private final StandaloneBlockchain blockchain;
     private final TestConfig config;
     private final BlockingQueue<Transaction> transactions = new ArrayBlockingQueue<>(100);
     private final LocalExecutionServiceImpl localExecutionService;
 
-    public EthereumJTest(TestConfig config) {
+    public EthereumTest(TestConfig config) {
         SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
             @Override
             public BigInteger getMINIMUM_DIFFICULTY() {

@@ -38,7 +38,7 @@ public class EthereumFacadeProvider {
     }
 
     public static EthereumFacade forTest(TestConfig config){
-        EthereumJTest ethereumj = new EthereumJTest(config);
+        EthereumTest ethereumj = new EthereumTest(config);
         EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
         ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
         return new Builder(BlockchainConfig.builder()).create(ethereumj, ethereumListener);
@@ -58,7 +58,7 @@ public class EthereumFacadeProvider {
 
         public EthereumFacade create(){
             GenericConfig.config = configBuilder.build().toString();
-            EthereumJReal ethereum = new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class), configBuilder.networkId);
+            EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class), configBuilder.networkId);
             return create(ethereum, new EthereumEventHandler(ethereum));
         }
 
