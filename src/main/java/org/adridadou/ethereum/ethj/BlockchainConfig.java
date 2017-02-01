@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
 import org.adridadou.ethereum.values.config.*;
 

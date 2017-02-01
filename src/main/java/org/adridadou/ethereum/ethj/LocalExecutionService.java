@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj;
 
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
@@ -14,11 +14,11 @@ import java.math.BigInteger;
 /**
  * Created by davidroon on 30.01.17.
  */
-public class LocalExecutionServiceImpl {
+public class LocalExecutionService {
     private final BlockchainImpl blockchain;
     private final ChainId chainId;
 
-    public LocalExecutionServiceImpl(BlockchainImpl blockchain, ChainId chainId) {
+    public LocalExecutionService(BlockchainImpl blockchain, ChainId chainId) {
         this.blockchain = blockchain;
         this.chainId = chainId;
     }

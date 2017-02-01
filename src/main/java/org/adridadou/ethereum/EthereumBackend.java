@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum;
 
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;

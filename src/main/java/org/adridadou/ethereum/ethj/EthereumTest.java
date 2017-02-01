@@ -1,13 +1,14 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
+import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.provider.LocalExecutionServiceImpl;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.FrontierConfig;
+import org.ethereum.config.blockchain.HomesteadConfig;
 import org.ethereum.core.Block;
 import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
@@ -24,12 +25,12 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EthereumTest implements EthereumBackend {
     private final StandaloneBlockchain blockchain;
-    private final TestConfig config;
+    private final TestConfig testConfig;
     private final BlockingQueue<Transaction> transactions = new ArrayBlockingQueue<>(100);
-    private final LocalExecutionServiceImpl localExecutionService;
+    private final LocalExecutionService localExecutionService;
 
-    public EthereumTest(TestConfig config) {
-        SystemProperties.getDefault().setBlockchainConfig(new FrontierConfig(new FrontierConfig.FrontierConstants() {
+    public EthereumTest(TestConfig testConfig) {
+        SystemProperties.getDefault().setBlockchainConfig(new HomesteadConfig(new HomesteadConfig.HomesteadConstants() {
             @Override
             public BigInteger getMINIMUM_DIFFICULTY() {
                 return BigInteger.ONE;
@@ -37,15 +38,16 @@ public class EthereumTest implements EthereumBackend {
         }));
 
         this.blockchain = new StandaloneBlockchain();
-        blockchain
-                .withGasLimit(config.getGasLimit())
-                .withGasPrice(config.getGasPrice())
-                .withCurrentTime(config.getInitialTime());
 
-        config.getBalances().entrySet()
+        blockchain
+                .withGasLimit(testConfig.getGasLimit())
+                .withGasPrice(testConfig.getGasPrice())
+                .withCurrentTime(testConfig.getInitialTime());
+
+        testConfig.getBalances().entrySet()
                 .forEach(entry -> blockchain.withAccountBalance(entry.getKey().getAddress().address, entry.getValue().inWei()));
 
-        localExecutionService = new LocalExecutionServiceImpl(blockchain.getBlockchain(), ChainId.id(1));
+        localExecutionService = new LocalExecutionService(blockchain.getBlockchain(), ChainId.id(1));
         CompletableFuture.runAsync(() -> {
             try {
                 while(true) {
@@ -57,7 +59,7 @@ public class EthereumTest implements EthereumBackend {
             }
         });
 
-        this.config = config;
+        this.testConfig = testConfig;
     }
 
     public EthAccount defaultAccount() {
@@ -66,7 +68,7 @@ public class EthereumTest implements EthereumBackend {
 
     @Override
     public BigInteger getGasPrice() {
-        return BigInteger.valueOf(config.getGasPrice());
+        return BigInteger.valueOf(testConfig.getGasPrice());
     }
 
     @Override

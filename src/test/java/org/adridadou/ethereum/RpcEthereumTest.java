@@ -1,10 +1,10 @@
 package org.adridadou.ethereum;
 
 
-import org.adridadou.ethereum.blockchain.Web3JFacade;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-import org.adridadou.ethereum.provider.EthereumFacadeProvider;
-import org.adridadou.ethereum.provider.EthereumFacadeRpcProvider;
+import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
+import org.adridadou.ethereum.rpc.provider.EthereumFacadeRpcProvider;
+import org.adridadou.ethereum.rpc.Web3JFacade;
 import org.adridadou.ethereum.values.*;
 import org.ethereum.crypto.ECKey;
 import org.junit.Test;

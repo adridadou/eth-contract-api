@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.adridadou.ethereum.blockchain.EthereumBackend;
+import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Block;
@@ -52,16 +52,16 @@ public class EthereumEventHandler extends EthereumListenerAdapter {
         onTransactionHandler.on(new OnTransactionParameters(txReceipt, EthData.of(transaction.getHash()), transactionStatus, txReceipt.getError(), new ArrayList<>(), transaction.getSender(), transaction.getReceiveAddress()));
     }
 
-  @Override
-  public void onTransactionExecuted(TransactionExecutionSummary summary) {
+    @Override
+    public void onTransactionExecuted(TransactionExecutionSummary summary) {
       summary.getInternalTransactions()
               .forEach(internalTransaction -> onTransactionHandler
                       .on(new OnTransactionParameters(null, EthData.of(internalTransaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), internalTransaction.getSender(), internalTransaction.getReceiveAddress())));
       Transaction transaction = summary.getTransaction();
       onTransactionHandler.on(new OnTransactionParameters(null, EthData.of(transaction.getHash()), TransactionStatus.Executed, "", summary.getLogs(), transaction.getSender(), transaction.getReceiveAddress()));
-  }
+    }
 
-  public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
+    public TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
         if (receipt.isSuccessful() && receipt.isValid()) {
             return receipt;
         } else {

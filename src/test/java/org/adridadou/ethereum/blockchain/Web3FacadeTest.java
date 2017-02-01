@@ -1,5 +1,6 @@
 package org.adridadou.ethereum.blockchain;
 
+import org.adridadou.ethereum.rpc.Web3JFacade;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.config.ChainId;

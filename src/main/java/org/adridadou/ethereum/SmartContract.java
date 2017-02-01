@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.smartcontract;
+package org.adridadou.ethereum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,8 +7,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.blockchain.EthereumBackend;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;

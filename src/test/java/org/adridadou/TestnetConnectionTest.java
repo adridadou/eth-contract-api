@@ -1,13 +1,14 @@
 package org.adridadou;
 
 import org.adridadou.ethereum.*;
-import org.adridadou.ethereum.blockchain.TestConfig;
+import org.adridadou.ethereum.ethj.TestConfig;
+import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
+import org.adridadou.ethereum.ethj.provider.PrivateEthereumFacadeProvider;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.provider.*;
 import org.adridadou.ethereum.values.*;
 
-import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
-import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
+import static org.adridadou.ethereum.ethj.provider.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.ethj.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
@@ -98,7 +99,7 @@ public class TestnetConnectionTest {
 
     @Test
     public void main_example_how_the_lib_works() throws Exception {
-        final EthereumFacade ethereum = fromPrivateNetwork();
+        final EthereumFacade ethereum = fromTest();
         EthAddress address = publishAndMapContract(ethereum);
         CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, MyContract2.class);

@@ -1,10 +1,10 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.rpc.provider;
 
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.blockchain.EthereumRPC;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
-import org.adridadou.ethereum.blockchain.EthereumRpcEventGenerator;
-import org.adridadou.ethereum.blockchain.Web3JFacade;
+import org.adridadou.ethereum.rpc.EthereumRPC;
+import org.adridadou.ethereum.EthereumProxy;
+import org.adridadou.ethereum.rpc.EthereumRpcEventGenerator;
+import org.adridadou.ethereum.rpc.Web3JFacade;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;

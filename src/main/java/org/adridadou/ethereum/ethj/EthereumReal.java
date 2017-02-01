@@ -1,7 +1,7 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
+import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
-import org.adridadou.ethereum.provider.LocalExecutionServiceImpl;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.core.*;
@@ -16,11 +16,11 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  */
 public class EthereumReal implements EthereumBackend {
     private final Ethereum ethereum;
-    private final LocalExecutionServiceImpl localExecutionService;
+    private final LocalExecutionService localExecutionService;
 
     public EthereumReal(Ethereum ethereum, ChainId chainId) {
         this.ethereum = ethereum;
-        this.localExecutionService = new LocalExecutionServiceImpl((BlockchainImpl)ethereum.getBlockchain(), chainId);
+        this.localExecutionService = new LocalExecutionService((BlockchainImpl)ethereum.getBlockchain(), chainId);
     }
 
     @Override

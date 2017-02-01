@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.rpc;
 
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.*;

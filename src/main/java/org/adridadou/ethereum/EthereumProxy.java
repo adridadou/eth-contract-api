@@ -1,4 +1,4 @@
-    package org.adridadou.ethereum.blockchain;
+    package org.adridadou.ethereum;
 
     import static org.adridadou.ethereum.values.EthValue.wei;
 
@@ -13,7 +13,6 @@
     import org.adridadou.ethereum.converters.input.InputTypeHandler;
     import org.adridadou.ethereum.converters.output.OutputTypeHandler;
     import org.adridadou.ethereum.event.*;
-    import org.adridadou.ethereum.smartcontract.SmartContract;
     import org.adridadou.ethereum.values.CompiledContract;
     import org.adridadou.ethereum.values.ContractAbi;
     import org.adridadou.ethereum.values.EthAccount;

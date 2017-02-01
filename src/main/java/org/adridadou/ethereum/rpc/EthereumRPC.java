@@ -1,5 +1,6 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.rpc;
 
+import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.ethereum.core.Transaction;

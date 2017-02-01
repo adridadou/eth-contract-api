@@ -1,10 +1,8 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
-import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
