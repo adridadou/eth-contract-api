@@ -39,6 +39,9 @@ public class OnTransactionParameters {
                 ", status=" + status +
                 ", error='" + error + '\'' +
                 ", logs=" + logs +
+                ", sender=" + sender +
+                ", receiver=" + receiver +
+                ", isContractCreation=" + isContractCreation +
                 '}';
     }
 
@@ -53,7 +56,10 @@ public class OnTransactionParameters {
         if (txHash != null ? !txHash.equals(that.txHash) : that.txHash != null) return false;
         if (status != that.status) return false;
         if (error != null ? !error.equals(that.error) : that.error != null) return false;
-        return logs != null ? logs.equals(that.logs) : that.logs == null;
+        if (logs != null ? !logs.equals(that.logs) : that.logs != null) return false;
+        if (sender != null ? !sender.equals(that.sender) : that.sender != null) return false;
+        if (receiver != null ? !receiver.equals(that.receiver) : that.receiver != null) return false;
+        return isContractCreation != null ? isContractCreation.equals(that.isContractCreation) : that.isContractCreation == null;
     }
 
     @Override
@@ -63,6 +69,9 @@ public class OnTransactionParameters {
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (error != null ? error.hashCode() : 0);
         result = 31 * result + (logs != null ? logs.hashCode() : 0);
+        result = 31 * result + (sender != null ? sender.hashCode() : 0);
+        result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
+        result = 31 * result + (isContractCreation != null ? isContractCreation.hashCode() : 0);
         return result;
     }
 }

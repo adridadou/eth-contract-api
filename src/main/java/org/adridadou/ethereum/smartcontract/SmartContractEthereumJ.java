@@ -7,13 +7,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import org.adridadou.ethereum.blockchain.BlockchainProxyReal;
+import org.adridadou.ethereum.blockchain.EthereumProxyEthereumJ;
+import org.adridadou.ethereum.blockchain.Ethereumj;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
-import org.adridadou.exception.FunctionNotFoundException;
 import org.ethereum.core.Block;
 import org.ethereum.core.BlockchainImpl;
 import org.ethereum.core.CallTransaction;
@@ -21,7 +21,6 @@ import org.ethereum.core.CallTransaction.Contract;
 import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutor;
-import org.ethereum.facade.Ethereum;
 
 import static org.adridadou.ethereum.values.EthValue.wei;
 
@@ -29,15 +28,15 @@ import static org.adridadou.ethereum.values.EthValue.wei;
  * Created by davidroon on 20.04.16.
  * This code is released under Apache 2 license
  */
-public class SmartContractReal implements SmartContract {
+public class SmartContractEthereumJ implements SmartContract {
     public static final long GAS_LIMIT_FOR_CONSTANT_CALLS = 100_000_000_000_000L;
     private final EthAddress address;
     private final Contract contract;
-    private final Ethereum ethereum;
-    private final BlockchainProxyReal bcProxy;
+    private final Ethereumj ethereum;
+    private final EthereumProxyEthereumJ bcProxy;
     private final EthAccount sender;
 
-    public SmartContractReal(Contract contract, Ethereum ethereum, EthAccount sender, EthAddress address, BlockchainProxyReal bcProxy) {
+    public SmartContractEthereumJ(Contract contract, Ethereumj ethereum, EthAccount sender, EthAddress address, EthereumProxyEthereumJ bcProxy) {
         this.contract = contract;
         this.ethereum = ethereum;
         this.sender = sender;
@@ -104,7 +103,7 @@ public class SmartContractReal implements SmartContract {
             EthData functionCallBytes = EthData.of(func.encode(args));
             return bcProxy.sendTx(value, functionCallBytes, sender, address)
                     .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
-        }).orElseThrow(() -> new FunctionNotFoundException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
+        }).orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 
     private String getAvailableFunctions() {

@@ -45,4 +45,12 @@ contract myContract2 {
     function throwMe() {
         throw;
     }
+
+    function getInitTime(uint time) constant returns(uint) {
+        return time;
+    }
+
+    function getAccountAddress(address addr) constant returns (address) {
+        return addr;
+    }
 }
