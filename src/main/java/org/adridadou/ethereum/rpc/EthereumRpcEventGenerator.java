@@ -23,7 +23,6 @@ public class EthereumRpcEventGenerator {
 
     private void observeBlocks(EthBlock ethBlock) {
         ethBlock.getBlock().ifPresent(block -> {
-            System.out.println("**** block received:" + block.getNumber());
             List<TransactionReceipt> txs = block.getTransactions().stream()
                     .map(tx -> toReceipt((EthBlock.TransactionObject)tx.get()))
                     .collect(Collectors.toList());

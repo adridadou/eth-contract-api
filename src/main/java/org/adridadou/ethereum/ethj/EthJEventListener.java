@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.adridadou.ethereum.event.*;
+import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.event.OnBlockParameters;
+import org.adridadou.ethereum.event.OnTransactionParameters;
+import org.adridadou.ethereum.event.TransactionStatus;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.ethereum.core.Block;
@@ -26,7 +29,6 @@ public class EthJEventListener extends EthereumListenerAdapter {
 
     @Override
     public void onBlock(Block block, List<TransactionReceipt> receipts) {
-        System.out.println("***** new block");
         eventHandler.onBlock(new OnBlockParameters(block.getNumber(), receipts.stream().map(this::toReceipt).collect(Collectors.toList())));
     }
 

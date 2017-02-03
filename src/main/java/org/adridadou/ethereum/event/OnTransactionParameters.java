@@ -15,7 +15,7 @@ public class OnTransactionParameters {
         this.receipt = receipt;
         this.status = status;
         this.logs = logs;
-        this.isContractCreation = this.receipt.receiveAddress.isEmpty();
+        this.isContractCreation = this.receipt != null && this.receipt.receiveAddress.isEmpty();
     }
 
     @Override

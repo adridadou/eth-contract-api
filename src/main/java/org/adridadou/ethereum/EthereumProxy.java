@@ -106,8 +106,11 @@
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
             CompletableFuture<TransactionReceipt> result = CompletableFuture.supplyAsync(() -> {
-                Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Objects.equals(params.receipt.hash, txHash) && params.status == TransactionStatus.Dropped);
-                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.blockNumber > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
+                Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions()
+                        .filter(params -> params.receipt != null && Objects.equals(params.receipt.hash, txHash) && params.status == TransactionStatus.Dropped);
+                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks()
+                        .filter(blockParams -> blockParams.blockNumber > currentBlock + BLOCK_WAIT_LIMIT)
+                        .map(params -> null);
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
                         .filter(receipt -> Objects.equals(receipt.hash, txHash))
