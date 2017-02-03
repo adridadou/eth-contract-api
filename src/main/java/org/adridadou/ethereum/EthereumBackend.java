@@ -17,8 +17,6 @@ public interface EthereumBackend {
 
     EthData submit(final EthAccount account, final EthAddress address,final EthValue value, final EthData data, final BigInteger nonce);
 
-    void addListener(EthereumEventHandler ethereumEventHandler);
-
     BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
 
     BigInteger getNonce(EthAddress currentAddress);
@@ -28,4 +26,6 @@ public interface EthereumBackend {
     SmartContractByteCode getCode(EthAddress address);
 
     EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
+
+    void register(EthereumEventHandler eventHandler);
 }

@@ -19,7 +19,6 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.core.Block;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
@@ -71,14 +70,14 @@ public class PrivateEthereumFacadeProvider {
             }
         }
 
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumBackend);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
         final EthereumFacade facade = new EthereumFacade(new EthereumProxy(ethereumBackend, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 
         //This event does not trigger when you are the miner
-        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
-        facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
+        ethereumListener.onReady();
+        facade.events().ready().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
                 .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
                 .forEach(result -> {
                     try {

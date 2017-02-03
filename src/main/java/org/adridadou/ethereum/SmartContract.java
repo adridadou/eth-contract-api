@@ -57,7 +57,7 @@ public class SmartContract {
         return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
             EthData functionCallBytes = EthData.of(func.encode(args));
             return proxy.sendTx(value, functionCallBytes, account, address)
-                    .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult()));
+                    .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult().data));
         }).orElseThrow(() -> new EthereumApiException("function " + functionName + " cannot be found. available:" + getAvailableFunctions()));
     }
 

@@ -3,10 +3,7 @@
     import static org.adridadou.ethereum.values.EthValue.wei;
 
     import java.math.BigInteger;
-    import java.util.ArrayList;
-    import java.util.Arrays;
-    import java.util.Map;
-    import java.util.Optional;
+    import java.util.*;
     import java.util.concurrent.CompletableFuture;
     import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,7 +20,6 @@
     import org.adridadou.ethereum.values.SmartContractByteCode;
     import org.adridadou.exception.EthereumApiException;
     import org.ethereum.core.CallTransaction;
-    import org.ethereum.core.TransactionReceipt;
     import org.ethereum.util.ByteUtil;
     import rx.Observable;
 
@@ -46,6 +42,7 @@
         this.inputTypeHandler = inputTypeHandler;
         this.outputTypeHandler = outputTypeHandler;
         updateNonce();
+        ethereum.register(eventHandler);
     }
 
     public SmartContract mapFromAbi(ContractAbi abi, EthAddress address, EthAccount account) {
@@ -85,7 +82,7 @@
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
         CallTransaction.Contract contract = new CallTransaction.Contract(abi.getAbi());
         return eventHandler.observeTransactions()
-                    .filter(params -> params.receiver.equals(contractAddress))
+                    .filter(params -> params.receipt.receiveAddress.equals(contractAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
                     .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
@@ -94,27 +91,27 @@
 
     public CompletableFuture<EthAddress> publishContract(EthValue ethValue, EthData data, EthAccount account) {
         return this.sendTxInternal(ethValue, data, account, EthAddress.empty())
-                .thenApply(receipt -> EthAddress.of(receipt.getTransaction().getContractAddress()));
+                .thenApply(receipt -> receipt.receiveAddress);
     }
 
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress address) {
         return this.sendTxInternal(value, data, account, address)
-                .thenApply(receipt -> new EthExecutionResult(receipt.getExecutionResult()));
+                .thenApply(receipt -> new EthExecutionResult(receipt.executionResult));
     }
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
-        return eventHandler.onReady().thenCompose((b) -> {
+        return eventHandler.ready().thenCompose((v) -> {
             EthData txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()));
 
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
             CompletableFuture<TransactionReceipt> result = CompletableFuture.supplyAsync(() -> {
-                Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Arrays.equals(params.txHash.data, txHash.data) && params.status == TransactionStatus.Dropped);
-                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.block.getNumber() > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
+                Observable<OnTransactionParameters> droppedTxs = eventHandler.observeTransactions().filter(params -> Objects.equals(params.receipt.hash, txHash) && params.status == TransactionStatus.Dropped);
+                Observable<OnTransactionParameters> timeoutBlock = eventHandler.observeBlocks().filter(blockParams -> blockParams.blockNumber > currentBlock + BLOCK_WAIT_LIMIT).map(params -> null);
                 Observable<OnTransactionParameters> blockTxs = eventHandler.observeBlocks()
                         .flatMap(params -> Observable.from(params.receipts))
-                        .filter(receipt -> Arrays.equals(receipt.getTransaction().getHash(), txHash.data))
-                        .map(receipt -> new OnTransactionParameters(receipt, EthData.of(receipt.getTransaction().getHash()), TransactionStatus.Executed, receipt.getError(), new ArrayList<>(), receipt.getTransaction().getSender(), receipt.getTransaction().getReceiveAddress()));
+                        .filter(receipt -> Objects.equals(receipt.hash, txHash))
+                        .map(this::createTransactionParameters);
 
                 return Observable.merge(droppedTxs, blockTxs, timeoutBlock)
                         .map(params -> {
@@ -123,9 +120,9 @@
                             }
                             TransactionReceipt receipt = params.receipt;
                             if (params.status == TransactionStatus.Dropped) {
-                                throw new EthereumApiException("the transaction has been dropped! - " + params.error);
+                                throw new EthereumApiException("the transaction has been dropped! - " + params.receipt.error);
                             }
-                            return eventHandler.checkForErrors(receipt);
+                            return checkForErrors(receipt);
                         }).toBlocking().first();
 
             });
@@ -134,19 +131,31 @@
         });
     }
 
+        private OnTransactionParameters createTransactionParameters(TransactionReceipt receipt) {
+            return new OnTransactionParameters(receipt, TransactionStatus.Executed, new ArrayList<>());
+        }
+
+        private TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
+        if (receipt.isSuccessful) {
+            return receipt;
+        } else {
+            throw new EthereumApiException("error with the transaction " + receipt.hash + ". error:" + receipt.error);
+        }
+    }
+
     private void updateNonce() {
         eventHandler.observeTransactions()
                 .filter(tx -> tx.status == TransactionStatus.Dropped)
                 .forEach(params -> {
-            EthAddress currentAddress = EthAddress.of(params.receipt.getTransaction().getSender());
+            EthAddress currentAddress = params.receipt.sender;
             Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
                 pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
                 nonces.put(currentAddress, ethereum.getNonce(currentAddress));
             });
         });
         eventHandler.observeBlocks()
-            .forEach(params -> params.block.getTransactionsList().stream()
-                .map(tx -> EthAddress.of(tx.getSender()))
+            .forEach(params -> params.receipts.stream()
+                .map(tx -> tx.sender)
                 .forEach(currentAddress -> Optional.ofNullable(pendingTransactions.get(currentAddress))
                         .ifPresent(counter -> {
                             pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));

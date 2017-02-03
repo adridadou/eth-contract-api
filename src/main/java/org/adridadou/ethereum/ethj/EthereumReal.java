@@ -67,17 +67,17 @@ public class EthereumReal implements EthereumBackend {
         return localExecutionService.executeLocally(account, address, value, data, getNonce(account.getAddress()));
     }
 
+    @Override
+    public void register(EthereumEventHandler eventHandler) {
+        ethereum.addListener(new EthJEventListener(eventHandler));
+    }
+
     public BlockchainImpl getBlockchain() {
         return (BlockchainImpl) ethereum.getBlockchain();
     }
 
     private Repository getRepository() {
         return getBlockchain().getRepository();
-    }
-
-    @Override
-    public void addListener(EthereumEventHandler ethereumEventHandler) {
-        ethereum.addListener(ethereumEventHandler);
     }
 
     @Override

@@ -13,7 +13,6 @@ import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.EthereumFactory;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.springframework.context.annotation.Bean;
 
@@ -42,8 +41,8 @@ public class EthereumFacadeProvider {
 
     public static EthereumFacade forTest(TestConfig config){
         EthereumTest ethereumj = new EthereumTest(config);
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
-        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();
+        ethereumListener.onReady();
         return new Builder(BlockchainConfig.builder()).create(ethereumj, ethereumListener);
     }
 
@@ -62,7 +61,7 @@ public class EthereumFacadeProvider {
         public EthereumFacade create(){
             GenericConfig.config = configBuilder.build().toString();
             EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class), configBuilder.networkId);
-            return create(ethereum, new EthereumEventHandler(ethereum));
+            return create(ethereum, new EthereumEventHandler());
         }
 
         public EthereumFacade create(EthereumBackend ethereum, EthereumEventHandler ethereumListener) {

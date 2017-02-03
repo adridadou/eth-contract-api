@@ -2,7 +2,6 @@ package org.adridadou.ethereum;
 
 
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.rpc.provider.EthereumFacadeRpcProvider;
 import org.adridadou.ethereum.rpc.Web3JFacade;
 import org.adridadou.ethereum.values.*;
@@ -48,12 +47,11 @@ public class RpcEthereumTest {
         when(web3j.estimateGas(eq(account), eq(address), eq(wei(0)), any(EthData.class))).thenReturn(BigInteger.TEN);
         when(web3j.constantCall(eq(account), eq(address), any(EthData.class))).thenReturn(EthData.of(new byte[0]));
 
-        EthereumFacade ethereum = provider.create(web3j, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        EthereumFacade ethereum = provider.create(web3j);
+        CompiledContract compiledContract = ethereum.compile(contractSource).get().get("myContract2");
         Contract service = ethereum.createContractProxy(compiledContract, address, account, Contract.class);
 
-        //service.myMethod(23).get();
-
+        service.myMethod(23).get();
         assertEquals(0, service.getI1().intValue());
     }
 

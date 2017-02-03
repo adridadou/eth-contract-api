@@ -7,7 +7,6 @@ import org.adridadou.ethereum.values.*;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
-import org.ethereum.config.blockchain.FrontierConfig;
 import org.ethereum.config.blockchain.HomesteadConfig;
 import org.ethereum.core.Block;
 import org.ethereum.core.Repository;
@@ -52,6 +51,7 @@ public class EthereumTest implements EthereumBackend {
             try {
                 while(true) {
                     blockchain.submitTransaction(transactions.take());
+                    System.out.println("***** creating a new block now ....");
                     blockchain.createBlock();
                 }
             } catch (InterruptedException e) {
@@ -94,11 +94,6 @@ public class EthereumTest implements EthereumBackend {
     }
 
     @Override
-    public void addListener(EthereumEventHandler ethereumEventHandler) {
-        blockchain.addEthereumListener(ethereumEventHandler);
-    }
-
-    @Override
     public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
         Transaction tx = createTransaction(account, getNonce(account.getAddress()), address, value, data);
         Block callBlock = blockchain.getBlockchain().getBestBlock();
@@ -130,7 +125,7 @@ public class EthereumTest implements EthereumBackend {
 
     @Override
     public long getCurrentBlockNumber() {
-        return 0;
+        return blockchain.getBlockchain().getBestBlock().getNumber();
     }
 
     @Override
@@ -141,5 +136,11 @@ public class EthereumTest implements EthereumBackend {
     @Override
     public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
         return localExecutionService.executeLocally(account, address,value, data, getNonce(account.getAddress()));
+    }
+
+    @Override
+    public void register(EthereumEventHandler eventHandler) {
+        eventHandler.onReady();
+        blockchain.addEthereumListener(new EthJEventListener(eventHandler));
     }
 }

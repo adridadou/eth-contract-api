@@ -1,0 +1,63 @@
+package org.adridadou.ethereum.ethj;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.adridadou.ethereum.event.*;
+import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.EthData;
+import org.ethereum.core.Block;
+import org.ethereum.core.Transaction;
+import org.ethereum.core.TransactionExecutionSummary;
+import org.ethereum.core.TransactionReceipt;
+import org.ethereum.listener.EthereumListenerAdapter;
+
+/**
+ * Created by davidroon on 27.04.16.
+ * This code is released under Apache 2 license
+ */
+public class EthJEventListener extends EthereumListenerAdapter {
+    private final EthereumEventHandler eventHandler;
+
+    public EthJEventListener(EthereumEventHandler eventHandler) {
+        this.eventHandler = eventHandler;
+    }
+
+    @Override
+    public void onBlock(Block block, List<TransactionReceipt> receipts) {
+        System.out.println("***** new block");
+        eventHandler.onBlock(new OnBlockParameters(block.getNumber(), receipts.stream().map(this::toReceipt).collect(Collectors.toList())));
+    }
+
+    @Override
+    public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
+        TransactionStatus transactionStatus = null;
+        switch(state) {
+          case PENDING:
+          case NEW_PENDING: transactionStatus = TransactionStatus.Pending; break;
+          case DROPPED: transactionStatus = TransactionStatus.Dropped; break;
+          case INCLUDED: transactionStatus = TransactionStatus.Included;break;
+        }
+        eventHandler.onPendingTransactionUpdate(new OnTransactionParameters(toReceipt(txReceipt), transactionStatus, new ArrayList<>()));
+    }
+
+    @Override
+    public void onTransactionExecuted(TransactionExecutionSummary summary) {
+        OnTransactionParameters mainTransaction = new OnTransactionParameters(null, TransactionStatus.Executed, summary.getLogs());
+        List<OnTransactionParameters> internalTransactions = summary.getInternalTransactions().stream()
+                .map(internalTransaction -> new OnTransactionParameters(null, TransactionStatus.Executed, summary.getLogs())).collect(Collectors.toList());
+
+        eventHandler.onTransactionExecuted(mainTransaction, internalTransactions);
+    }
+
+    @Override
+    public void onSyncDone(final SyncState syncState) {
+        eventHandler.onReady();
+    }
+
+    private org.adridadou.ethereum.event.TransactionReceipt toReceipt(TransactionReceipt transactionReceipt) {
+        Transaction tx = transactionReceipt.getTransaction();
+        return new org.adridadou.ethereum.event.TransactionReceipt(EthData.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()),transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
+    }
+}

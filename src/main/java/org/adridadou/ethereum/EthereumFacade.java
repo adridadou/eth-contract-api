@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
 import org.adridadou.ethereum.converters.input.InputTypeConverter;
@@ -132,10 +134,10 @@ public class EthereumFacade {
       }
     }
 
-    public CompletableFuture<CompiledContract> compile(SoliditySource src, String contractName) {
-        return CompletableFuture.supplyAsync(() -> compileInternal(src,contractName));
+    public CompletableFuture<Map<String, CompiledContract>> compile(SoliditySource src) {
+        return CompletableFuture.supplyAsync(() -> compileInternal(src));
     }
-    private CompiledContract compileInternal(SoliditySource src, String contractName) {
+    private Map<String, CompiledContract> compileInternal(SoliditySource src) {
       try {
           SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
             SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
@@ -146,16 +148,10 @@ public class EthereumFacade {
           if (res.contracts.isEmpty()) {
               throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
           }
-          CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-          if(metadata == null) {
-              throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
-          }
-          if (metadata.bin == null || metadata.bin.isEmpty()) {
-              throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-          }
-          return CompiledContract.from(src, contractName, metadata);
+          return res.contracts.entrySet().stream()
+                  .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src,e.getKey(),e.getValue())));
       } catch (IOException e) {
-          throw new EthereumApiException("error while compiling " + contractName, e);
+          throw new EthereumApiException("error while compiling solidity smart contract", e);
       }
   }
 

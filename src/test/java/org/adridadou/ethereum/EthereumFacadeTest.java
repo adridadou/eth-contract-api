@@ -10,7 +10,6 @@ import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,20 +29,20 @@ public class EthereumFacadeTest {
     private final EthereumTest ethereumj = new EthereumTest(TestConfig.builder().build());
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-    private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
+    private final EthereumEventHandler handler = new EthereumEventHandler();
     private final EthereumProxy proxy = new EthereumProxy(ethereumj,handler,inputTypeHandler,outputTypeHandler);
     private final EthereumFacade ethereum = new EthereumFacade(proxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
     private final EthAccount account = ethereumj.defaultAccount();
 
     @Before
     public void before() {
-        handler.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        handler.onReady();
     }
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
         SoliditySource contractSource = SoliditySource.from(new File("src/test/resources/contract2.sol"));
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
+        CompiledContract compiledContract = ethereum.compile(contractSource).get().get("myContract2");
         EthAddress address = ethereum.publishContract(compiledContract, account).get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, account, MyContract2.class);
         System.out.println("*** calling contract myMethod");

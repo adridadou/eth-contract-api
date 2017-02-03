@@ -34,7 +34,7 @@ public class EventsTest {
             "}");
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
-        CompiledContract compiledContract = ethereum.compile(contractSource, "contractEvents").get();
+        CompiledContract compiledContract = ethereum.compile(contractSource).get().get("contractEvents");
         CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
     }
@@ -42,7 +42,7 @@ public class EventsTest {
     @Test
     public void createTests() throws Exception {
         EthAddress address = publishAndMapContract(ethereum);
-        CompiledContract compiledContract = ethereum.compile(contractSource,"contractEvents").get();
+        CompiledContract compiledContract = ethereum.compile(contractSource).get().get("contractEvents");
         ContractEvents myContract = ethereum.createContractProxy(compiledContract, address, mainAccount, ContractEvents.class);
         Observable<MyEvent> observeEvent = ethereum.observeEvents(compiledContract.getAbi(), address, "MyEvent", MyEvent.class);
         myContract.createEvent("my event is here");

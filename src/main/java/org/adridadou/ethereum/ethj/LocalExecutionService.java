@@ -25,29 +25,14 @@ public class LocalExecutionService {
 
 
     public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
-        Block callBlock = blockchain.getBestBlock();
-        Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
-        try {
-            TransactionExecutor executor = new TransactionExecutor
-                    (createTransaction(account,nonce, BigInteger.ZERO, BigInteger.valueOf(100_000_000_000L),address,value,data), callBlock.getCoinbase(), repository, blockchain.getBlockStore(),
-                            blockchain.getProgramInvokeFactory(), callBlock)
-                    .setLocalCall(true);
-
-            executor.init();
-            executor.execute();
-            executor.go();
-            executor.finalization();
-            if(!executor.getReceipt().isSuccessful()) {
-                throw new EthereumApiException(executor.getReceipt().getError());
-            }
-            long gasUsed = executor.getGasUsed();
-            return BigInteger.valueOf(gasUsed);
-        } finally {
-            repository.rollback();
-        }
+        return BigInteger.valueOf(execute(account,address,value, data, nonce).getGasUsed());
     }
 
     public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
+        return EthData.of(execute(account,address,value,data,nonce).getResult().getHReturn());
+    }
+
+    private TransactionExecutor execute(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
         Block callBlock = blockchain.getBestBlock();
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
 
@@ -65,7 +50,7 @@ public class LocalExecutionService {
             if(!executor.getReceipt().isSuccessful()) {
                 throw new EthereumApiException(executor.getReceipt().getError());
             }
-            return EthData.of(executor.getResult().getHReturn());
+            return executor;
         } finally {
             repository.rollback();
         }

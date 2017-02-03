@@ -48,11 +48,6 @@ public class EthereumRPC implements EthereumBackend {
     }
 
     @Override
-    public void addListener(EthereumEventHandler ethereumEventHandler) {
-        ethereumRpcEventGenerator.addListener(ethereumEventHandler);
-    }
-
-    @Override
     public BigInteger estimateGas(EthAccount account, EthAddress address, EthValue value, EthData data) {
         return web3JFacade.estimateGas(account, address, value, data);
     }
@@ -77,4 +72,8 @@ public class EthereumRPC implements EthereumBackend {
         return web3JFacade.constantCall(account, address, data);
     }
 
+    @Override
+    public void register(EthereumEventHandler eventHandler) {
+        ethereumRpcEventGenerator.addListener(eventHandler);
+    }
 }

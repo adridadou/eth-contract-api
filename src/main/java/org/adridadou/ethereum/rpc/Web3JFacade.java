@@ -68,6 +68,10 @@ public class Web3JFacade {
         }
     }
 
+    public Observable<EthBlock> observeBlocks() {
+        return web3j.blockObservable(true);
+    }
+
     public BigInteger estimateGas(EthAccount account, EthAddress address, EthValue value, EthData data) {
         try {
             return Numeric.decodeQuantity(handleError(web3j.ethEstimateGas(new Transaction(account.getAddress().withLeading0x(), null, null, null, address.withLeading0x(),value.inWei(),  data.toString())).send()));
@@ -150,5 +154,13 @@ public class Web3JFacade {
 
         return new org.ethereum.core.Transaction(nonceBytes, gasPriceBytes, gasBytes,
                 address.address, valueBytes, data.data, chainId.id);
+    }
+
+    public EthBlock.Block getBestBlock() {
+        try {
+            return handleError(web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, true).send());
+        } catch (IOException e) {
+            throw new EthereumApiException("error while retrieving the block");
+        }
     }
 }
