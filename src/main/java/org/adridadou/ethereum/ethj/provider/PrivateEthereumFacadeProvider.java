@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class PrivateEthereumFacadeProvider {
     private final Logger log = LoggerFactory.getLogger(PrivateEthereumFacadeProvider.class);
-    private final EthAccount mainAccount = AccountProvider.from("cow");
+    private final EthAccount mainAccount = AccountProvider.fromSeed("cow");
 
     public EthereumFacade create(final PrivateNetworkConfig config) {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();

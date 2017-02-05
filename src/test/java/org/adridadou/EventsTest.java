@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  * This code is released under Apache 2 license
  */
 public class EventsTest {
-    private final EthAccount mainAccount = AccountProvider.from("hello");
+    private final EthAccount mainAccount = AccountProvider.fromSeed("hello");
     private final EthereumFacade ethereum = EthereumFacadeProvider.forTest(TestConfig.builder()
             .balance(mainAccount, ether(1000))
             .build());

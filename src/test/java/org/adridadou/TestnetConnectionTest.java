@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
  */
 public class TestnetConnectionTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
-    private EthAccount mainAccount = AccountProvider.from("cow");
+    private EthAccount mainAccount = AccountProvider.fromSeed("cow");
     private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
     public TestnetConnectionTest() throws URISyntaxException {

@@ -40,7 +40,7 @@ public class EthereumRpcEventGenerator {
         boolean successful = !receipt.getGasUsed().equals(tx.getGas());
         String error = "";
         if(!successful) {
-            error = "Error from RPC, all the gas was used";
+            error = "Error fromSeed RPC, all the gas was used";
         }
         return new TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getFrom()),EthAddress.of(tx.getTo()), EthAddress.of(receipt.getContractAddress()), error, EthData.empty(), successful);
     }

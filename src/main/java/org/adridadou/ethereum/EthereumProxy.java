@@ -94,7 +94,8 @@
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.ready().thenCompose((v) -> {
-            EthHash txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()));
+            BigInteger gasLimit = estimateGas(value, data, account, toAddress);
+            EthHash txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()), gasLimit);
 
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
@@ -127,11 +128,20 @@
         });
     }
 
-        private OnTransactionParameters createTransactionParameters(TransactionReceipt receipt) {
-            return new OnTransactionParameters(receipt, TransactionStatus.Executed, new ArrayList<>());
+    private BigInteger estimateGas(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
+        BigInteger gasLimit = ethereum.estimateGas(account, toAddress, value, data);
+        //if it is a contract creation
+        if(toAddress.isEmpty()) {
+            gasLimit = gasLimit.add(BigInteger.valueOf(15_000));
         }
+        return gasLimit;
+    }
 
-        private TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
+    private OnTransactionParameters createTransactionParameters(TransactionReceipt receipt) {
+        return new OnTransactionParameters(receipt, TransactionStatus.Executed, new ArrayList<>());
+    }
+
+    private TransactionReceipt checkForErrors(final TransactionReceipt receipt) {
         if (receipt.isSuccessful) {
             return receipt;
         } else {

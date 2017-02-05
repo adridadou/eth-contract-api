@@ -59,7 +59,7 @@ public class EthereumTest implements EthereumBackend {
     }
 
     public EthAccount defaultAccount() {
-        return AccountProvider.from(this.blockchain.getSender());
+        return AccountProvider.fromECKey(this.blockchain.getSender());
     }
 
     @Override
@@ -78,15 +78,14 @@ public class EthereumTest implements EthereumBackend {
     }
 
     @Override
-    public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
-        Transaction tx = createTransaction(account, nonce, address, value, data);
+    public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce, BigInteger gasLimit) {
+        Transaction tx = createTransaction(account, nonce,gasLimit, address, value, data);
         transactions.add(tx);
 
         return EthHash.of(tx.getHash());
     }
 
-    private Transaction createTransaction(EthAccount account, BigInteger nonce, EthAddress address, EthValue value, EthData data) {
-        BigInteger gasLimit = estimateGas(account, address, value, data);
+    private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasLimit, EthAddress address, EthValue value, EthData data) {
         Transaction transaction = new Transaction(ByteUtil.bigIntegerToBytes(nonce), ByteUtil.bigIntegerToBytes(BigInteger.ZERO), ByteUtil.bigIntegerToBytes(gasLimit), address.address, ByteUtil.bigIntegerToBytes(value.inWei()), data.data, null);
         transaction.sign(account.key);
         return transaction;
