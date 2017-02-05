@@ -38,12 +38,12 @@ public class EthereumReal implements EthereumBackend {
     }
 
     @Override
-    public EthData submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
+    public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
         Transaction tx = ethereum.createTransaction(nonce, getGasPrice(), estimateGas(account, address, value, data), address.address, value.inWei(), data.data);
         tx.sign(account.key);
         ethereum.submitTransaction(tx);
 
-        return EthData.of(tx.getHash());
+        return EthHash.of(tx.getHash());
     }
 
     @Override
@@ -81,7 +81,7 @@ public class EthereumReal implements EthereumBackend {
 
     @Override
     public BigInteger estimateGas(EthAccount account, EthAddress address, EthValue value, EthData data) {
-        return localExecutionService.estimateGas(account, address, value, data, getNonce(account.getAddress()));
+        return localExecutionService.estimateGas(account, address, value, data);
     }
 
 }

@@ -5,6 +5,7 @@ import org.adridadou.ethereum.event.OnBlockParameters;
 import org.adridadou.ethereum.event.TransactionReceipt;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthHash;
 import org.web3j.protocol.core.methods.response.EthBlock;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class EthereumRpcEventGenerator {
     private TransactionReceipt toReceipt(EthBlock.TransactionObject transactionObject) {
         //TODO: can I figure out if the transaction was successful or not?
 
-        return new TransactionReceipt(EthData.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()),"", EthData.empty(), true);
+        return new TransactionReceipt(EthHash.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()),"", EthData.empty(), true);
     }
 
     public void addListener(EthereumEventHandler ethereumEventHandler) {

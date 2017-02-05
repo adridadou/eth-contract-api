@@ -52,14 +52,6 @@ public class Web3JFacade {
         }
     }
 
-    public TransactionReceipt getTransactionReceipt(final EthData transactionHash) {
-        try {
-            return handleError(web3j.ethGetTransactionReceipt(transactionHash.withLeading0x()).send());
-        } catch (IOException e) {
-            throw new IOError(e);
-        }
-    }
-
     public BigInteger getTransactionCount(EthAddress address) {
         try {
             return Numeric.decodeQuantity(handleError(web3j.ethGetTransactionCount(address.withLeading0x(), DefaultBlockParameterName.LATEST).send()));
@@ -132,12 +124,6 @@ public class Web3JFacade {
         return outputTypeHandler;
     }
 
-    public Observable<EthBlock.TransactionObject> observeTransactionsFromBlock() {
-        return web3j.blockObservable(true)
-                .flatMap(block -> Observable.from(block.getResult().getTransactions()))
-                .map(txResult -> (EthBlock.TransactionObject)txResult.get());
-    }
-
     public long getCurrentBlockNumber() {
         try {
             return web3j.ethBlockNumber().send().getBlockNumber().longValue();
@@ -154,13 +140,5 @@ public class Web3JFacade {
 
         return new org.ethereum.core.Transaction(nonceBytes, gasPriceBytes, gasBytes,
                 address.address, valueBytes, data.data, chainId.id);
-    }
-
-    public EthBlock.Block getBestBlock() {
-        try {
-            return handleError(web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, true).send());
-        } catch (IOException e) {
-            throw new EthereumApiException("error while retrieving the block");
-        }
     }
 }

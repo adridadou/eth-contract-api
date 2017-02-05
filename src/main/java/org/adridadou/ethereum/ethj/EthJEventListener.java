@@ -10,6 +10,7 @@ import org.adridadou.ethereum.event.OnTransactionParameters;
 import org.adridadou.ethereum.event.TransactionStatus;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
+import org.adridadou.ethereum.values.EthHash;
 import org.ethereum.core.Block;
 import org.ethereum.core.Transaction;
 import org.ethereum.core.TransactionExecutionSummary;
@@ -61,6 +62,6 @@ public class EthJEventListener extends EthereumListenerAdapter {
 
     private org.adridadou.ethereum.event.TransactionReceipt toReceipt(TransactionReceipt transactionReceipt) {
         Transaction tx = transactionReceipt.getTransaction();
-        return new org.adridadou.ethereum.event.TransactionReceipt(EthData.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()),transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
+        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()),transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
     }
 }

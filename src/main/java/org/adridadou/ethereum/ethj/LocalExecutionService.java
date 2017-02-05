@@ -20,8 +20,9 @@ public class LocalExecutionService {
     }
 
 
-    public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
-        return BigInteger.valueOf(execute(account,address,value, data, nonce).getGasUsed());
+    public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
+        System.out.println("***** estimate gas");
+        return BigInteger.valueOf(execute(account,address,value, data, BigInteger.ZERO).getGasUsed());
     }
 
     public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
@@ -29,6 +30,7 @@ public class LocalExecutionService {
     }
 
     private TransactionExecutor execute(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
+        System.out.println("***** execute");
         Block callBlock = blockchain.getBestBlock();
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
         try {

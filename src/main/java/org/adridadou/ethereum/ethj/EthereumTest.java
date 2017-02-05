@@ -7,10 +7,7 @@ import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.HomesteadConfig;
-import org.ethereum.core.Block;
-import org.ethereum.core.Repository;
 import org.ethereum.core.Transaction;
-import org.ethereum.core.TransactionExecutor;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
@@ -80,11 +77,11 @@ public class EthereumTest implements EthereumBackend {
     }
 
     @Override
-    public EthData submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
+    public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce) {
         Transaction tx = createTransaction(account, nonce, address, value, data);
         transactions.add(tx);
 
-        return EthData.of(tx.getHash());
+        return EthHash.of(tx.getHash());
     }
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, EthAddress address, EthValue value, EthData data) {
@@ -93,27 +90,7 @@ public class EthereumTest implements EthereumBackend {
 
     @Override
     public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
-        Transaction tx = createTransaction(account, getNonce(account.getAddress()), address, value, data);
-        Block callBlock = blockchain.getBlockchain().getBestBlock();
-        Repository repository = blockchain.getBlockchain().getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
-        try {
-            TransactionExecutor executor = new TransactionExecutor
-                    (tx, callBlock.getCoinbase(), repository, blockchain.getBlockchain().getBlockStore(),
-                    blockchain.getBlockchain().getProgramInvokeFactory(), callBlock)
-                    .setLocalCall(true);
-
-            executor.init();
-            executor.execute();
-            executor.go();
-            executor.finalization();
-            if(!executor.getReceipt().isSuccessful()) {
-                throw new EthereumApiException(executor.getReceipt().getError());
-            }
-            long gasUsed = executor.getGasUsed();
-            return BigInteger.valueOf(gasUsed);
-        } finally {
-            repository.rollback();
-        }
+        return localExecutionService.estimateGas(account, address, value, data);
     }
 
     @Override

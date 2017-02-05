@@ -15,7 +15,7 @@ public interface EthereumBackend {
 
     boolean addressExists(EthAddress address);
 
-    EthData submit(final EthAccount account, final EthAddress address,final EthValue value, final EthData data, final BigInteger nonce);
+    EthHash submit(final EthAccount account, final EthAddress address,final EthValue value, final EthData data, final BigInteger nonce);
 
     BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
 

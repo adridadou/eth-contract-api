@@ -10,14 +10,7 @@
     import org.adridadou.ethereum.converters.input.InputTypeHandler;
     import org.adridadou.ethereum.converters.output.OutputTypeHandler;
     import org.adridadou.ethereum.event.*;
-    import org.adridadou.ethereum.values.CompiledContract;
-    import org.adridadou.ethereum.values.ContractAbi;
-    import org.adridadou.ethereum.values.EthAccount;
-    import org.adridadou.ethereum.values.EthAddress;
-    import org.adridadou.ethereum.values.EthData;
-    import org.adridadou.ethereum.values.EthExecutionResult;
-    import org.adridadou.ethereum.values.EthValue;
-    import org.adridadou.ethereum.values.SmartContractByteCode;
+    import org.adridadou.ethereum.values.*;
     import org.adridadou.exception.EthereumApiException;
     import org.ethereum.core.CallTransaction;
     import org.ethereum.util.ByteUtil;
@@ -101,7 +94,7 @@
 
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.ready().thenCompose((v) -> {
-            EthData txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()));
+            EthHash txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()));
 
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
