@@ -43,7 +43,7 @@ public class SmartContract {
     public Object[] callConstFunction(String functionName, EthValue value, Object... args) {
         CallTransaction.Function func = contract.getByName(functionName);
         EthData data = EthData.of(func.encode(args));
-        return func.decodeResult(ethereum.executeLocally(account,address,value,data).data);
+        return func.decodeResult(ethereum.constantCall(account,address,value,data).data);
     }
 
     public CompletableFuture<Object[]> callFunction(String functionName, Object... args) {

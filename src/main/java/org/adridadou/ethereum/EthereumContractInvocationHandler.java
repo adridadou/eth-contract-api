@@ -78,6 +78,9 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
+        if(address.isEmpty()) {
+            throw new EthereumApiException("the contract address cannot be empty");
+        }
         SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 

@@ -62,8 +62,8 @@ public class EthereumReal implements EthereumBackend {
     }
 
     @Override
-    public EthData executeLocally(EthAccount account, EthAddress address, EthValue value, EthData data) {
-        return localExecutionService.executeLocally(account, address, value, data, getNonce(account.getAddress()));
+    public EthData constantCall(EthAccount account, EthAddress address, EthValue value, EthData data) {
+        return localExecutionService.executeLocally(account, address, value, data);
     }
 
     @Override

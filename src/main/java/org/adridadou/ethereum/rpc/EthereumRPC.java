@@ -68,7 +68,7 @@ public class EthereumRPC implements EthereumBackend {
     }
 
     @Override
-    public EthData executeLocally(EthAccount account, EthAddress address, EthValue value, EthData data) {
+    public EthData constantCall(EthAccount account, EthAddress address, EthValue value, EthData data) {
         return web3JFacade.constantCall(account, address, data);
     }
 

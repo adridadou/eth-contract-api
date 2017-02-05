@@ -25,7 +25,7 @@ public interface EthereumBackend {
 
     SmartContractByteCode getCode(EthAddress address);
 
-    EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
+    EthData constantCall(final EthAccount account, final EthAddress address, final EthValue value, final EthData data);
 
     void register(EthereumEventHandler eventHandler);
 }

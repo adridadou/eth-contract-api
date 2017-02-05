@@ -8,6 +8,7 @@ import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.HomesteadConfig;
 import org.ethereum.core.Transaction;
+import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
 import java.math.BigInteger;
@@ -85,7 +86,10 @@ public class EthereumTest implements EthereumBackend {
     }
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, EthAddress address, EthValue value, EthData data) {
-        return blockchain.createTransaction(account.key, nonce.longValue(),address.address, value.inWei(), data.data);
+        BigInteger gasLimit = estimateGas(account, address, value, data);
+        Transaction transaction = new Transaction(ByteUtil.bigIntegerToBytes(nonce), ByteUtil.bigIntegerToBytes(BigInteger.ZERO), ByteUtil.bigIntegerToBytes(gasLimit), address.address, ByteUtil.bigIntegerToBytes(value.inWei()), data.data, null);
+        transaction.sign(account.key);
+        return transaction;
     }
 
     @Override
@@ -109,8 +113,8 @@ public class EthereumTest implements EthereumBackend {
     }
 
     @Override
-    public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
-        return localExecutionService.executeLocally(account, address,value, data, getNonce(account.getAddress()));
+    public EthData constantCall(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
+        return localExecutionService.executeLocally(account, address,value, data);
     }
 
     @Override

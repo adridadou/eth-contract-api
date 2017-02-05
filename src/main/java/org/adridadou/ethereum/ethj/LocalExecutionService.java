@@ -21,20 +21,22 @@ public class LocalExecutionService {
 
 
     public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
-        System.out.println("***** estimate gas");
-        return BigInteger.valueOf(execute(account,address,value, data, BigInteger.ZERO).getGasUsed());
+        System.out.println("**** estimate gas");
+        TransactionExecutor execution = execute(account, address, value, data);
+        return BigInteger.valueOf(execution.getGasUsed());
     }
 
-    public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
-        return EthData.of(execute(account,address,value,data,nonce).getResult().getHReturn());
+    public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
+        System.out.println("**** execute locally");
+        TransactionExecutor execution = execute(account, address, value, data);
+        return EthData.of(execution.getResult().getHReturn());
     }
 
-    private TransactionExecutor execute(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
-        System.out.println("***** execute");
+    private TransactionExecutor execute(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
         Block callBlock = blockchain.getBestBlock();
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
         try {
-            Transaction tx = createTransaction(account, nonce, BigInteger.ZERO, address, value, data);
+            Transaction tx = createTransaction(account, BigInteger.ZERO, BigInteger.ZERO, address, value, data);
             TransactionExecutor executor = new TransactionExecutor
                     (tx, callBlock.getCoinbase(), repository, blockchain.getBlockStore(),
                             blockchain.getProgramInvokeFactory(), callBlock)
