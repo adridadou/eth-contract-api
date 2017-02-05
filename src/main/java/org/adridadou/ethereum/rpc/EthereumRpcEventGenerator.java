@@ -17,8 +17,10 @@ import java.util.stream.Collectors;
  */
 public class EthereumRpcEventGenerator {
     private final List<EthereumEventHandler> ethereumEventHandlers = new ArrayList<>();
+    private final Web3JFacade web3JFacade;
 
     public EthereumRpcEventGenerator(Web3JFacade web3JFacade) {
+        this.web3JFacade = web3JFacade;
         web3JFacade.observeBlocks().subscribe(this::observeBlocks);
     }
 
@@ -33,10 +35,14 @@ public class EthereumRpcEventGenerator {
         });
     }
 
-    private TransactionReceipt toReceipt(EthBlock.TransactionObject transactionObject) {
-        //TODO: can I figure out if the transaction was successful or not?
-        //TODO: retrieve the Transaction receipt to get the contract address
-        return new TransactionReceipt(EthHash.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()), EthAddress.empty(), "", EthData.empty(), true);
+    private TransactionReceipt toReceipt(EthBlock.TransactionObject tx) {
+        org.web3j.protocol.core.methods.response.TransactionReceipt receipt = web3JFacade.getReceipt(EthHash.of(tx.getHash()));
+        boolean successful = !receipt.getGasUsed().equals(tx.getGas());
+        String error = "";
+        if(!successful) {
+            error = "Error from RPC, all the gas was used";
+        }
+        return new TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getFrom()),EthAddress.of(tx.getTo()), EthAddress.of(receipt.getContractAddress()), error, EthData.empty(), successful);
     }
 
     public void addListener(EthereumEventHandler ethereumEventHandler) {

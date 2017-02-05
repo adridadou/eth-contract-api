@@ -141,4 +141,12 @@ public class Web3JFacade {
         return new org.ethereum.core.Transaction(nonceBytes, gasPriceBytes, gasBytes,
                 address.address, valueBytes, data.data, chainId.id);
     }
+
+    public TransactionReceipt getReceipt(EthHash hash) {
+        try {
+            return handleError(web3j.ethGetTransactionReceipt(hash.withLeading0x()).send());
+        } catch (IOException e) {
+            throw new EthereumApiException("error while retrieving the transactionReceipt", e);
+        }
+    }
 }
