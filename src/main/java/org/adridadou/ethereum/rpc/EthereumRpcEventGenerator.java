@@ -35,8 +35,8 @@ public class EthereumRpcEventGenerator {
 
     private TransactionReceipt toReceipt(EthBlock.TransactionObject transactionObject) {
         //TODO: can I figure out if the transaction was successful or not?
-
-        return new TransactionReceipt(EthHash.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()),"", EthData.empty(), true);
+        //TODO: retrieve the Transaction receipt to get the contract address
+        return new TransactionReceipt(EthHash.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()), EthAddress.empty(), "", EthData.empty(), true);
     }
 
     public void addListener(EthereumEventHandler ethereumEventHandler) {

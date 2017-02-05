@@ -11,14 +11,16 @@ public class TransactionReceipt {
     public final EthHash hash;
     public final EthAddress sender;
     public final EthAddress receiveAddress;
+    public final EthAddress contractAddress;
     public final String error;
     public final EthData executionResult;
     public final boolean isSuccessful;
 
-    public TransactionReceipt(EthHash hash, EthAddress sender, EthAddress receiveAddress, String error, EthData executionResult, boolean isSuccessful) {
+    public TransactionReceipt(EthHash hash, EthAddress sender, EthAddress receiveAddress, EthAddress contractAddress, String error, EthData executionResult, boolean isSuccessful) {
         this.hash = hash;
         this.sender = sender;
         this.receiveAddress = receiveAddress;
+        this.contractAddress = contractAddress;
         this.error = error;
         this.executionResult = executionResult;
         this.isSuccessful = isSuccessful;
@@ -30,6 +32,7 @@ public class TransactionReceipt {
                 "hash=" + hash +
                 ", sender=" + sender +
                 ", receiveAddress=" + receiveAddress +
+                ", contractAddress=" + contractAddress +
                 ", error='" + error + '\'' +
                 ", executionResult=" + executionResult +
                 ", isSuccessful=" + isSuccessful +

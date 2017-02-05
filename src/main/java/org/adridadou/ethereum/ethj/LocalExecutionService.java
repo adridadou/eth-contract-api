@@ -21,13 +21,11 @@ public class LocalExecutionService {
 
 
     public BigInteger estimateGas(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
-        System.out.println("**** estimate gas");
         TransactionExecutor execution = execute(account, address, value, data);
         return BigInteger.valueOf(execution.getGasUsed());
     }
 
     public EthData executeLocally(final EthAccount account, final EthAddress address, final EthValue value, final EthData data) {
-        System.out.println("**** execute locally");
         TransactionExecutor execution = execute(account, address, value, data);
         return EthData.of(execution.getResult().getHReturn());
     }

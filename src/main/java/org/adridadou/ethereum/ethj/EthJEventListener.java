@@ -48,9 +48,10 @@ public class EthJEventListener extends EthereumListenerAdapter {
 
     @Override
     public void onTransactionExecuted(TransactionExecutionSummary summary) {
-        OnTransactionParameters mainTransaction = new OnTransactionParameters(null, TransactionStatus.Executed, summary.getLogs());
+
+        OnTransactionParameters mainTransaction = new OnTransactionParameters(toReceipt(summary.getTransaction()), TransactionStatus.Executed, summary.getLogs());
         List<OnTransactionParameters> internalTransactions = summary.getInternalTransactions().stream()
-                .map(internalTransaction -> new OnTransactionParameters(null, TransactionStatus.Executed, summary.getLogs())).collect(Collectors.toList());
+                .map(internalTransaction -> new OnTransactionParameters(toReceipt(internalTransaction), TransactionStatus.Executed, summary.getLogs())).collect(Collectors.toList());
 
         eventHandler.onTransactionExecuted(mainTransaction, internalTransactions);
     }
@@ -60,8 +61,12 @@ public class EthJEventListener extends EthereumListenerAdapter {
         eventHandler.onReady();
     }
 
+    private org.adridadou.ethereum.event.TransactionReceipt toReceipt(Transaction tx) {
+        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()), EthAddress.of(tx.getReceiveAddress()), EthAddress.empty(), "", EthData.empty(), true);
+    }
+
     private org.adridadou.ethereum.event.TransactionReceipt toReceipt(TransactionReceipt transactionReceipt) {
         Transaction tx = transactionReceipt.getTransaction();
-        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()),transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
+        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()), EthAddress.of(tx.getContractAddress()), transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
     }
 }

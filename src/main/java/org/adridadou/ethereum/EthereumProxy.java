@@ -75,7 +75,7 @@
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
         CallTransaction.Contract contract = new CallTransaction.Contract(abi.getAbi());
         return eventHandler.observeTransactions()
-                    .filter(params -> params.receipt.receiveAddress.equals(contractAddress))
+                    .filter(params -> contractAddress.equals(params.receipt.receiveAddress))
                     .flatMap(params -> Observable.from(params.logs))
                     .map(contract::parseEvent)
                     .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
@@ -84,7 +84,7 @@
 
     public CompletableFuture<EthAddress> publishContract(EthValue ethValue, EthData data, EthAccount account) {
         return this.sendTxInternal(ethValue, data, account, EthAddress.empty())
-                .thenApply(receipt -> receipt.receiveAddress);
+                .thenApply(receipt -> receipt.contractAddress);
     }
 
     public CompletableFuture<EthExecutionResult> sendTx(EthValue value, EthData data, EthAccount account, EthAddress address) {
