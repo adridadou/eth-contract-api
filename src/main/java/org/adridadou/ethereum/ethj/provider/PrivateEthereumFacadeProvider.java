@@ -11,7 +11,6 @@ import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.ethereum.values.config.DatabaseDirectory;
 import org.adridadou.exception.EthereumApiException;
 import org.apache.commons.io.FileUtils;
