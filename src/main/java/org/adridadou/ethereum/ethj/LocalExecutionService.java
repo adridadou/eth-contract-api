@@ -4,10 +4,8 @@ import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
-import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
-import org.ethereum.util.ByteUtil;
 
 import java.math.BigInteger;
 
@@ -16,11 +14,9 @@ import java.math.BigInteger;
  */
 public class LocalExecutionService {
     private final BlockchainImpl blockchain;
-    private final ChainId chainId;
 
-    public LocalExecutionService(BlockchainImpl blockchain, ChainId chainId) {
+    public LocalExecutionService(BlockchainImpl blockchain) {
         this.blockchain = blockchain;
-        this.chainId = chainId;
     }
 
 
@@ -35,10 +31,10 @@ public class LocalExecutionService {
     private TransactionExecutor execute(final EthAccount account, final EthAddress address, final EthValue value, final EthData data, final BigInteger nonce) {
         Block callBlock = blockchain.getBestBlock();
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
-
         try {
+            Transaction tx = createTransaction(account, nonce, BigInteger.ZERO, address, value, data);
             TransactionExecutor executor = new TransactionExecutor
-                    (createTransaction(account,nonce, BigInteger.ZERO, BigInteger.valueOf(100_000_000_000L),address,value,data), callBlock.getCoinbase(), repository, blockchain.getBlockStore(),
+                    (tx, callBlock.getCoinbase(), repository, blockchain.getBlockStore(),
                             blockchain.getProgramInvokeFactory(), callBlock)
                     .setLocalCall(true);
 
@@ -60,15 +56,8 @@ public class LocalExecutionService {
         return blockchain.getRepository();
     }
 
-    private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasPrice, BigInteger gas, EthAddress address, EthValue value, EthData data) {
-        byte[] nonceBytes = ByteUtil.bigIntegerToBytes(nonce);
-        byte[] gasPriceBytes = ByteUtil.bigIntegerToBytes(gasPrice);
-        byte[] gasBytes = ByteUtil.bigIntegerToBytes(gas);
-        byte[] valueBytes = ByteUtil.bigIntegerToBytes(value.inWei());
-
-        Transaction tx = new Transaction(nonceBytes, gasPriceBytes, gasBytes,
-                address.address, valueBytes, data.data, chainId.id);
-
+    private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasPrice, EthAddress address, EthValue value, EthData data) {
+        Transaction tx = CallTransaction.createRawTransaction(nonce.longValue(), gasPrice.longValue(), 100_000_000_000L, address.toString(), value.inWei().longValue(), data.data);
         tx.sign(account.key);
         return tx;
     }

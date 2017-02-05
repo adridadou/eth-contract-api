@@ -4,7 +4,6 @@ import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.*;
-import org.adridadou.ethereum.values.config.ChainId;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.config.blockchain.HomesteadConfig;
@@ -46,12 +45,11 @@ public class EthereumTest implements EthereumBackend {
         testConfig.getBalances().entrySet()
                 .forEach(entry -> blockchain.withAccountBalance(entry.getKey().getAddress().address, entry.getValue().inWei()));
 
-        localExecutionService = new LocalExecutionService(blockchain.getBlockchain(), ChainId.id(1));
+        localExecutionService = new LocalExecutionService(blockchain.getBlockchain());
         CompletableFuture.runAsync(() -> {
             try {
                 while(true) {
                     blockchain.submitTransaction(transactions.take());
-                    System.out.println("***** creating a new block now ....");
                     blockchain.createBlock();
                 }
             } catch (InterruptedException e) {

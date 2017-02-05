@@ -57,7 +57,7 @@ public class PrivateEthereumFacadeProvider {
 
         MinerConfig.dbName = config.getDbName();
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        EthereumBackend ethereumBackend = new EthereumReal(ethereum, ChainId.id(1));
+        EthereumBackend ethereumBackend = new EthereumReal(ethereum);
         ethereum.initSyncing();
 
         if (!dagCached) {

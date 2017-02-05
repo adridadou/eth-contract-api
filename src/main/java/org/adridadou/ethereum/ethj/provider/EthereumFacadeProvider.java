@@ -60,7 +60,7 @@ public class EthereumFacadeProvider {
 
         public EthereumFacade create(){
             GenericConfig.config = configBuilder.build().toString();
-            EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class), configBuilder.networkId);
+            EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class));
             return create(ethereum, new EthereumEventHandler());
         }
 
