@@ -27,24 +27,14 @@ public class EthereumRpcEventGenerator {
                     .map(tx -> toReceipt((EthBlock.TransactionObject)tx.get()))
                     .collect(Collectors.toList());
 
-            new OnBlockParameters(block.getNumber().longValue(),txs);
-            ethereumEventHandlers
-                    .forEach(handler -> this.handleNewBlock(handler, block));
+            OnBlockParameters param = new OnBlockParameters(block.getNumber().longValue(), txs);
+            ethereumEventHandlers.forEach(handler -> handler.onBlock(param));
         });
     }
 
-    private void handleNewBlock(EthereumEventHandler eventHandler, EthBlock.Block block) {
-        List<TransactionReceipt> txs = block.getTransactions().stream()
-                .map(result -> ((EthBlock.TransactionObject)result.get()))
-                .map(this::toReceipt)
-                .collect(Collectors.toList());
-
-        eventHandler.onBlock(new OnBlockParameters(block.getNumber().longValue(), txs));
-    }
-
-
     private TransactionReceipt toReceipt(EthBlock.TransactionObject transactionObject) {
         //TODO: can I figure out if the transaction was successful or not?
+
         return new TransactionReceipt(EthData.of(transactionObject.getHash()), EthAddress.of(transactionObject.getFrom()),EthAddress.of(transactionObject.getTo()),"", EthData.empty(), true);
     }
 

@@ -40,7 +40,7 @@ public class EthJEventListener extends EthereumListenerAdapter {
           case NEW_PENDING: transactionStatus = TransactionStatus.Pending; break;
           case DROPPED: transactionStatus = TransactionStatus.Dropped; break;
           case INCLUDED: transactionStatus = TransactionStatus.Included;break;
-          default: transactionStatus = TransactionStatus.Unknown;
+          default: transactionStatus = TransactionStatus.Unknown;break;
         }
         eventHandler.onPendingTransactionUpdate(new OnTransactionParameters(toReceipt(txReceipt), transactionStatus, new ArrayList<>()));
     }
