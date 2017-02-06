@@ -10,13 +10,13 @@ contract owned is abstract {
   }
 
   function currentUser() returns (address) {
-		return msg.sender;
+		return msg.account;
 	}
 }
 
 contract mortal is abstract, owned {
   function kill() {
-    if (msg.sender == owner) suicide(owner);
+    if (msg.account == owner) suicide(owner);
   }
 }
 

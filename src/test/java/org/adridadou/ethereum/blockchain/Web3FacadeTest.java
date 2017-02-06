@@ -1,7 +1,9 @@
 package org.adridadou.ethereum.blockchain;
 
+import org.adridadou.ethereum.rpc.Web3JFacade;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.EthAddress;
+import org.adridadou.ethereum.values.config.ChainId;
 import org.junit.Test;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -20,7 +22,7 @@ import static org.mockito.Mockito.when;
  */
 public class Web3FacadeTest {
     private final Web3j web3j = mock(Web3j.class);
-    private final Web3JFacade web3Facade = new Web3JFacade(web3j, new OutputTypeHandler());
+    private final Web3JFacade web3Facade = new Web3JFacade(web3j, new OutputTypeHandler(), ChainId.id(1));
     private final EthAddress address = EthAddress.of("0x00394857372832");
 
     @Test

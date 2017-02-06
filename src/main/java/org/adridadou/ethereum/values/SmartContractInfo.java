@@ -6,19 +6,19 @@ package org.adridadou.ethereum.values;
  */
 public class SmartContractInfo {
     private final EthAddress address;
-    private final EthAccount sender;
+    private final EthAccount account;
 
-    public SmartContractInfo(EthAddress address, EthAccount sender) {
+    public SmartContractInfo(EthAddress address, EthAccount account) {
         this.address = address;
-        this.sender = sender;
+        this.account = account;
     }
 
     public EthAddress getAddress() {
         return address;
     }
 
-    public EthAccount getSender() {
-        return sender;
+    public EthAccount getAccount() {
+        return account;
     }
 
     @Override
@@ -29,14 +29,14 @@ public class SmartContractInfo {
         SmartContractInfo that = (SmartContractInfo) o;
 
         if (address != null ? !address.equals(that.address) : that.address != null) return false;
-        return sender != null ? sender.equals(that.sender) : that.sender == null;
+        return account != null ? account.equals(that.account) : that.account == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = address != null ? address.hashCode() : 0;
-        result = 31 * result + (sender != null ? sender.hashCode() : 0);
+        result = 31 * result + (account != null ? account.hashCode() : 0);
         return result;
     }
 
@@ -44,7 +44,7 @@ public class SmartContractInfo {
     public String toString() {
         return "SmartContractInfo{" +
                 "address=" + address.withLeading0x() +
-                ", sender=" + sender.getAddress().withLeading0x() +
+                ", account=" + account.getAddress().withLeading0x() +
                 '}';
     }
 }

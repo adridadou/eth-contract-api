@@ -1,10 +1,10 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.blockchain.EthereumProxyEthereumJ;
-import org.adridadou.ethereum.blockchain.EthereumJReal;
-import org.adridadou.ethereum.blockchain.Ethereumj;
+import org.adridadou.ethereum.EthereumBackend;
+import org.adridadou.ethereum.EthereumProxy;
+import org.adridadou.ethereum.ethj.EthereumReal;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
@@ -18,7 +18,6 @@ import org.ethereum.config.SystemProperties;
 import org.ethereum.core.Block;
 import org.ethereum.facade.Ethereum;
 import org.ethereum.facade.EthereumFactory;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.mine.Ethash;
 import org.ethereum.mine.MinerListener;
 import org.ethereum.samples.BasicSample;
@@ -37,7 +36,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class PrivateEthereumFacadeProvider {
     private final Logger log = LoggerFactory.getLogger(PrivateEthereumFacadeProvider.class);
-    private final EthAccount mainAccount = AccountProvider.from("cow");
+    private final EthAccount mainAccount = AccountProvider.fromSeed("cow");
 
     public EthereumFacade create(final PrivateNetworkConfig config) {
         final boolean dagCached = new File("cachedDag/mine-dag.dat").exists();
@@ -57,7 +56,7 @@ public class PrivateEthereumFacadeProvider {
 
         MinerConfig.dbName = config.getDbName();
         Ethereum ethereum = EthereumFactory.createEthereum(MinerConfig.class);
-        Ethereumj ethereumj = new EthereumJReal(ethereum);
+        EthereumBackend ethereumBackend = new EthereumReal(ethereum);
         ethereum.initSyncing();
 
         if (!dagCached) {
@@ -70,14 +69,14 @@ public class PrivateEthereumFacadeProvider {
             }
         }
 
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-        final EthereumFacade facade = new EthereumFacade(new EthereumProxyEthereumJ(ethereumj, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
+        final EthereumFacade facade = new EthereumFacade(new EthereumProxy(ethereumBackend, ethereumListener, inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
 
         //This event does not trigger when you are the miner
-        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
-        facade.events().onReady().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
+        ethereumListener.onReady();
+        facade.events().ready().thenAccept((b) -> config.getInitialBalances().entrySet().stream()
                 .map(entry -> facade.sendEther(mainAccount, entry.getKey().getAddress(), entry.getValue()))
                 .forEach(result -> {
                     try {

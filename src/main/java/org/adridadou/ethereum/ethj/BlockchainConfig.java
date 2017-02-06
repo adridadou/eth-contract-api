@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
 import org.adridadou.ethereum.values.config.*;
 
@@ -69,7 +69,7 @@ public class BlockchainConfig {
     }
 
     public static class Builder {
-        private ChainId networkId;
+        public ChainId networkId;
         private Boolean eip8;
         private Boolean fastSync;
         private GenesisPath genesis;

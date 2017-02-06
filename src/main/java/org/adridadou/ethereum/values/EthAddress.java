@@ -21,6 +21,9 @@ public class EthAddress {
     }
 
     public static EthAddress of(byte[] address) {
+        if(address == null) {
+            return EthAddress.empty();
+        }
         return new EthAddress(trimLeft(address));
     }
 
