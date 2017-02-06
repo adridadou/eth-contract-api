@@ -134,7 +134,7 @@ public class EthereumProxy {
         if (toAddress.isEmpty()) {
             gasLimit = gasLimit.add(BigInteger.valueOf(15_000));
         }
-        return gasLimit;
+        return gasLimit.add(BigInteger.valueOf(200_000));
     }
 
     private OnTransactionParameters createTransactionParameters(TransactionReceipt receipt) {
