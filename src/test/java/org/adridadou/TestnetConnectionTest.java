@@ -5,7 +5,6 @@ import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.ethj.provider.PrivateEthereumFacadeProvider;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.rpc.provider.EthereumFacadeRpcProvider;
 import org.adridadou.ethereum.values.*;
 
 import static org.adridadou.ethereum.ethj.provider.EthereumJConfigs.ropsten;
@@ -57,8 +56,7 @@ public class TestnetConnectionTest {
     }
 
     private EthereumFacade fromRpc() {
-        //return InfuraRopstenEthereumFacadeProvider.create(InfuraKey.of("57yGdS5iZEfm7G4MpJAo"));
-        return new EthereumFacadeRpcProvider().create("http://localhost:8545", ChainId.id(16123));
+        return EthereumFacadeProvider.forRemoteNode("http://localhost:8545", ChainId.id(16123));
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
