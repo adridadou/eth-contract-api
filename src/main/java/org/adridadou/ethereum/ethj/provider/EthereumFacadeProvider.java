@@ -34,17 +34,6 @@ public class EthereumFacadeProvider {
         return new Builder(config);
     }
 
-    private static class GenericConfig {
-        private static String config;
-
-        @Bean
-        public SystemProperties systemProperties() {
-            SystemProperties props = new SystemProperties();
-            props.overrideParams(ConfigFactory.parseString(config));
-            return props;
-        }
-    }
-
     public static EthereumFacade forTest(TestConfig config){
         EthereumTest ethereumj = new EthereumTest(config);
         EthereumEventHandler ethereumListener = new EthereumEventHandler();
@@ -102,6 +91,17 @@ public class EthereumFacadeProvider {
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
             return new EthereumFacade(new EthereumProxy(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
+        }
+    }
+
+    private static class GenericConfig {
+        private static String config;
+
+        @Bean
+        public SystemProperties systemProperties() {
+            SystemProperties props = new SystemProperties();
+            props.overrideParams(ConfigFactory.parseString(config));
+            return props;
         }
     }
 }
