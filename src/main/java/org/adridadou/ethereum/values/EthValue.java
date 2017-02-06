@@ -25,6 +25,10 @@ public class EthValue implements Comparable<EthValue> {
                 .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
     }
 
+    public boolean isEmpty() {
+        return inWei().signum() != 1;
+    }
+
     public EthValue plus(EthValue value) {
         return new EthValue(this.value.add(value.value).toBigInteger());
     }
