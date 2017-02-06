@@ -27,26 +27,4 @@ public class OnTransactionParameters {
                 ", isContractCreation=" + isContractCreation +
                 '}';
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        OnTransactionParameters that = (OnTransactionParameters) o;
-
-        if (receipt != null ? !receipt.equals(that.receipt) : that.receipt != null) return false;
-        if (status != that.status) return false;
-        if (logs != null ? !logs.equals(that.logs) : that.logs != null) return false;
-        return isContractCreation != null ? isContractCreation.equals(that.isContractCreation) : that.isContractCreation == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = receipt != null ? receipt.hashCode() : 0;
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (logs != null ? logs.hashCode() : 0);
-        result = 31 * result + (isContractCreation != null ? isContractCreation.hashCode() : 0);
-        return result;
-    }
 }

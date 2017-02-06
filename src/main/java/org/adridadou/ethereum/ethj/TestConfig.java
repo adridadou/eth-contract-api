@@ -9,6 +9,7 @@ import java.util.Map;
 
 /**
  * Created by davidroon on 22.01.17.
+ * This code is released under Apache 2 license
  */
 public class TestConfig {
 

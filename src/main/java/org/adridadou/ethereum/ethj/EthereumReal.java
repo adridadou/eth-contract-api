@@ -12,6 +12,7 @@ import static org.adridadou.ethereum.values.EthValue.wei;
 
 /**
  * Created by davidroon on 20.01.17.
+ * This code is released under Apache 2 license
  */
 public class EthereumReal implements EthereumBackend {
     private final Ethereum ethereum;
