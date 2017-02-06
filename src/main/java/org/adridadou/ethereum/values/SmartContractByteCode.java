@@ -18,6 +18,10 @@ public class SmartContractByteCode {
         this.code = code;
     }
 
+    public static SmartContractByteCode of(EthData code) {
+        return new SmartContractByteCode(code.data);
+    }
+
     public static SmartContractByteCode of(byte[] code) {
         return new SmartContractByteCode(code);
     }

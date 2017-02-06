@@ -1,18 +1,15 @@
 package org.adridadou.ethereum;
 
-import org.adridadou.ethereum.blockchain.EthereumProxy;
-import org.adridadou.ethereum.blockchain.EthereumProxyEthereumJ;
-import org.adridadou.ethereum.blockchain.EthereumJTest;
-import org.adridadou.ethereum.blockchain.TestConfig;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.ethj.EthereumTest;
+import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;
 import org.adridadou.ethereum.values.SoliditySource;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,25 +26,25 @@ import static org.junit.Assert.assertTrue;
  * This code is released under Apache 2 license
  */
 public class EthereumFacadeTest {
-    private final EthereumJTest ethereumj = new EthereumJTest(TestConfig.builder().build());
+    private final EthereumTest ethereumj = new EthereumTest(TestConfig.builder().build());
     private final InputTypeHandler inputTypeHandler = new InputTypeHandler();
     private final OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-    private final EthereumEventHandler handler = new EthereumEventHandler(ethereumj);
-    private final EthereumProxy proxy = new EthereumProxyEthereumJ(ethereumj,handler,inputTypeHandler,outputTypeHandler);
+    private final EthereumEventHandler handler = new EthereumEventHandler();
+    private final EthereumProxy proxy = new EthereumProxy(ethereumj,handler,inputTypeHandler,outputTypeHandler);
     private final EthereumFacade ethereum = new EthereumFacade(proxy, inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
-    private final EthAccount sender = ethereumj.defaultAccount();
+    private final EthAccount account = ethereumj.defaultAccount();
 
     @Before
     public void before() {
-        handler.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        handler.onReady();
     }
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
         SoliditySource contractSource = SoliditySource.from(new File("src/test/resources/contract2.sol"));
-        CompiledContract compiledContract = ethereum.compile(contractSource, "myContract2").get();
-        EthAddress address = ethereum.publishContract(compiledContract, sender).get();
-        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, sender, MyContract2.class);
+        CompiledContract compiledContract = ethereum.compile(contractSource).get().get("myContract2");
+        EthAddress address = ethereum.publishContract(compiledContract, account).get();
+        MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, account, MyContract2.class);
         System.out.println("*** calling contract myMethod");
         assertEquals("hello", myContract.getI1());
         assertTrue(myContract.getT());

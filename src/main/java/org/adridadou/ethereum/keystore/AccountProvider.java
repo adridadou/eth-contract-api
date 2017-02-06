@@ -27,15 +27,15 @@ public class AccountProvider {
         return new EthAccount(ECKey.fromPrivate(Hex.decode(privateKey)));
     }
 
-    public static EthAccount from(final ECKey ecKey) {
+    public static EthAccount fromECKey(final ECKey ecKey) {
         return new EthAccount(ecKey);
     }
 
-    public static EthAccount from(final String id) {
+    public static EthAccount fromSeed(final String id) {
         return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
     }
 
-    public static SecureKey from(final File file) {
+    public static SecureKey fromKeystore(final File file) {
         return new FileSecureKey(file);
     }
 
@@ -51,7 +51,7 @@ public class AccountProvider {
         File[] files = Optional.ofNullable(directory.listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + WalletUtils.getMainnetKeyDirectory()));
         return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
-                .map(AccountProvider::from)
+                .map(AccountProvider::fromKeystore)
                 .collect(Collectors.toList());
     }
 

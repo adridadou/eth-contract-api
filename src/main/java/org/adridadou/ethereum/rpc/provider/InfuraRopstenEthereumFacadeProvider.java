@@ -1,6 +1,7 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.rpc.provider;
 
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.values.config.*;
 
 /**

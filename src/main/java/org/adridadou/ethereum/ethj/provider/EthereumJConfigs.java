@@ -1,7 +1,8 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj.provider;
 
-import org.adridadou.ethereum.blockchain.BlockchainConfig;
-import org.adridadou.ethereum.blockchain.IncompatibleDatabaseBehavior;
+import org.adridadou.ethereum.ethj.BlockchainConfig;
+import org.adridadou.ethereum.ethj.IncompatibleDatabaseBehavior;
+import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.values.config.*;
 
 /**

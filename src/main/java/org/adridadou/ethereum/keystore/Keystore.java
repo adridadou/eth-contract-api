@@ -64,23 +64,17 @@ public class Keystore {
         int iterations = keystore.getCrypto().getKdfparams().getC();
         byte[] part = new byte[16];
         byte[] h = hash(password, salt, iterations);
-        byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
-        System.arraycopy(h, 16, part, 0, 16);
-
-        byte[] actual = sha3(concat(part, cipherText));
-
-        if (Arrays.equals(actual, Hex.decode(keystore.getCrypto().getMac()))) {
-            System.arraycopy(h, 0, part, 0, 16);
-            return part;
-        }
-
-        throw new EthereumApiException("error while loading the private key forNetwork the keystore. Most probably a wrong passphrase");
+        return check(keystore,part, h);
     }
 
     private static byte[] checkMacScrypt(Keystore keystore, String password) {
         byte[] part = new byte[16];
         KdfParams params = keystore.getCrypto().getKdfparams();
         byte[] h = scrypt(password.getBytes(EthereumFacade.CHARSET), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
+        return check(keystore, part, h);
+    }
+
+    private static byte[] check(Keystore keystore, byte[] part, byte[] h) {
         byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
         System.arraycopy(h, 16, part, 0, 16);
 

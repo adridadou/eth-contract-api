@@ -1,16 +1,18 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj.provider;
 
 import com.typesafe.config.ConfigFactory;
-import org.adridadou.ethereum.EthereumFacade;
-import org.adridadou.ethereum.blockchain.*;
+import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.ethj.BlockchainConfig;
+import org.adridadou.ethereum.ethj.EthereumReal;
+import org.adridadou.ethereum.ethj.EthereumTest;
+import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
 import org.adridadou.ethereum.values.config.ChainId;
 import org.ethereum.config.SystemProperties;
 import org.ethereum.facade.EthereumFactory;
-import org.ethereum.listener.EthereumListener;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.springframework.context.annotation.Bean;
 
@@ -38,9 +40,9 @@ public class EthereumFacadeProvider {
     }
 
     public static EthereumFacade forTest(TestConfig config){
-        EthereumJTest ethereumj = new EthereumJTest(config);
-        EthereumEventHandler ethereumListener = new EthereumEventHandler(ethereumj);
-        ethereumListener.onSyncDone(EthereumListener.SyncState.COMPLETE);
+        EthereumTest ethereumj = new EthereumTest(config);
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();
+        ethereumListener.onReady();
         return new Builder(BlockchainConfig.builder()).create(ethereumj, ethereumListener);
     }
 
@@ -58,14 +60,14 @@ public class EthereumFacadeProvider {
 
         public EthereumFacade create(){
             GenericConfig.config = configBuilder.build().toString();
-            EthereumJReal ethereum = new EthereumJReal(EthereumFactory.createEthereum(GenericConfig.class));
-            return create(ethereum, new EthereumEventHandler(ethereum));
+            EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class));
+            return create(ethereum, new EthereumEventHandler());
         }
 
-        public EthereumFacade create(Ethereumj ethereum, EthereumEventHandler ethereumListener) {
+        public EthereumFacade create(EthereumBackend ethereum, EthereumEventHandler ethereumListener) {
             InputTypeHandler inputTypeHandler = new InputTypeHandler();
             OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-            return new EthereumFacade(new EthereumProxyEthereumJ(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
+            return new EthereumFacade(new EthereumProxy(ethereum, ethereumListener,inputTypeHandler, outputTypeHandler),inputTypeHandler, outputTypeHandler, SwarmService.from(SwarmService.PUBLIC_HOST), SolidityCompiler.getInstance());
         }
     }
 }
