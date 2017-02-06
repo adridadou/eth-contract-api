@@ -2,13 +2,13 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.ethj.TestConfig;
-import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
-import org.adridadou.ethereum.ethj.provider.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.provider.EthereumFacadeProvider;
+import org.adridadou.ethereum.provider.PrivateEthereumFacadeProvider;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.*;
 
-import static org.adridadou.ethereum.ethj.provider.EthereumJConfigs.ropsten;
-import static org.adridadou.ethereum.ethj.provider.PrivateNetworkConfig.config;
+import static org.adridadou.ethereum.provider.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.provider.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 

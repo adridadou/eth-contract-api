@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 /**
  * Created by davidroon on 05.01.17.
+ * This code is released under Apache 2 license
  */
 public class BigIntegerConverter implements OutputTypeConverter {
     @Override

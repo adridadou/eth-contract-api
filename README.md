@@ -44,7 +44,7 @@ It can create an account from a String (seed) or from a File (keystore)
 
 ####EthereumFacadeProvider
 This is the provider used to connect through EthereumJ. 
-The different pre-defined configurations can be found at org.adridadou.ethereum.ethj.provider.EthereumJConfigs
+The different pre-defined configurations can be found at org.adridadou.ethereum.provider.EthereumJConfigs
 You can use the function "from" that takes a configuration.
 This returns a Provider Builder. You can then extend the configuration. This is useful when you want to connect to Ropsten but with fast sync (for example)
 

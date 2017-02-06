@@ -3,7 +3,7 @@ package org.adridadou;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
+import org.adridadou.ethereum.provider.EthereumFacadeProvider;
 import org.adridadou.ethereum.values.CompiledContract;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthAddress;

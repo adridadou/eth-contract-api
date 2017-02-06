@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.ethj.provider;
+package org.adridadou.ethereum.provider;
 
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthValue;

@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.ethj.provider;
+package org.adridadou.ethereum.provider;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.*;

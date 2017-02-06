@@ -80,9 +80,9 @@ public class Web3JFacade {
         }
     }
 
-    public EthData sendTransaction(final EthData rawTransaction) {
+    public EthHash sendTransaction(final EthData rawTransaction) {
         try {
-            return EthData.of(handleError(web3j.ethSendRawTransaction(rawTransaction.withLeading0x()).send()));
+            return EthHash.of(handleError(web3j.ethSendRawTransaction(rawTransaction.withLeading0x()).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
