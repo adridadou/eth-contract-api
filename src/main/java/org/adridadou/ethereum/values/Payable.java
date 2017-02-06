@@ -1,7 +1,7 @@
 package org.adridadou.ethereum.values;
 
 import org.adridadou.ethereum.EthereumContractInvocationHandler;
-import org.adridadou.ethereum.smartcontract.SmartContract;
+import org.adridadou.ethereum.SmartContract;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;

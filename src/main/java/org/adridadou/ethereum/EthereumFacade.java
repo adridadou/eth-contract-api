@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.InputTypeConverter;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeConverter;
@@ -30,7 +31,7 @@ import rx.Observable;
  */
 public class EthereumFacade {
     public final static Charset CHARSET = Charsets.UTF_8;
-  private final EthereumContractInvocationHandler handler;
+    private final EthereumContractInvocationHandler handler;
     private final OutputTypeHandler outputTypeHandler;
     private final InputTypeHandler inputTypeHandler;
     private final EthereumProxy ethereumProxy;
@@ -89,8 +90,8 @@ public class EthereumFacade {
         return metadata.getAbi();
     }
 
-    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        return ethereumProxy.publish(contract, sender, constructorArgs);
+    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount account, Object... constructorArgs) {
+        return ethereumProxy.publish(contract, account, constructorArgs);
     }
 
     public SwarmHash publishMetadataToSwarm(CompiledContract contract) {
@@ -133,14 +134,10 @@ public class EthereumFacade {
       }
     }
 
-    public void shutdown() {
-        ethereumProxy.shutdown();
+    public CompletableFuture<Map<String, CompiledContract>> compile(SoliditySource src) {
+        return CompletableFuture.supplyAsync(() -> compileInternal(src));
     }
-
-    public CompletableFuture<CompiledContract> compile(SoliditySource src, String contractName) {
-        return CompletableFuture.supplyAsync(() -> compileInternal(src,contractName));
-    }
-    private CompiledContract compileInternal(SoliditySource src, String contractName) {
+    private Map<String, CompiledContract> compileInternal(SoliditySource src) {
       try {
           SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
             SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
@@ -151,16 +148,10 @@ public class EthereumFacade {
           if (res.contracts.isEmpty()) {
               throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
           }
-          CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-          if(metadata == null) {
-              throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
-          }
-          if (metadata.bin == null || metadata.bin.isEmpty()) {
-              throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-          }
-          return CompiledContract.from(src, contractName, metadata);
+          return res.contracts.entrySet().stream()
+                  .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src,e.getKey(),e.getValue())));
       } catch (IOException e) {
-          throw new EthereumApiException("error while compiling " + contractName, e);
+          throw new EthereumApiException("error while compiling solidity smart contract", e);
       }
   }
 

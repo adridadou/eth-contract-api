@@ -1,19 +1,17 @@
 package org.adridadou.ethereum.values;
 
-import java.util.Arrays;
-
 /**
  * Created by davidroon on 13.10.16.
  * This code is released under Apache 2 license
  */
 public class EthExecutionResult {
-    private final byte[] result;
+    private final EthData result;
 
-    public EthExecutionResult(byte[] result) {
+    public EthExecutionResult(EthData result) {
         this.result = result;
     }
 
-    public byte[] getResult() {
+    public EthData getResult() {
         return result;
     }
 
@@ -24,17 +22,18 @@ public class EthExecutionResult {
 
         EthExecutionResult that = (EthExecutionResult) o;
 
-        return Arrays.equals(result, that.result);
-
+        return result != null ? result.equals(that.result) : that.result == null;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(result);
+        return result != null ? result.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        return "result:" + EthData.of(result).toString();
+        return "EthExecutionResult{" +
+                "result=" + result +
+                '}';
     }
 }
