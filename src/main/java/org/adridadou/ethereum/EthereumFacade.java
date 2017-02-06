@@ -31,7 +31,7 @@ import rx.Observable;
  */
 public class EthereumFacade {
     public final static Charset CHARSET = Charsets.UTF_8;
-  private final EthereumContractInvocationHandler handler;
+    private final EthereumContractInvocationHandler handler;
     private final OutputTypeHandler outputTypeHandler;
     private final InputTypeHandler inputTypeHandler;
     private final EthereumProxy ethereumProxy;

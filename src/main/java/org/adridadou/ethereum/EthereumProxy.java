@@ -1,26 +1,26 @@
-    package org.adridadou.ethereum;
+package org.adridadou.ethereum;
 
-    import static org.adridadou.ethereum.values.EthValue.wei;
+import static org.adridadou.ethereum.values.EthValue.wei;
 
-    import java.math.BigInteger;
-    import java.util.*;
-    import java.util.concurrent.CompletableFuture;
-    import java.util.concurrent.ConcurrentHashMap;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
-    import org.adridadou.ethereum.converters.input.InputTypeHandler;
-    import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-    import org.adridadou.ethereum.event.*;
-    import org.adridadou.ethereum.values.*;
-    import org.adridadou.exception.EthereumApiException;
-    import org.ethereum.core.CallTransaction;
-    import org.ethereum.util.ByteUtil;
-    import rx.Observable;
+import org.adridadou.ethereum.converters.input.InputTypeHandler;
+import org.adridadou.ethereum.converters.output.OutputTypeHandler;
+import org.adridadou.ethereum.event.*;
+import org.adridadou.ethereum.values.*;
+import org.adridadou.exception.EthereumApiException;
+import org.ethereum.core.CallTransaction;
+import org.ethereum.util.ByteUtil;
+import rx.Observable;
 
-    /**
-    * Created by davidroon on 20.04.16.
-    * This code is released under Apache 2 license
-    */
-    public class EthereumProxy {
+/**
+ * Created by davidroon on 20.04.16.
+ * This code is released under Apache 2 license
+ */
+public class EthereumProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
     private final EthereumBackend ethereum;
     private final EthereumEventHandler eventHandler;
@@ -75,11 +75,11 @@
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress contractAddress, String eventName, Class<T> cls) {
         CallTransaction.Contract contract = new CallTransaction.Contract(abi.getAbi());
         return eventHandler.observeTransactions()
-                    .filter(params -> contractAddress.equals(params.receipt.receiveAddress))
-                    .flatMap(params -> Observable.from(params.logs))
-                    .map(contract::parseEvent)
-                    .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
-                    .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls));
+                .filter(params -> contractAddress.equals(params.receipt.receiveAddress))
+                .flatMap(params -> Observable.from(params.logs))
+                .map(contract::parseEvent)
+                .filter(invocation -> invocation != null && eventName.equals(invocation.function.name))
+                .map(invocation -> outputTypeHandler.convertSpecificType(invocation.args, cls));
     }
 
     public CompletableFuture<EthAddress> publishContract(EthValue ethValue, EthData data, EthAccount account) {
@@ -95,7 +95,7 @@
     private CompletableFuture<TransactionReceipt> sendTxInternal(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         return eventHandler.ready().thenCompose((v) -> {
             BigInteger gasLimit = estimateGas(value, data, account, toAddress);
-            EthHash txHash = ethereum.submit(account, toAddress,value,data, getNonce(account.getAddress()), gasLimit);
+            EthHash txHash = ethereum.submit(account, toAddress, value, data, getNonce(account.getAddress()), gasLimit);
 
             long currentBlock = eventHandler.getCurrentBlockNumber();
 
@@ -131,7 +131,7 @@
     private BigInteger estimateGas(EthValue value, EthData data, EthAccount account, EthAddress toAddress) {
         BigInteger gasLimit = ethereum.estimateGas(account, toAddress, value, data);
         //if it is a contract creation
-        if(toAddress.isEmpty()) {
+        if (toAddress.isEmpty()) {
             gasLimit = gasLimit.add(BigInteger.valueOf(15_000));
         }
         return gasLimit;
@@ -153,20 +153,20 @@
         eventHandler.observeTransactions()
                 .filter(tx -> tx.status == TransactionStatus.Dropped)
                 .forEach(params -> {
-            EthAddress currentAddress = params.receipt.sender;
-            Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
-                pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
-                nonces.put(currentAddress, ethereum.getNonce(currentAddress));
-            });
-        });
+                    EthAddress currentAddress = params.receipt.sender;
+                    Optional.ofNullable(pendingTransactions.get(currentAddress)).ifPresent(counter -> {
+                        pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
+                        nonces.put(currentAddress, ethereum.getNonce(currentAddress));
+                    });
+                });
         eventHandler.observeBlocks()
-            .forEach(params -> params.receipts.stream()
-                .map(tx -> tx.sender)
-                .forEach(currentAddress -> Optional.ofNullable(pendingTransactions.get(currentAddress))
-                        .ifPresent(counter -> {
-                            pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
-                            nonces.put(currentAddress, ethereum.getNonce(currentAddress));
-                })));
+                .forEach(params -> params.receipts.stream()
+                        .map(tx -> tx.sender)
+                        .forEach(currentAddress -> Optional.ofNullable(pendingTransactions.get(currentAddress))
+                                .ifPresent(counter -> {
+                                    pendingTransactions.put(currentAddress, counter.subtract(BigInteger.ONE));
+                                    nonces.put(currentAddress, ethereum.getNonce(currentAddress));
+                                })));
     }
 
     public EthereumEventHandler events() {

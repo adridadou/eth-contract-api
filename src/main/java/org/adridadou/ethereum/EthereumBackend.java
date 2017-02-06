@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 /**
  * Created by davidroon on 20.01.17.
+ * This code is released under Apache 2 license
  */
 public interface EthereumBackend {
     BigInteger getGasPrice();
