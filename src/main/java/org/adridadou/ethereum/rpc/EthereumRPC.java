@@ -9,6 +9,7 @@ import java.math.BigInteger;
 
 /**
  * Created by davidroon on 20.01.17.
+ * This code is released under Apache 2 license
  */
 public class EthereumRPC implements EthereumBackend {
     private final Web3JFacade web3JFacade;
