@@ -30,7 +30,7 @@ public class EthereumFacadeProvider {
     public final static ChainId MAIN_CHAIN_ID = ChainId.id(0);
     public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
 
-    public static Builder forNetwork(final BlockchainConfig.Builder config) {
+    public static Builder forNetwork(final BlockchainConfig config) {
         return new Builder(config);
     }
 
@@ -71,18 +71,18 @@ public class EthereumFacadeProvider {
 
     public static class Builder {
 
-        private final BlockchainConfig.Builder configBuilder;
+        private final BlockchainConfig configBuilder;
 
-        public Builder(BlockchainConfig.Builder configBuilder) {
+        public Builder(BlockchainConfig configBuilder) {
             this.configBuilder = configBuilder;
         }
 
-        public BlockchainConfig.Builder extendConfig() {
+        public BlockchainConfig extendConfig() {
             return configBuilder;
         }
 
         public EthereumFacade create(){
-            GenericConfig.config = configBuilder.build().toString();
+            GenericConfig.config = configBuilder.toString();
             EthereumReal ethereum = new EthereumReal(EthereumFactory.createEthereum(GenericConfig.class));
             return create(ethereum, new EthereumEventHandler());
         }

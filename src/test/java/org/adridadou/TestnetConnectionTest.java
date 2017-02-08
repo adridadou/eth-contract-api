@@ -88,6 +88,8 @@ public class TestnetConnectionTest {
 
         assertEquals(ether(150), ethereum.getBalance(address));
 
+        assertEquals(mainAccount.getAddress(), myContract.getOwner());
+
         assertEquals("async call", myContract.getI2());
 
         assertEquals(EnumTest.VAL2, myContract.getEnumValue());

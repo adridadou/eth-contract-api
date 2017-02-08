@@ -117,7 +117,7 @@ public class PrivateEthereumFacadeProvider {
             return EthereumJConfigs.privateMiner()
                     .dbDirectory(DatabaseDirectory.db(dbName))
                     .listenPort(55555)
-                    .build().toString();
+                    .toString();
         }
 
         @Bean

@@ -10,11 +10,11 @@ import org.adridadou.ethereum.values.config.*;
  */
 public class EthereumJConfigs {
 
-    public static BlockchainConfig.Builder mainNet() {
+    public static BlockchainConfig mainNet() {
         return BlockchainConfig.builder();
     }
 
-    public static BlockchainConfig.Builder ropsten() {
+    public static BlockchainConfig ropsten() {
         return BlockchainConfig.builder()
                 .addIp(NodeIp.ip("94.242.229.4:40404"))
                 .addIp(NodeIp.ip("94.242.229.203:30303"))
@@ -25,7 +25,7 @@ public class EthereumJConfigs {
                 .dbDirectory(DatabaseDirectory.db("database-ropsten"));
     }
 
-    public static BlockchainConfig.Builder etherCampTestnet() {
+    public static BlockchainConfig etherCampTestnet() {
         return BlockchainConfig.builder()
                 .eip8(false)
                 .dbDirectory(DatabaseDirectory.db("ethercamp-test"))
@@ -40,7 +40,7 @@ public class EthereumJConfigs {
                 .configName(EthereumConfigName.name("testnet"));
     }
 
-    public static BlockchainConfig.Builder privateMiner() {
+    public static BlockchainConfig privateMiner() {
         return BlockchainConfig
                 .builder()
                 .peerDiscovery(false)
