@@ -1,7 +1,6 @@
 package org.adridadou.ethereum.ethj;
 
 import org.adridadou.ethereum.values.config.*;
-import org.ethereum.config.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,6 @@ public class BlockchainConfig {
     private List<String> peerActiveList;
     private String peerPrivateKey;
     private IncompatibleDatabaseBehavior behavior;
-    private SystemProperties properties = new SystemProperties();
 
     public String toString() {
         final Optional<String> strIpList = Optional.ofNullable(ipList).map(lst -> String.join(",", lst.stream().map(NodeIp::toString).collect(Collectors.toList())));
