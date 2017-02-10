@@ -34,22 +34,6 @@ public class EthData {
         return Hex.toHexString(data);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EthData ethData = (EthData) o;
-
-        return Arrays.equals(data, ethData.data);
-
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(data);
-    }
-
     public static EthData empty() {
         return EthData.of(new byte[0]);
     }
