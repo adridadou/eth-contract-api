@@ -17,7 +17,9 @@ public class BigIntegerConverter implements OutputTypeConverter {
 
     @Override
     public BigInteger convert(Object obj, Type genericType) {
-        if(obj == null || obj instanceof BigInteger) return (BigInteger) obj;
+        if(obj == null || obj instanceof BigInteger) {
+            return (BigInteger) obj;
+        }
         throw new EthereumApiException("cannot convert " + obj.getClass().getSimpleName() + " to BigInteger");
     }
 }

@@ -30,8 +30,8 @@ public class EthereumEventHandler {
     }
 
     public void onTransactionExecuted(OnTransactionParameters tx, List<OnTransactionParameters> internalTxes) {
-      internalTxes.forEach(onTransactionHandler::on);
-      onTransactionHandler.on(tx);
+        internalTxes.forEach(onTransactionHandler::on);
+        onTransactionHandler.on(tx);
     }
 
     public void onReady() {

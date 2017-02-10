@@ -7,7 +7,7 @@ import org.adridadou.ethereum.values.ContractAbi;
  * This code is released under Apache 2 license
  */
 public class SmartContractMetadata {
-    final private ContractAbi abi;
+    private final ContractAbi abi;
 
     public SmartContractMetadata(String abi) {
         this.abi = new ContractAbi(abi);
@@ -15,21 +15,6 @@ public class SmartContractMetadata {
 
     public ContractAbi getAbi() {
         return abi;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SmartContractMetadata that = (SmartContractMetadata) o;
-
-        return abi.equals(that.abi);
-    }
-
-    @Override
-    public int hashCode() {
-        return abi.hashCode();
     }
 
     @Override

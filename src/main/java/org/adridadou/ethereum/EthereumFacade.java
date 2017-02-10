@@ -80,8 +80,7 @@ public class EthereumFacade {
     }
 
     public <T> Builder<T> createContractProxy(CompiledContract contract, EthAddress address, Class<T> contractInterface) {
-        return new Builder<>(contractInterface, address, contract.getAbi()
-        );
+        return new Builder<>(contractInterface, address, contract.getAbi());
     }
 
     public ContractAbi getAbi(final EthAddress address) {
@@ -128,9 +127,9 @@ public class EthereumFacade {
 
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
       try {
-        return swarmService.getMetadata(swarmMetadaLink.getHash());
+          return swarmService.getMetadata(swarmMetadaLink.getHash());
       } catch (IOException e) {
-        throw new EthereumApiException("error while getting metadata", e);
+          throw new EthereumApiException("error while getting metadata", e);
       }
     }
 

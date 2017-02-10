@@ -31,7 +31,9 @@ public class SmartContractByteCode {
     }
 
     public Optional<SwarmMetadaLink> getMetadaLink() {
-        if (code.length == 0) return Optional.empty();
+        if (code.length == 0) {
+            return Optional.empty();
+        }
 
         byte length1 = code[code.length - 1];
         byte length2 = code[code.length - 2];
