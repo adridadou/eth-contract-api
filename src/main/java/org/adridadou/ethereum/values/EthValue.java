@@ -10,7 +10,7 @@ import java.math.BigInteger;
  */
 public class EthValue implements Comparable<EthValue> {
     private final BigDecimal value;
-    private final static BigDecimal ETHER_CONVERSION = BigDecimal.valueOf(1_000_000_000_000_000_000L);
+    private static final BigDecimal ETHER_CONVERSION = BigDecimal.valueOf(1_000_000_000_000_000_000L);
 
     public EthValue(BigInteger value) {
         this.value = new BigDecimal(value);
