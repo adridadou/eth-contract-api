@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
  */
 public class AccountProvider {
 
+    private AccountProvider() {}
+
     public static final int BIT_LENGTH = 256;
 
     public static EthAccount fromPrivateKey(final byte[] privateKey) {
@@ -57,8 +59,6 @@ public class AccountProvider {
                 .map(AccountProvider::fromKeystore)
                 .collect(Collectors.toList());
     }
-
-    private AccountProvider() {}
 
     private static byte[] doSha3(byte[] message) {
         SHA3Digest digest = new SHA3Digest(BIT_LENGTH);
