@@ -21,9 +21,10 @@ import rx.Observable;
  * This code is released under Apache 2 license
  */
 public class EthereumProxy {
-    private static final long BLOCK_WAIT_LIMIT = 16;
     public static final int ADDITIONAL_GAS_FOR_CONTRACT_CREATION = 15_000;
     public static final int ADDITIONAL_GAS_DIRTY_FIX = 200_000;
+    private static final long BLOCK_WAIT_LIMIT = 16;
+
     private final EthereumBackend ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();

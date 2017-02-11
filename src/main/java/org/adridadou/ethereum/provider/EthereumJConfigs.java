@@ -15,6 +15,8 @@ public class EthereumJConfigs {
 
     private static final ChainId PRIVATE_NETWORK_CHAIN_ID = ChainId.id(55);
 
+    private EthereumJConfigs() {}
+
     public static BlockchainConfig mainNet() {
         return BlockchainConfig.builder();
     }

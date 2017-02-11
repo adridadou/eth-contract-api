@@ -31,6 +31,8 @@ public class EthereumFacadeProvider {
     public static final ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
     public static final ChainId ETHER_CAMP_CHAIN_ID = ChainId.id(161);
 
+    private EthereumFacadeProvider() {}
+
     public static Builder forNetwork(final BlockchainConfig config) {
         return new Builder(config);
     }
