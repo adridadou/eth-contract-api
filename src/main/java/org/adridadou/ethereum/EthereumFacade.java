@@ -126,32 +126,31 @@ public class EthereumFacade {
     }
 
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
-      try {
+        try {
           return swarmService.getMetadata(swarmMetadaLink.getHash());
-      } catch (IOException e) {
+        } catch (IOException e) {
           throw new EthereumApiException("error while getting metadata", e);
-      }
+        }
     }
 
     public CompletableFuture<Map<String, CompiledContract>> compile(SoliditySource src) {
         return CompletableFuture.supplyAsync(() -> compileInternal(src));
     }
     private Map<String, CompiledContract> compileInternal(SoliditySource src) {
-      try {
-          SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
-            SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
-          if (result.isFailed()) {
+        try {
+            SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
+            if (result.isFailed()) {
               throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
-          }
-          CompilationResult res = CompilationResult.parse(result.output);
-          if (res.contracts.isEmpty()) {
+            }
+            CompilationResult res = CompilationResult.parse(result.output);
+            if (res.contracts.isEmpty()) {
               throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
-          }
-          return res.contracts.entrySet().stream()
-                  .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src,e.getKey(),e.getValue())));
-      } catch (IOException e) {
-          throw new EthereumApiException("error while compiling solidity smart contract", e);
-      }
+            }
+            return res.contracts.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src,e.getKey(),e.getValue())));
+        } catch (IOException e) {
+            throw new EthereumApiException("error while compiling solidity smart contract", e);
+        }
   }
 
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress address, String eventName, Class<T> cls) {
@@ -159,7 +158,6 @@ public class EthereumFacade {
     }
 
     public class Builder<T> {
-
         private final Class<T> contractInterface;
         private final EthAddress address;
         private final ContractAbi abi;
