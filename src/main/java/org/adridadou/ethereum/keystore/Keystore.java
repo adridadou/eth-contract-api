@@ -22,6 +22,7 @@ import java.util.Arrays;
  * This code is released under Apache 2 license
  */
 public class Keystore {
+    public static final int PART_SIZE = 16;
     private KeystoreCrypto crypto;
     private String id;
     private Integer version;
@@ -62,13 +63,13 @@ public class Keystore {
     private static byte[] checkMacSha3(Keystore keystore, String password) throws Exception {
         byte[] salt = Hex.decode(keystore.getCrypto().getKdfparams().getSalt());
         int iterations = keystore.getCrypto().getKdfparams().getC();
-        byte[] part = new byte[16];
+        byte[] part = new byte[PART_SIZE];
         byte[] h = hash(password, salt, iterations);
         return check(keystore,part, h);
     }
 
     private static byte[] checkMacScrypt(Keystore keystore, String password) {
-        byte[] part = new byte[16];
+        byte[] part = new byte[PART_SIZE];
         KdfParams params = keystore.getCrypto().getKdfparams();
         byte[] h = scrypt(password.getBytes(EthereumFacade.CHARSET), Hex.decode(params.getSalt()), params.getN(), params.getR(), params.getP(), params.getDklen());
         return check(keystore, part, h);
@@ -76,12 +77,12 @@ public class Keystore {
 
     private static byte[] check(Keystore keystore, byte[] part, byte[] h) {
         byte[] cipherText = Hex.decode(keystore.getCrypto().getCiphertext());
-        System.arraycopy(h, 16, part, 0, 16);
+        System.arraycopy(h, PART_SIZE, part, 0, PART_SIZE);
 
         byte[] actual = sha3(concat(part, cipherText));
 
         if (Arrays.equals(actual, Hex.decode(keystore.getCrypto().getMac()))) {
-            System.arraycopy(h, 0, part, 0, 16);
+            System.arraycopy(h, 0, part, 0, PART_SIZE);
             return part;
         }
 

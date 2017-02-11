@@ -20,6 +20,6 @@ public class ProxyWrapper {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(proxy);
+        return 0;
     }
 }
