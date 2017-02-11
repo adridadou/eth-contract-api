@@ -4,11 +4,16 @@ import org.adridadou.ethereum.ethj.BlockchainConfig;
 import org.adridadou.ethereum.ethj.IncompatibleDatabaseBehavior;
 import org.adridadou.ethereum.values.config.*;
 
+import static org.adridadou.ethereum.provider.EthereumFacadeProvider.ETHER_CAMP_CHAIN_ID;
+import static org.adridadou.ethereum.provider.EthereumFacadeProvider.ROPSTEN_CHAIN_ID;
+
 /**
  * Created by davidroon on 26.12.16.
  * This code is released under Apache 2 license
  */
 public class EthereumJConfigs {
+
+    private static final ChainId PRIVATE_NETWORK_CHAIN_ID = ChainId.id(55);
 
     public static BlockchainConfig mainNet() {
         return BlockchainConfig.builder();
@@ -18,7 +23,7 @@ public class EthereumJConfigs {
         return BlockchainConfig.builder()
                 .addIp(NodeIp.ip("94.242.229.4:40404"))
                 .addIp(NodeIp.ip("94.242.229.203:30303"))
-                .networkId(EthereumFacadeProvider.ROPSTEN_CHAIN_ID)
+                .networkId(ROPSTEN_CHAIN_ID)
                 .eip8(true)
                 .genesis(GenesisPath.path("ropsten.json"))
                 .configName(EthereumConfigName.name("ropsten"))
@@ -31,7 +36,7 @@ public class EthereumJConfigs {
                 .dbDirectory(DatabaseDirectory.db("ethercamp-test"))
                 .genesis(GenesisPath.path("frontier-test.json"))
                 .syncEnabled(true)
-                .networkId(ChainId.id(161))
+                .networkId(ETHER_CAMP_CHAIN_ID)
                 .listenPort(0)
                 .peerDiscovery(false)
                 .peerActiveUrl("enode://9bcff30ea776ebd28a9424d0ac7aa500d372f918445788f45a807d83186bd52c4c0afaf504d77e2077e5a99f1f264f75f8738646c1ac3673ccc652b65565c3bb@peer-1.ether.camp:30303")
@@ -46,7 +51,7 @@ public class EthereumJConfigs {
                 .peerDiscovery(false)
                 .listenPort(30335)
                 .privateKey("6ef8da380c27cea8fdf7448340ea99e8e2268fc2950d79ed47cbf6f85dc977ec")
-                .networkId(ChainId.id(55))
+                .networkId(PRIVATE_NETWORK_CHAIN_ID)
                 .syncEnabled(false)
                 .genesis(GenesisPath.path("private-genesis.json"))
                 .incompatibleDatabaseBehavior(IncompatibleDatabaseBehavior.IGNORE);

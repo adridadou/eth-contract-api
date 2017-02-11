@@ -22,6 +22,8 @@ import rx.Observable;
  */
 public class EthereumProxy {
     private static final long BLOCK_WAIT_LIMIT = 16;
+    public static final int ADDITIONAL_GAS_FOR_CONTRACT_CREATION = 15_000;
+    public static final int ADDITIONAL_GAS_DIRTY_FIX = 200_000;
     private final EthereumBackend ethereum;
     private final EthereumEventHandler eventHandler;
     private final Map<EthAddress, BigInteger> pendingTransactions = new ConcurrentHashMap<>();
@@ -132,9 +134,9 @@ public class EthereumProxy {
         BigInteger gasLimit = ethereum.estimateGas(account, toAddress, value, data);
         //if it is a contract creation
         if (toAddress.isEmpty()) {
-            gasLimit = gasLimit.add(BigInteger.valueOf(15_000));
+            gasLimit = gasLimit.add(BigInteger.valueOf(ADDITIONAL_GAS_FOR_CONTRACT_CREATION));
         }
-        return gasLimit.add(BigInteger.valueOf(200_000));
+        return gasLimit.add(BigInteger.valueOf(ADDITIONAL_GAS_DIRTY_FIX));
     }
 
     private OnTransactionParameters createTransactionParameters(TransactionReceipt receipt) {

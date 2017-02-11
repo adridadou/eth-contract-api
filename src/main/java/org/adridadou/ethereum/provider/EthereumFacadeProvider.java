@@ -27,8 +27,9 @@ import org.web3j.protocol.http.HttpService;
  * This code is released under Apache 2 license
  */
 public class EthereumFacadeProvider {
-    public final static ChainId MAIN_CHAIN_ID = ChainId.id(0);
-    public final static ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
+    public static final ChainId MAIN_CHAIN_ID = ChainId.id(0);
+    public static final ChainId ROPSTEN_CHAIN_ID = ChainId.id(3);
+    public static final ChainId ETHER_CAMP_CHAIN_ID = ChainId.id(161);
 
     public static Builder forNetwork(final BlockchainConfig config) {
         return new Builder(config);

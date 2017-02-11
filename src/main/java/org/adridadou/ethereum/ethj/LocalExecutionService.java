@@ -46,7 +46,7 @@ public class LocalExecutionService {
             executor.go();
             executor.finalization();
 
-            if(!executor.getReceipt().isSuccessful()) {
+            if (!executor.getReceipt().isSuccessful()) {
                 throw new EthereumApiException(executor.getReceipt().getError());
             }
             return executor;

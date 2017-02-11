@@ -94,7 +94,7 @@ public class EthereumFacade {
     }
 
     public SwarmHash publishMetadataToSwarm(CompiledContract contract) {
-      return swarmService.publish(contract.getMetadata().getValue());
+        return swarmService.publish(contract.getMetadata().getValue());
     }
 
     public boolean addressExists(final EthAddress address) {
@@ -127,9 +127,9 @@ public class EthereumFacade {
 
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
         try {
-          return swarmService.getMetadata(swarmMetadaLink.getHash());
+            return swarmService.getMetadata(swarmMetadaLink.getHash());
         } catch (IOException e) {
-          throw new EthereumApiException("error while getting metadata", e);
+            throw new EthereumApiException("error while getting metadata", e);
         }
     }
 
@@ -140,18 +140,18 @@ public class EthereumFacade {
         try {
             SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
             if (result.isFailed()) {
-              throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
+                throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
             }
             CompilationResult res = CompilationResult.parse(result.output);
             if (res.contracts.isEmpty()) {
-              throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
+                throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
             }
             return res.contracts.entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src,e.getKey(),e.getValue())));
         } catch (IOException e) {
             throw new EthereumApiException("error while compiling solidity smart contract", e);
         }
-  }
+    }
 
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress address, String eventName, Class<T> cls) {
         return ethereumProxy.observeEvents(abi, address,eventName, cls);

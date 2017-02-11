@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
  * This code is released under Apache 2 license
  */
 public class AbstractHandler<T> implements Observable.OnSubscribe<T> {
-    private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
     public final Observable<T> observable;
+    private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
 
     public AbstractHandler() {
         observable = Observable.create(this);
