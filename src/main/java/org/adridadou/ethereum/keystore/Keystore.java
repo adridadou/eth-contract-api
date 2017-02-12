@@ -23,6 +23,7 @@ import java.util.Arrays;
  */
 public class Keystore {
     public static final int PART_SIZE = 16;
+    public static final int KEY_LENGTH = 256;
     private KeystoreCrypto crypto;
     private String id;
     private Integer version;
@@ -104,7 +105,7 @@ public class Keystore {
 
     private static byte[] hash(String encryptedData, byte[] salt, int iterations) throws Exception {
         char[] chars = encryptedData.toCharArray();
-        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 256);
+        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, KEY_LENGTH);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         return skf.generateSecret(spec).getEncoded();
     }

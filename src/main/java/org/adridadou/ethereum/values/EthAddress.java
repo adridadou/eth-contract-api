@@ -12,11 +12,12 @@ import org.spongycastle.util.encoders.Hex;
  * This code is released under Apache 2 license
  */
 public class EthAddress {
+    public static final int MAX_ADDRESS_SIZE = 32;
     public final byte[] address;
 
 
     private EthAddress(byte[] address) {
-        Preconditions.checkArgument(address.length <= 32, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
+        Preconditions.checkArgument(address.length <= MAX_ADDRESS_SIZE, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
         this.address = address;
     }
 

@@ -12,6 +12,9 @@ import java.util.Optional;
  * This code is released under Apache 2 license
  */
 public class SmartContractByteCode {
+    public static final int WORD_SIZE = 256;
+    public static final int HASH_SIZE = 32;
+    public static final int START_OF_LINK_INDEX = 7;
     private final byte[] code;
 
     public SmartContractByteCode(byte[] code) {
@@ -37,7 +40,7 @@ public class SmartContractByteCode {
 
         byte length1 = code[code.length - 1];
         byte length2 = code[code.length - 2];
-        int length = length1 + length2 * 256;
+        int length = length1 + length2 * WORD_SIZE;
         if (length < code.length) {
             byte[] link = new byte[length];
             System.arraycopy(code, code.length - length, link, 0, length);
@@ -55,8 +58,8 @@ public class SmartContractByteCode {
     }
 
     private SwarmMetadaLink toSwarmMetadataLink(byte[] link) {
-        byte[] hash = new byte[32];
-        System.arraycopy(link, 7, hash, 0, 32);
+        byte[] hash = new byte[HASH_SIZE];
+        System.arraycopy(link, START_OF_LINK_INDEX, hash, 0, HASH_SIZE);
         return new SwarmMetadaLink(SwarmHash.of(hash));
     }
 
