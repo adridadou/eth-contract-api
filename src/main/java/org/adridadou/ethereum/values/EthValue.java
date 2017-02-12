@@ -10,8 +10,8 @@ import java.util.Objects;
  * This code is released under Apache 2 license
  */
 public class EthValue implements Comparable<EthValue> {
-    private final BigDecimal value;
     private final static BigDecimal ETHER_CONVERSION = BigDecimal.valueOf(1_000_000_000_000_000_000L);
+    private final BigDecimal value;
 
     public EthValue(BigInteger value) {
         this.value = new BigDecimal(value);
