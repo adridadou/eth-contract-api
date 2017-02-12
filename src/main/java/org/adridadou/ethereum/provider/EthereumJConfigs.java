@@ -12,9 +12,8 @@ import static org.adridadou.ethereum.provider.EthereumFacadeProvider.ROPSTEN_CHA
  * This code is released under Apache 2 license
  */
 public class EthereumJConfigs {
-
-    private static final ChainId PRIVATE_NETWORK_CHAIN_ID = ChainId.id(55);
     public static final int MINER_PORT = 30335;
+    private static final ChainId PRIVATE_NETWORK_CHAIN_ID = ChainId.id(55);
 
     private EthereumJConfigs() {}
 
