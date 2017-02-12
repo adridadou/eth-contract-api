@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
  */
 public class AccountProvider {
 
-    private AccountProvider() {}
-
     public static final int BIT_LENGTH = 256;
+
+    private AccountProvider() {}
 
     public static EthAccount fromPrivateKey(final byte[] privateKey) {
         return new EthAccount(ECKey.fromPrivate(privateKey));

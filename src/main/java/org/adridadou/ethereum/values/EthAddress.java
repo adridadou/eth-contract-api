@@ -33,7 +33,9 @@ public class EthAddress {
 
     private static byte[] trimLeft(byte[] address) {
         int firstNonZeroPos = 0;
-        while (firstNonZeroPos < address.length && address[firstNonZeroPos] == 0) firstNonZeroPos++;
+        while (firstNonZeroPos < address.length && address[firstNonZeroPos] == 0) {
+            firstNonZeroPos++;
+        }
 
         byte[] newAddress = new byte[address.length - firstNonZeroPos];
         System.arraycopy(address, firstNonZeroPos, newAddress, 0, address.length - firstNonZeroPos);
@@ -58,8 +60,12 @@ public class EthAddress {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()){
+            return false;
+        }
 
         EthAddress that = (EthAddress) o;
 
