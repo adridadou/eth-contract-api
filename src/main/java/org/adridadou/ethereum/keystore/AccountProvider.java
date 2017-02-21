@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
  * This code is released under Apache 2 license
  */
 public class AccountProvider {
+
+    public static final int BIT_LENGTH = 256;
+
+    private AccountProvider() {}
+
     public static EthAccount fromPrivateKey(final byte[] privateKey) {
         return new EthAccount(ECKey.fromPrivate(privateKey));
     }
@@ -27,15 +32,15 @@ public class AccountProvider {
         return new EthAccount(ECKey.fromPrivate(Hex.decode(privateKey)));
     }
 
-    public static EthAccount from(final ECKey ecKey) {
+    public static EthAccount fromECKey(final ECKey ecKey) {
         return new EthAccount(ecKey);
     }
 
-    public static EthAccount from(final String id) {
+    public static EthAccount fromSeed(final String id) {
         return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
     }
 
-    public static SecureKey from(final File file) {
+    public static SecureKey fromKeystore(final File file) {
         return new FileSecureKey(file);
     }
 
@@ -51,12 +56,12 @@ public class AccountProvider {
         File[] files = Optional.ofNullable(directory.listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + WalletUtils.getMainnetKeyDirectory()));
         return Lists.newArrayList(files).stream()
                 .filter(File::isFile)
-                .map(AccountProvider::from)
+                .map(AccountProvider::fromKeystore)
                 .collect(Collectors.toList());
     }
 
     private static byte[] doSha3(byte[] message) {
-        SHA3Digest digest = new SHA3Digest(256);
+        SHA3Digest digest = new SHA3Digest(BIT_LENGTH);
         byte[] hash = new byte[digest.getDigestSize()];
 
         if (message.length != 0) {

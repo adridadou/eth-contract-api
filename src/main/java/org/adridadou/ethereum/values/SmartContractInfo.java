@@ -6,45 +6,26 @@ package org.adridadou.ethereum.values;
  */
 public class SmartContractInfo {
     private final EthAddress address;
-    private final EthAccount sender;
+    private final EthAccount account;
 
-    public SmartContractInfo(EthAddress address, EthAccount sender) {
+    public SmartContractInfo(EthAddress address, EthAccount account) {
         this.address = address;
-        this.sender = sender;
+        this.account = account;
     }
 
     public EthAddress getAddress() {
         return address;
     }
 
-    public EthAccount getSender() {
-        return sender;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SmartContractInfo that = (SmartContractInfo) o;
-
-        if (address != null ? !address.equals(that.address) : that.address != null) return false;
-        return sender != null ? sender.equals(that.sender) : that.sender == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
-        result = 31 * result + (sender != null ? sender.hashCode() : 0);
-        return result;
+    public EthAccount getAccount() {
+        return account;
     }
 
     @Override
     public String toString() {
         return "SmartContractInfo{" +
                 "address=" + address.withLeading0x() +
-                ", sender=" + sender.getAddress().withLeading0x() +
+                ", account=" + account.getAddress().withLeading0x() +
                 '}';
     }
 }

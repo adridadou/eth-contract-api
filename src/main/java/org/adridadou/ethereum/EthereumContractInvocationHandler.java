@@ -1,10 +1,8 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
-import org.adridadou.ethereum.smartcontract.SmartContract;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.CallTransaction;
@@ -14,6 +12,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+
+import static org.adridadou.ethereum.values.EthValue.wei;
 
 
 /**
@@ -39,7 +39,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         final String methodName = method.getName();
         SmartContractInfo contractInfo = info.get(new ProxyWrapper(proxy));
-        SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getSender());
+        SmartContract contract = contracts.get(contractInfo.getAddress()).get(contractInfo.getAccount());
         Object[] arguments = Optional.ofNullable(args).map(this::prepareArguments).orElse(new Object[0]);
         if (method.getReturnType().equals(Void.TYPE)) {
             try {
@@ -51,12 +51,12 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
-                return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
+            return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
         } else if(method.getReturnType().equals(Payable.class)) {
             return new Payable(contract, methodName, arguments, method, this);
         }
         else {
-            return convertResult(contract.callConstFunction(methodName, arguments), method);
+            return convertResult(contract.callConstFunction(methodName, wei(0), arguments), method);
         }
     }
 
@@ -78,6 +78,9 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     protected <T> void register(T proxy, Class<T> contractInterface, ContractAbi abi, EthAddress address, EthAccount account) {
+        if(address.isEmpty()) {
+            throw new EthereumApiException("the contract address cannot be empty");
+        }
         SmartContract smartContract = ethereumProxy.mapFromAbi(abi, address, account);
         verifyContract(smartContract, contractInterface);
 
@@ -97,7 +100,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
         Sets.SetView<String> superfluous = Sets.difference(interfaceMethodNames, solidityFuncNames);
 
         if (!superfluous.isEmpty()) {
-            throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it from your interface");
+            throw new EthereumApiException("The contract " + contractInterface.getName() + " does not have the function(s) " + superfluous.toString() + ". Add this function(s) to the smart contract or remove it fromSeed your interface");
         }
 
         Map<String, List<Method>> methods = interfaceMethods.stream().collect(Collectors.groupingBy(Method::getName));

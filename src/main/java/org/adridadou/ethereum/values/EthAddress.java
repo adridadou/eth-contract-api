@@ -12,15 +12,19 @@ import org.spongycastle.util.encoders.Hex;
  * This code is released under Apache 2 license
  */
 public class EthAddress {
+    public static final int MAX_ADDRESS_SIZE = 32;
     public final byte[] address;
 
 
     private EthAddress(byte[] address) {
-        Preconditions.checkArgument(address.length <= 32, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
+        Preconditions.checkArgument(address.length <= MAX_ADDRESS_SIZE, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
         this.address = address;
     }
 
     public static EthAddress of(byte[] address) {
+        if(address == null) {
+            return EthAddress.empty();
+        }
         return new EthAddress(trimLeft(address));
     }
 
@@ -30,7 +34,9 @@ public class EthAddress {
 
     private static byte[] trimLeft(byte[] address) {
         int firstNonZeroPos = 0;
-        while (firstNonZeroPos < address.length && address[firstNonZeroPos] == 0) firstNonZeroPos++;
+        while (firstNonZeroPos < address.length && address[firstNonZeroPos] == 0) {
+            firstNonZeroPos++;
+        }
 
         byte[] newAddress = new byte[address.length - firstNonZeroPos];
         System.arraycopy(address, firstNonZeroPos, newAddress, 0, address.length - firstNonZeroPos);
@@ -55,8 +61,12 @@ public class EthAddress {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()){
+            return false;
+        }
 
         EthAddress that = (EthAddress) o;
 

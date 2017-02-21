@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
-import org.adridadou.ethereum.blockchain.EthereumProxy;
 import org.adridadou.ethereum.converters.input.InputTypeConverter;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeConverter;
@@ -29,8 +30,8 @@ import rx.Observable;
  * This code is released under Apache 2 license
  */
 public class EthereumFacade {
-    public final static Charset CHARSET = Charsets.UTF_8;
-  private final EthereumContractInvocationHandler handler;
+    public static final Charset CHARSET = Charsets.UTF_8;
+    private final EthereumContractInvocationHandler handler;
     private final OutputTypeHandler outputTypeHandler;
     private final InputTypeHandler inputTypeHandler;
     private final EthereumProxy ethereumProxy;
@@ -74,13 +75,12 @@ public class EthereumFacade {
         return new Builder<>(contractInterface, address, getAbi(address));
     }
 
-    public <T> Builder<T> createContractProxy(EthAddress address,ContractAbi abi, Class<T> contractInterface) {
+    public <T> Builder<T> createContractProxy(EthAddress address, ContractAbi abi, Class<T> contractInterface) {
         return new Builder<>(contractInterface, address, abi);
     }
 
     public <T> Builder<T> createContractProxy(CompiledContract contract, EthAddress address, Class<T> contractInterface) {
-        return new Builder<>(contractInterface, address, contract.getAbi()
-        );
+        return new Builder<>(contractInterface, address, contract.getAbi());
     }
 
     public ContractAbi getAbi(final EthAddress address) {
@@ -89,12 +89,12 @@ public class EthereumFacade {
         return metadata.getAbi();
     }
 
-    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount sender, Object... constructorArgs) {
-        return ethereumProxy.publish(contract, sender, constructorArgs);
+    public CompletableFuture<EthAddress> publishContract(CompiledContract contract, EthAccount account, Object... constructorArgs) {
+        return ethereumProxy.publish(contract, account, constructorArgs);
     }
 
     public SwarmHash publishMetadataToSwarm(CompiledContract contract) {
-      return swarmService.publish(contract.getMetadata().getValue());
+        return swarmService.publish(contract.getMetadata().getValue());
     }
 
     public boolean addressExists(final EthAddress address) {
@@ -126,50 +126,39 @@ public class EthereumFacade {
     }
 
     public SmartContractMetadata getMetadata(SwarmMetadaLink swarmMetadaLink) {
-      try {
-        return swarmService.getMetadata(swarmMetadaLink.getHash());
-      } catch (IOException e) {
-        throw new EthereumApiException("error while getting metadata", e);
-      }
+        try {
+            return swarmService.getMetadata(swarmMetadaLink.getHash());
+        } catch (IOException e) {
+            throw new EthereumApiException("error while getting metadata", e);
+        }
     }
 
-    public void shutdown() {
-        ethereumProxy.shutdown();
+    public CompletableFuture<Map<String, CompiledContract>> compile(SoliditySource src) {
+        return CompletableFuture.supplyAsync(() -> compileInternal(src));
     }
 
-    public CompletableFuture<CompiledContract> compile(SoliditySource src, String contractName) {
-        return CompletableFuture.supplyAsync(() -> compileInternal(src,contractName));
+    private Map<String, CompiledContract> compileInternal(SoliditySource src) {
+        try {
+            SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true, true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
+            if (result.isFailed()) {
+                throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
+            }
+            CompilationResult res = CompilationResult.parse(result.output);
+            if (res.contracts.isEmpty()) {
+                throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
+            }
+            return res.contracts.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src, e.getKey(), e.getValue())));
+        } catch (IOException e) {
+            throw new EthereumApiException("error while compiling solidity smart contract", e);
+        }
     }
-    private CompiledContract compileInternal(SoliditySource src, String contractName) {
-      try {
-          SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true,true,
-            SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
-          if (result.isFailed()) {
-              throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
-          }
-          CompilationResult res = CompilationResult.parse(result.output);
-          if (res.contracts.isEmpty()) {
-              throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
-          }
-          CompilationResult.ContractMetadata metadata = res.contracts.get(contractName);
-          if(metadata == null) {
-              throw new EthereumApiException("No contract found with the name " + contractName + " available:" + res.contracts.keySet());
-          }
-          if (metadata.bin == null || metadata.bin.isEmpty()) {
-              throw new EthereumApiException("Compilation failed, no binary returned:\n" + result.errors);
-          }
-          return CompiledContract.from(src, contractName, metadata);
-      } catch (IOException e) {
-          throw new EthereumApiException("error while compiling " + contractName, e);
-      }
-  }
 
     public <T> Observable<T> observeEvents(ContractAbi abi, EthAddress address, String eventName, Class<T> cls) {
-        return ethereumProxy.observeEvents(abi, address,eventName, cls);
+        return ethereumProxy.observeEvents(abi, address, eventName, cls);
     }
 
     public class Builder<T> {
-
         private final Class<T> contractInterface;
         private final EthAddress address;
         private final ContractAbi abi;
@@ -182,7 +171,7 @@ public class EthereumFacade {
 
         public T forAccount(final EthAccount account) {
             T proxy = (T) newProxyInstance(contractInterface.getClassLoader(), new Class[]{contractInterface}, handler);
-            EthereumFacade.this.handler.register(proxy,contractInterface,abi, address, account);
+            EthereumFacade.this.handler.register(proxy, contractInterface, abi, address, account);
             return proxy;
         }
     }

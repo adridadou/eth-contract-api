@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
 /**
  * Created by davidroon on 26.12.16.

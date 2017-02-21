@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.blockchain;
+package org.adridadou.ethereum.ethj;
 
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.ethereum.values.EthValue;
@@ -9,9 +9,11 @@ import java.util.Map;
 
 /**
  * Created by davidroon on 22.01.17.
+ * This code is released under Apache 2 license
  */
 public class TestConfig {
-
+    public static final int DEFAULT_GAS_LIMIT = 4_700_000;
+    public static final long DEFAULT_GAS_PRICE = 50_000_000_000L;
     private final Date initialTime;
     private final long gasLimit;
     private final long gasPrice;
@@ -45,8 +47,8 @@ public class TestConfig {
     }
 
     public static class Builder {
-        private long gasLimit = 4_700_000;
-        private long gasPrice = 50_000_000_000L;
+        private long gasLimit = DEFAULT_GAS_LIMIT;
+        private long gasPrice = DEFAULT_GAS_PRICE;
         private final Map<EthAccount, EthValue> balances = new HashMap<>();
         private Date initialTime = new Date();
 
