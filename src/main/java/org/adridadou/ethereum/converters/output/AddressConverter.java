@@ -27,9 +27,7 @@ public class AddressConverter implements OutputTypeConverter {
         try {
             return EthAddress.of((byte[]) obj);
         } catch (Exception ex) {
-         /*Do nothing, the exception will be thrown afterward*/
+            throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Address");
         }
-
-        throw new IllegalArgumentException("cannot convert " + obj.getClass().getSimpleName() + " to Address");
     }
 }

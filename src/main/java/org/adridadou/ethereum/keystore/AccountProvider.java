@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
  * This code is released under Apache 2 license
  */
 public class AccountProvider {
+
+    public static final int BIT_LENGTH = 256;
+
+    private AccountProvider() {}
+
     public static EthAccount fromPrivateKey(final byte[] privateKey) {
         return new EthAccount(ECKey.fromPrivate(privateKey));
     }
@@ -56,7 +61,7 @@ public class AccountProvider {
     }
 
     private static byte[] doSha3(byte[] message) {
-        SHA3Digest digest = new SHA3Digest(256);
+        SHA3Digest digest = new SHA3Digest(BIT_LENGTH);
         byte[] hash = new byte[digest.getDigestSize()];
 
         if (message.length != 0) {

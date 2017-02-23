@@ -3,14 +3,15 @@ package org.adridadou.ethereum.values;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 
 /**
  * Created by davidroon on 06.11.16.
  * This code is released under Apache 2 license
  */
 public class EthValue implements Comparable<EthValue> {
-    private final BigDecimal value;
     private static final BigDecimal ETHER_CONVERSION = BigDecimal.valueOf(1_000_000_000_000_000_000L);
+    private final BigDecimal value;
 
     public EthValue(BigInteger value) {
         this.value = new BigDecimal(value);
@@ -42,7 +43,7 @@ public class EthValue implements Comparable<EthValue> {
     }
 
     public static EthValue ether(final Double value) {
-        return ether((BigDecimal.valueOf(value)));
+        return ether(BigDecimal.valueOf(value));
     }
 
     public static EthValue ether(final BigDecimal value) {
@@ -72,11 +73,7 @@ public class EthValue implements Comparable<EthValue> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EthValue ethValue = (EthValue) o;
-        return value.equals(ethValue.value);
+        return o != null && Objects.equals(value, ((EthValue)o).value);
     }
 
     @Override

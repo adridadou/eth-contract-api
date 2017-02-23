@@ -26,14 +26,13 @@ public class EthereumRpcEventGenerator {
     }
 
     private void observeBlocks(EthBlock ethBlock) {
-        ethBlock.getBlock().ifPresent(block -> {
-            List<TransactionReceipt> txs = block.getTransactions().stream()
-                    .map(tx -> toReceipt((EthBlock.TransactionObject)tx.get()))
-                    .collect(Collectors.toList());
+        EthBlock.Block block = ethBlock.getBlock();
+        List<TransactionReceipt> txs = block.getTransactions().stream()
+                .map(tx -> toReceipt((EthBlock.TransactionObject)tx.get()))
+                .collect(Collectors.toList());
 
-            OnBlockParameters param = new OnBlockParameters(block.getNumber().longValue(), txs);
-            ethereumEventHandlers.forEach(handler -> handler.onBlock(param));
-        });
+        OnBlockParameters param = new OnBlockParameters(block.getNumber().longValue(), txs);
+        ethereumEventHandlers.forEach(handler -> handler.onBlock(param));
     }
 
     private TransactionReceipt toReceipt(EthBlock.TransactionObject tx) {

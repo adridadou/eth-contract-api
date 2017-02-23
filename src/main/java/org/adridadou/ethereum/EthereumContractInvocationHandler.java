@@ -51,7 +51,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
 
             return Void.TYPE;
         } else if (method.getReturnType().equals(CompletableFuture.class)) {
-                return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
+            return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
         } else if(method.getReturnType().equals(Payable.class)) {
             return new Payable(contract, methodName, arguments, method, this);
         }

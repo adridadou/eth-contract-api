@@ -14,6 +14,7 @@ import java.math.BigInteger;
  * This code is released under Apache 2 license
  */
 public class LocalExecutionService {
+    public static final long GAS_LIMIT_FOR_LOCAL_EXECUTION = 100_000_000_000L;
     private final BlockchainImpl blockchain;
 
     public LocalExecutionService(BlockchainImpl blockchain) {
@@ -36,17 +37,14 @@ public class LocalExecutionService {
         Repository repository = getRepository().getSnapshotTo(callBlock.getStateRoot()).startTracking();
         try {
             Transaction tx = createTransaction(account, BigInteger.ZERO, BigInteger.ZERO, address, value, data);
-            TransactionExecutor executor = new TransactionExecutor
-                    (tx, callBlock.getCoinbase(), repository, blockchain.getBlockStore(),
-                            blockchain.getProgramInvokeFactory(), callBlock)
-                    .setLocalCall(true);
+            TransactionExecutor executor = new TransactionExecutor(tx, callBlock.getCoinbase(), repository, blockchain.getBlockStore(), blockchain.getProgramInvokeFactory(), callBlock).setLocalCall(true);
 
             executor.init();
             executor.execute();
             executor.go();
             executor.finalization();
 
-            if(!executor.getReceipt().isSuccessful()) {
+            if (!executor.getReceipt().isSuccessful()) {
                 throw new EthereumApiException(executor.getReceipt().getError());
             }
             return executor;
@@ -60,7 +58,7 @@ public class LocalExecutionService {
     }
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasPrice, EthAddress address, EthValue value, EthData data) {
-        Transaction tx = CallTransaction.createRawTransaction(nonce.longValue(), gasPrice.longValue(), 100_000_000_000L, address.toString(), value.inWei().longValue(), data.data);
+        Transaction tx = CallTransaction.createRawTransaction(nonce.longValue(), gasPrice.longValue(), GAS_LIMIT_FOR_LOCAL_EXECUTION, address.toString(), value.inWei().longValue(), data.data);
         tx.sign(account.key);
         return tx;
     }

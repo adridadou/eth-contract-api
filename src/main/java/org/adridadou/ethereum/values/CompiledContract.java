@@ -4,6 +4,7 @@ import org.ethereum.solidity.compiler.CompilationResult;
 
 /**
  * Created by davidroon on 08.01.17.
+ * This code is released under Apache 2 license
  */
 public class CompiledContract {
     private final ContractAbi abi;

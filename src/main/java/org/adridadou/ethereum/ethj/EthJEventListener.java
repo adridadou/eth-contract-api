@@ -36,12 +36,20 @@ public class EthJEventListener extends EthereumListenerAdapter {
     @Override
     public void onPendingTransactionUpdate(TransactionReceipt txReceipt, PendingTransactionState state, Block block) {
         TransactionStatus transactionStatus;
-        switch(state) {
-          case PENDING:
-          case NEW_PENDING: transactionStatus = TransactionStatus.Pending; break;
-          case DROPPED: transactionStatus = TransactionStatus.Dropped; break;
-          case INCLUDED: transactionStatus = TransactionStatus.Included;break;
-          default: transactionStatus = TransactionStatus.Unknown;break;
+        switch (state) {
+            case PENDING:
+            case NEW_PENDING:
+                transactionStatus = TransactionStatus.Pending;
+                break;
+            case DROPPED:
+                transactionStatus = TransactionStatus.Dropped;
+                break;
+            case INCLUDED:
+                transactionStatus = TransactionStatus.Included;
+                break;
+            default:
+                transactionStatus = TransactionStatus.Unknown;
+                break;
         }
         eventHandler.onPendingTransactionUpdate(new OnTransactionParameters(toReceipt(txReceipt), transactionStatus, new ArrayList<>()));
     }
@@ -67,6 +75,6 @@ public class EthJEventListener extends EthereumListenerAdapter {
 
     private org.adridadou.ethereum.event.TransactionReceipt toReceipt(TransactionReceipt transactionReceipt) {
         Transaction tx = transactionReceipt.getTransaction();
-        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()),EthAddress.of(tx.getReceiveAddress()), EthAddress.of(tx.getContractAddress()), transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
+        return new org.adridadou.ethereum.event.TransactionReceipt(EthHash.of(tx.getHash()), EthAddress.of(tx.getSender()), EthAddress.of(tx.getReceiveAddress()), EthAddress.of(tx.getContractAddress()), transactionReceipt.getError(), EthData.of(transactionReceipt.getExecutionResult()), transactionReceipt.isSuccessful() && transactionReceipt.isValid());
     }
 }

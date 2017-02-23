@@ -22,25 +22,6 @@ public class SmartContractInfo {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SmartContractInfo that = (SmartContractInfo) o;
-
-        if (address != null ? !address.equals(that.address) : that.address != null) return false;
-        return account != null ? account.equals(that.account) : that.account == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
-        result = 31 * result + (account != null ? account.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "SmartContractInfo{" +
                 "address=" + address.withLeading0x() +

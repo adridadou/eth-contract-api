@@ -2,13 +2,12 @@ package org.adridadou;
 
 import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.ethj.TestConfig;
-import org.adridadou.ethereum.ethj.provider.EthereumFacadeProvider;
-import org.adridadou.ethereum.ethj.provider.PrivateEthereumFacadeProvider;
+import org.adridadou.ethereum.ethj.privatenetwork.PrivateEthereumFacadeProvider;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.*;
 
-import static org.adridadou.ethereum.ethj.provider.EthereumJConfigs.ropsten;
-import static org.adridadou.ethereum.ethj.provider.PrivateNetworkConfig.config;
+import static org.adridadou.ethereum.ethj.EthereumJConfigs.ropsten;
+import static org.adridadou.ethereum.ethj.privatenetwork.PrivateNetworkConfig.config;
 import static org.adridadou.ethereum.values.EthValue.ether;
 import static org.junit.Assert.*;
 
@@ -32,7 +31,7 @@ import java.util.concurrent.Future;
 public class TestnetConnectionTest {
     private final PrivateEthereumFacadeProvider privateNetwork = new PrivateEthereumFacadeProvider();
     private EthAccount mainAccount = AccountProvider.fromSeed("cow");
-    private SoliditySource contractSource = SoliditySource.from(new File(this.getClass().getResource("/contract.sol").toURI()));
+    private SoliditySource contractSource = SoliditySourceFile.from(new File(this.getClass().getResource("/contract.sol").toURI()));
 
     public TestnetConnectionTest() throws URISyntaxException {
     }
@@ -60,6 +59,7 @@ public class TestnetConnectionTest {
     }
 
     private EthAddress publishAndMapContract(EthereumFacade ethereum) throws Exception {
+        ethereum.compile(SoliditySourceFile.from(new File("src/test/resources/c1.sol"))).get();
         CompiledContract compiledContract = ethereum.compile(contractSource).get().get("myContract2");
         CompletableFuture<EthAddress> futureAddress = ethereum.publishContract(compiledContract, mainAccount);
         return futureAddress.get();
@@ -87,6 +87,8 @@ public class TestnetConnectionTest {
         myContract.myMethod3("async call").with(ether(150)).get();
 
         assertEquals(ether(150), ethereum.getBalance(address));
+
+        assertEquals(mainAccount.getAddress(), myContract.getOwner());
 
         assertEquals("async call", myContract.getI2());
 

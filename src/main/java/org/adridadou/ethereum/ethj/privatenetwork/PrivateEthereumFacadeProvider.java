@@ -1,9 +1,10 @@
-package org.adridadou.ethereum.ethj.provider;
+package org.adridadou.ethereum.ethj.privatenetwork;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.EthereumProxy;
+import org.adridadou.ethereum.ethj.EthereumJConfigs;
 import org.adridadou.ethereum.ethj.EthereumReal;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutionException;
  * This code is released under Apache 2 license
  */
 public class PrivateEthereumFacadeProvider {
+    public static final int MINER_PORT = 55555;
     private final Logger log = LoggerFactory.getLogger(PrivateEthereumFacadeProvider.class);
     private final EthAccount mainAccount = AccountProvider.fromSeed("cow");
 
@@ -116,8 +118,8 @@ public class PrivateEthereumFacadeProvider {
             // no need for discovery in that small network
             return EthereumJConfigs.privateMiner()
                     .dbDirectory(DatabaseDirectory.db(dbName))
-                    .listenPort(55555)
-                    .build().toString();
+                    .listenPort(MINER_PORT)
+                    .toString();
         }
 
         @Bean
