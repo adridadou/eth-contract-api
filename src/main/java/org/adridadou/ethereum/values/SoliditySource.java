@@ -1,47 +1,24 @@
 package org.adridadou.ethereum.values;
 
-import org.adridadou.ethereum.EthereumFacade;
-import org.apache.commons.io.IOUtils;
-
 import java.io.*;
 
 /**
  * Created by davidroon on 18.09.16.
  * This code is released under Apache 2 license
  */
-public class SoliditySource {
-    private final String source;
+public interface SoliditySource<T> {
 
-    public SoliditySource(String source) {
-        this.source = source;
+    T getSource();
+
+    static SoliditySourceFile from(final File file){
+        return SoliditySourceFile.from(file);
     }
 
-    public String getSource() {
-        return source;
+    static SoliditySourceString from(final String source) {
+        return SoliditySourceString.from(source);
     }
 
-    public static SoliditySource from(File file) {
-        try {
-            return from(new FileInputStream(file));
-        } catch (IOException e) {
-            throw new IOError(e);
-        }
-    }
-
-    public static SoliditySource from(InputStream file) {
-        try {
-            return new SoliditySource(IOUtils.toString(file, EthereumFacade.CHARSET));
-        } catch (IOException e) {
-            throw new IOError(e);
-        }
-    }
-
-    public static SoliditySource from(String source) {
-        return new SoliditySource(source);
-    }
-
-    @Override
-    public String toString() {
-        return "source:" + source;
+    static SoliditySourceString from(final InputStream stream) {
+        return SoliditySourceString.from(stream);
     }
 }

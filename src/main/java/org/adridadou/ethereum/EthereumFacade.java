@@ -134,10 +134,35 @@ public class EthereumFacade {
     }
 
     public CompletableFuture<Map<String, CompiledContract>> compile(SoliditySource src) {
-        return CompletableFuture.supplyAsync(() -> compileInternal(src));
+        if(src instanceof SoliditySourceString){
+            return CompletableFuture.supplyAsync(() -> compileInternal((SoliditySourceString)src));
+        }
+
+        if(src instanceof  SoliditySourceFile) {
+            return CompletableFuture.supplyAsync(() -> compileInternal((SoliditySourceFile)src));
+        }
+
+        throw new EthereumApiException("error while trying to compile " + src);
     }
 
-    private Map<String, CompiledContract> compileInternal(SoliditySource src) {
+    private Map<String, CompiledContract> compileInternal(SoliditySourceFile src) {
+        try {
+            SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource(), true, true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
+            if (result.isFailed()) {
+                throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
+            }
+            CompilationResult res = CompilationResult.parse(result.output);
+            if (res.contracts.isEmpty()) {
+                throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
+            }
+            return res.contracts.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> CompiledContract.from(src, e.getKey(), e.getValue())));
+        } catch (IOException e) {
+            throw new EthereumApiException("error while compiling solidity smart contract", e);
+        }
+    }
+
+    private Map<String, CompiledContract> compileInternal(SoliditySourceString src) {
         try {
             SolidityCompiler.Result result = solidityCompiler.compileSrc(src.getSource().getBytes(EthereumFacade.CHARSET), true, true, SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN, SolidityCompiler.Options.METADATA);
             if (result.isFailed()) {

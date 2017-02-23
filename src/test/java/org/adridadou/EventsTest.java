@@ -3,11 +3,8 @@ package org.adridadou;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.keystore.AccountProvider;
-import org.adridadou.ethereum.provider.EthereumFacadeProvider;
-import org.adridadou.ethereum.values.CompiledContract;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
-import org.adridadou.ethereum.values.SoliditySource;
+import org.adridadou.ethereum.EthereumFacadeProvider;
+import org.adridadou.ethereum.values.*;
 import org.junit.Test;
 import rx.Observable;
 
@@ -25,7 +22,7 @@ public class EventsTest {
     private final EthereumFacade ethereum = EthereumFacadeProvider.forTest(TestConfig.builder()
             .balance(mainAccount, ether(1000))
             .build());
-    private SoliditySource contractSource = SoliditySource.from("pragma solidity ^0.4.7;" +
+    private SoliditySource contractSource = SoliditySourceString.from("pragma solidity ^0.4.7;" +
             "contract contractEvents {" +
             "event MyEvent(string value);" +
             "function createEvent(string value) {" +

@@ -1,11 +1,9 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj;
 
-import org.adridadou.ethereum.ethj.BlockchainConfig;
-import org.adridadou.ethereum.ethj.IncompatibleDatabaseBehavior;
 import org.adridadou.ethereum.values.config.*;
 
-import static org.adridadou.ethereum.provider.EthereumFacadeProvider.ETHER_CAMP_CHAIN_ID;
-import static org.adridadou.ethereum.provider.EthereumFacadeProvider.ROPSTEN_CHAIN_ID;
+import static org.adridadou.ethereum.EthereumFacadeProvider.ETHER_CAMP_CHAIN_ID;
+import static org.adridadou.ethereum.EthereumFacadeProvider.ROPSTEN_CHAIN_ID;
 
 /**
  * Created by davidroon on 26.12.16.

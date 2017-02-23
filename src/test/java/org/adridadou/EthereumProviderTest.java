@@ -7,10 +7,7 @@ import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
-import org.adridadou.ethereum.values.CompiledContract;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
-import org.adridadou.ethereum.values.SoliditySource;
+import org.adridadou.ethereum.values.*;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +38,7 @@ public class EthereumProviderTest {
 
     @Test
     public void checkSuccessCase() throws IOException, ExecutionException, InterruptedException {
-        SoliditySource contractSource = new SoliditySource(
+        SoliditySource contractSource = SoliditySourceString.from(
                 "pragma solidity ^0.4.6;" +
                         "contract myContract {" +
                         "  int i1;" +
@@ -59,7 +56,7 @@ public class EthereumProviderTest {
 
     @Test
     public void checkCreateTx() throws IOException, ExecutionException, InterruptedException {
-        SoliditySource contractSource = new SoliditySource(
+        SoliditySource contractSource = SoliditySourceString.from(
                 "pragma solidity ^0.4.6;" +
                         "contract myContract2 {" +
                         "  int i1;" +
