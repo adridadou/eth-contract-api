@@ -152,7 +152,7 @@ public class EthereumFacade {
                 throw new EthereumApiException("Contract compilation failed:\n" + result.errors);
             }
             CompilationResult res = CompilationResult.parse(result.output);
-            if (res.contracts.isEmpty()) {
+            if (res.contracts == null || res.contracts.isEmpty()) {
                 throw new EthereumApiException("Compilation failed, no contracts returned:\n" + result.errors);
             }
             return res.contracts.entrySet().stream()
