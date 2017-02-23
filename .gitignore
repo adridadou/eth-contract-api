@@ -16,7 +16,6 @@ buildNumber.properties
 /privateIntegration
 /logs
 /eth-contract-api.iml
-/src/test/resources
 /ethercamp-test/
 /cachedDag/mine-dag-light.dat
 /cachedDag/mine-dag.dat
