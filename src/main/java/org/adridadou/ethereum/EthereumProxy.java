@@ -67,8 +67,8 @@ public class EthereumProxy {
 
     public BigInteger getNonce(final EthAddress address) {
         nonces.computeIfAbsent(address, ethereum::getNonce);
-        BigInteger nonce = nonces.get(address);
-        return nonce.add(BigInteger.valueOf(pendingTransactions.getOrDefault(address, new HashSet<>()).size()));
+        Integer offset = Optional.ofNullable(pendingTransactions.get(address)).map(Set::size).orElse(0);
+        return nonces.get(address).add(BigInteger.valueOf(offset));
     }
 
     public SmartContractByteCode getCode(EthAddress address) {
@@ -164,7 +164,7 @@ public class EthereumProxy {
                     });
                 });
         eventHandler.observeBlocks()
-                .forEach(params -> params.receipts.stream()
+                .forEach(params -> params.receipts
                         .forEach(receipt -> Optional.ofNullable(pendingTransactions.get(receipt.sender))
                                 .ifPresent(hashes -> {
                                     hashes.remove(receipt.hash);
@@ -185,7 +185,7 @@ public class EthereumProxy {
     }
 
     private void increasePendingTransactionCounter(EthAddress address, EthHash hash) {
-        Set<EthHash> hashes = pendingTransactions.getOrDefault(address, new HashSet<EthHash>());
+        Set<EthHash> hashes = pendingTransactions.computeIfAbsent(address, (key) -> Collections.synchronizedSet(new HashSet<>()));
         hashes.add(hash);
         pendingTransactions.put(address, hashes);
     }

@@ -15,7 +15,7 @@ public class ProxyWrapper {
 
     @Override
     public boolean equals(Object o) {
-        return o != null && Objects.equals(this.proxy, ((ProxyWrapper)o).proxy);
+        return o != null && this.proxy == ((ProxyWrapper)o).proxy;
     }
 
     @Override
