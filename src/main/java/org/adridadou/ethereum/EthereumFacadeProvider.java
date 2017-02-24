@@ -1,7 +1,6 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum;
 
 import com.typesafe.config.ConfigFactory;
-import org.adridadou.ethereum.*;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.ethj.BlockchainConfig;

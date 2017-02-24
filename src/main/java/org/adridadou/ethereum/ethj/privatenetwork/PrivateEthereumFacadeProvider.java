@@ -1,9 +1,10 @@
-package org.adridadou.ethereum.provider;
+package org.adridadou.ethereum.ethj.privatenetwork;
 
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.EthereumProxy;
+import org.adridadou.ethereum.ethj.EthereumJConfigs;
 import org.adridadou.ethereum.ethj.EthereumReal;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;

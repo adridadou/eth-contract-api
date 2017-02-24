@@ -6,10 +6,7 @@ import org.adridadou.ethereum.ethj.EthereumTest;
 import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.swarm.SwarmService;
-import org.adridadou.ethereum.values.CompiledContract;
-import org.adridadou.ethereum.values.EthAccount;
-import org.adridadou.ethereum.values.EthAddress;
-import org.adridadou.ethereum.values.SoliditySource;
+import org.adridadou.ethereum.values.*;
 import org.ethereum.solidity.compiler.SolidityCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +38,7 @@ public class EthereumFacadeTest {
 
     @Test
     public void testReturnTypeConverters() throws Throwable {
-        SoliditySource contractSource = SoliditySource.from(new File("src/test/resources/contract2.sol"));
+        SoliditySource contractSource = SoliditySourceFile.from(new File("src/test/resources/contract2.sol"));
         CompiledContract compiledContract = ethereum.compile(contractSource).get().get("myContract2");
         EthAddress address = ethereum.publishContract(compiledContract, account).get();
         MyContract2 myContract = ethereum.createContractProxy(compiledContract, address, account, MyContract2.class);

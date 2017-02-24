@@ -61,7 +61,6 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     }
 
     private Object[] prepareArguments(Object[] args) {
-
         return Arrays.stream(args)
                 .map(inputTypeHandler::convert)
                 .toArray();
