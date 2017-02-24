@@ -38,7 +38,7 @@ public class EthereumRPC implements EthereumBackend {
     @Override
     public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce, BigInteger gasLimit) {
         Transaction tx = createTransaction(account, nonce, getGasPrice(), gasLimit, address, value, data);
-        web3JFacade.sendTransaction(EthData.of(tx.getEncodedRaw()));
+        web3JFacade.sendTransaction(EthData.of(tx.getEncoded()));
         return EthHash.of(tx.getHash());
     }
 
