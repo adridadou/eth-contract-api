@@ -26,7 +26,7 @@ public class EthValue implements Comparable<EthValue> {
                 .divide(ETHER_CONVERSION, BigDecimal.ROUND_FLOOR);
     }
 
-    public boolean isEmpty() {
+    public boolean isZero() {
         return inWei().signum() != 1;
     }
 
