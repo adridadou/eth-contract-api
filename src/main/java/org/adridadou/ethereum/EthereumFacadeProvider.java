@@ -67,7 +67,7 @@ public class EthereumFacadeProvider {
         }
 
         public EthereumFacade createRopsten() {
-            return forRemoteNode("https://ropsten.infura.io/" + key.key, EthereumFacadeProvider.MAIN_CHAIN_ID);
+            return forRemoteNode("https://ropsten.infura.io/" + key.key, EthereumFacadeProvider.ROPSTEN_CHAIN_ID);
         }
     }
 
