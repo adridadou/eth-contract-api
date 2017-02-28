@@ -67,7 +67,8 @@ public class Web3JFacade {
 
     public BigInteger estimateGas(EthAccount account, EthAddress address, EthValue value, EthData data) {
         try {
-            return Numeric.decodeQuantity(handleError(web3j.ethEstimateGas(new Transaction(account.getAddress().withLeading0x(), null, null, null, address.withLeading0x(),value.inWei(),  data.toString())).send()));
+            return Numeric.decodeQuantity(handleError(web3j.ethEstimateGas(new Transaction(account.getAddress().withLeading0x(), null, null, null, 
+            		address.isEmpty() ? null : address.withLeading0x(), value.inWei(),  data.toString())).send()));
         } catch (IOException e) {
             throw new IOError(e);
         }
