@@ -1,6 +1,4 @@
-package org.adridadou.ethereum.ethj;
-
-import org.adridadou.ethereum.values.config.*;
+package org.adridadou.ethereum.values.config;
 
 import java.util.ArrayList;
 import java.util.List;
