@@ -66,4 +66,8 @@ public class SmartContractByteCode {
     public String toString() {
         return Hex.toHexString(code);
     }
+
+    public boolean isEmpty() {
+        return code.length == 0;
+    }
 }

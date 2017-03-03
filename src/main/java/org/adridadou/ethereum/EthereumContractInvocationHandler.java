@@ -1,6 +1,8 @@
 package org.adridadou.ethereum;
 
 import com.google.common.collect.Sets;
+import org.adridadou.ethereum.converters.future.*;
+import org.adridadou.ethereum.converters.future.CompletableFutureConverter;
 import org.adridadou.ethereum.converters.input.*;
 import org.adridadou.ethereum.converters.output.*;
 import org.adridadou.ethereum.values.*;
@@ -9,7 +11,6 @@ import org.ethereum.core.CallTransaction;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
     private final InputTypeHandler inputTypeHandler;
     private final OutputTypeHandler outputTypeHandler;
     private final Map<ProxyWrapper, SmartContractInfo> info = new HashMap<>();
+    private FutureConverter futureConverter = new CompletableFutureConverter();
 
 
     EthereumContractInvocationHandler(EthereumProxy ethereumProxy, InputTypeHandler inputTypeHandler, OutputTypeHandler outputTypeHandler) {
@@ -50,10 +52,10 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
             }
 
             return Void.TYPE;
-        } else if (method.getReturnType().equals(CompletableFuture.class)) {
-            return contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method));
-        } else if(method.getReturnType().equals(Payable.class)) {
-            return new Payable(contract, methodName, arguments, method, this);
+        } else if (futureConverter.isFutureType(method.getReturnType())) {
+            return futureConverter.convert(contract.callFunction(methodName, arguments).thenApply(result -> convertResult(result, method)));
+        } else if(futureConverter.isPayableType(method.getReturnType())) {
+            return futureConverter.getPayable(contract, methodName, arguments, method, this);
         }
         else {
             return convertResult(contract.callConstFunction(methodName, wei(0), arguments), method);
@@ -115,18 +117,22 @@ public class EthereumContractInvocationHandler implements InvocationHandler {
                         .findFirst()
                         .orElseThrow(() -> new EthereumApiException("No function " + func.name + " found with " + func.inputs.length + " parameters on contract " + contractInterface.getName()));
 
-                if(func.payable != method.getReturnType().equals(Payable.class)) {
+                if(func.payable != futureConverter.isPayableType(method.getReturnType())) {
                     throw new EthereumApiException("ABI definition of " + func.name + " for payable is " + func.payable + " but return type is " + method.getReturnType().getSimpleName() + ". Return type should be Payable if and only if the function is payable");
                 }
 
-                if(func.constant && method.getReturnType().equals(CompletableFuture.class)) {
+                if(func.constant && futureConverter.isFutureType(method.getReturnType())) {
                     throw new EthereumApiException( func.name + " is defined as constant but return type is CompletableFuture. This is only for non constant functions");
                 }
 
-                if(!func.constant && !(method.getReturnType().equals(CompletableFuture.class) || method.getReturnType().equals(Payable.class))) {
+                if(!func.constant && !(futureConverter.isFutureType(method.getReturnType()) || futureConverter.isPayableType(method.getReturnType()))) {
                     throw new EthereumApiException( func.name + " is not defined as constant but return type is " + method.getReturnType().getSimpleName()+ ". non constant function return type should be CompletableFuture<" + method.getReturnType().getSimpleName()+ "> instead.");
                 }
             });
         }
+    }
+
+    public void setFutureConverter(FutureConverter futureConverter) {
+        this.futureConverter = futureConverter;
     }
 }

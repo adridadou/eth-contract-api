@@ -1,4 +1,4 @@
-package org.adridadou.ethereum.ethj;
+package org.adridadou.ethereum.values.config;
 
 /**
  * Created by davidroon on 26.12.16.

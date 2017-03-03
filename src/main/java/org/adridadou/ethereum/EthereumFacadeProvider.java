@@ -3,7 +3,7 @@ package org.adridadou.ethereum;
 import com.typesafe.config.ConfigFactory;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
-import org.adridadou.ethereum.ethj.BlockchainConfig;
+import org.adridadou.ethereum.values.config.BlockchainConfig;
 import org.adridadou.ethereum.ethj.EthereumReal;
 import org.adridadou.ethereum.ethj.EthereumTest;
 import org.adridadou.ethereum.ethj.TestConfig;

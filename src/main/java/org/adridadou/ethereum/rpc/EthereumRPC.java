@@ -32,7 +32,7 @@ public class EthereumRPC implements EthereumBackend {
 
     @Override
     public boolean addressExists(EthAddress address) {
-        return false;
+        return web3JFacade.getTransactionCount(address).intValue() > 0 || web3JFacade.getBalance(address).getBalance().intValue() > 0 || !web3JFacade.getCode(address).isEmpty();
     }
 
     @Override
