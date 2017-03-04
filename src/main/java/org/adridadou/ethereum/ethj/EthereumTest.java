@@ -5,8 +5,6 @@ import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
-import org.ethereum.config.SystemProperties;
-import org.ethereum.config.blockchain.HomesteadConfig;
 import org.ethereum.core.Transaction;
 import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
@@ -27,13 +25,6 @@ public class EthereumTest implements EthereumBackend {
     private final LocalExecutionService localExecutionService;
 
     public EthereumTest(TestConfig testConfig) {
-        SystemProperties.getDefault().setBlockchainConfig(new HomesteadConfig(new HomesteadConfig.HomesteadConstants() {
-            @Override
-            public BigInteger getMINIMUM_DIFFICULTY() {
-                return BigInteger.ONE;
-            }
-        }));
-
         this.blockchain = new StandaloneBlockchain();
 
         blockchain
