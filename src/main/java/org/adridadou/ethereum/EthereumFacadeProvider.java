@@ -1,6 +1,12 @@
 package org.adridadou.ethereum;
 
 import com.typesafe.config.ConfigFactory;
+
+import rx.Observable;
+import rx.Subscription;
+import rx.functions.Action1;
+import rx.internal.operators.OnSubscribeSingle;
+
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeHandler;
 import org.adridadou.ethereum.values.config.BlockchainConfig;
@@ -8,6 +14,7 @@ import org.adridadou.ethereum.ethj.EthereumReal;
 import org.adridadou.ethereum.ethj.EthereumTest;
 import org.adridadou.ethereum.ethj.TestConfig;
 import org.adridadou.ethereum.event.EthereumEventHandler;
+import org.adridadou.ethereum.event.OnBlockParameters;
 import org.adridadou.ethereum.rpc.EthereumRPC;
 import org.adridadou.ethereum.rpc.EthereumRpcEventGenerator;
 import org.adridadou.ethereum.rpc.Web3JFacade;
@@ -48,7 +55,13 @@ public class EthereumFacadeProvider {
         EthereumRPC ethRpc = new EthereumRPC(web3j, new EthereumRpcEventGenerator(web3j));
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-        return new EthereumFacade(new EthereumProxy(ethRpc, new EthereumEventHandler(), inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();
+        
+         Observable.merge(web3j.observeBlocks(),ethereumListener.observeBlocks())
+        		 .take(1)
+        		 .subscribe(b-> ethereumListener.onReady());
+        
+        return new EthereumFacade(new EthereumProxy(ethRpc, ethereumListener, inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
     }
 
     public static InfuraBuilder forInfura(final InfuraKey key)  {
