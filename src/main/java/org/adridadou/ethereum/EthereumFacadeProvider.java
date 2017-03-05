@@ -48,7 +48,9 @@ public class EthereumFacadeProvider {
         EthereumRPC ethRpc = new EthereumRPC(web3j, new EthereumRpcEventGenerator(web3j));
         InputTypeHandler inputTypeHandler = new InputTypeHandler();
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
-        return new EthereumFacade(new EthereumProxy(ethRpc, new EthereumEventHandler(), inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
+        EthereumEventHandler ethereumListener = new EthereumEventHandler();        
+        web3j.observeBlocks().take(1).subscribe(b-> ethereumListener.onReady());
+        return new EthereumFacade(new EthereumProxy(ethRpc, ethereumListener, inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
     }
 
     public static InfuraBuilder forInfura(final InfuraKey key)  {
