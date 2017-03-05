@@ -57,9 +57,8 @@ public class EthereumFacadeProvider {
         OutputTypeHandler outputTypeHandler = new OutputTypeHandler();
         EthereumEventHandler ethereumListener = new EthereumEventHandler();
         
-         Observable.merge(web3j.observeBlocks(),ethereumListener.observeBlocks())
-        		 .take(1)
-        		 .subscribe(b-> ethereumListener.onReady());
+         web3j.observeBlocks().take(1)
+        	.subscribe(b-> ethereumListener.onReady());
         
         return new EthereumFacade(new EthereumProxy(ethRpc, ethereumListener, inputTypeHandler, outputTypeHandler), inputTypeHandler, outputTypeHandler, new SwarmService(SwarmService.PUBLIC_HOST),SolidityCompiler.getInstance());
     }
