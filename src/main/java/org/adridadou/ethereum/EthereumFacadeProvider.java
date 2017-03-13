@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
+
 /**
  * Created by davidroon on 27.04.16.
  * This code is released under Apache 2 license

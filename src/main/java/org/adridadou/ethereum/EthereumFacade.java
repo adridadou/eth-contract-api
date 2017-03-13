@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
+import org.adridadou.ethereum.converters.future.FutureConverter;
 import org.adridadou.ethereum.converters.input.InputTypeConverter;
 import org.adridadou.ethereum.converters.input.InputTypeHandler;
 import org.adridadou.ethereum.converters.output.OutputTypeConverter;
@@ -54,6 +55,11 @@ public class EthereumFacade {
 
     public EthereumFacade addOutputHandlers(final List<OutputTypeConverter> handlers) {
         outputTypeHandler.addConverters(handlers);
+        return this;
+    }
+
+    public EthereumFacade addFutureConverter(final FutureConverter futureConverter) {
+        handler.addFutureConverter(futureConverter);
         return this;
     }
 
