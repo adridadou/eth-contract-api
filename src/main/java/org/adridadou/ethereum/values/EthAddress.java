@@ -45,6 +45,9 @@ public class EthAddress {
     }
 
     public static EthAddress of(final String address) {
+    	if (address == null) {
+            return empty();
+    	}
         if (address != null && address.startsWith("0x")) {
             return of(Hex.decode(address.substring(2)));
         }
