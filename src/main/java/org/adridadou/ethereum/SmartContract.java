@@ -2,7 +2,6 @@ package org.adridadou.ethereum;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -55,7 +54,7 @@ public class SmartContract {
     }
 
     public CompletableFuture<Object[]> callFunction(EthValue value, String functionName, Object... args) {
-        return Optional.ofNullable(contract.getByName(functionName)).map((func) -> {
+        return Arrays.stream(contract.functions).filter(f-> f.name.equals(functionName) && f.inputs.length == args.length).findFirst().map((func) -> {
             EthData functionCallBytes = EthData.of(func.encode(args));
             return proxy.sendTx(value, functionCallBytes, account, address)
                     .thenApply(receipt -> contract.getByName(functionName).decodeResult(receipt.getResult().data));
