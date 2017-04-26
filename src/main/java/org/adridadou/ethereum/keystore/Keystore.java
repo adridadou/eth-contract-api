@@ -1,10 +1,10 @@
 package org.adridadou.ethereum.keystore;
 
 import org.adridadou.ethereum.EthereumFacade;
+import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
 import org.codehaus.jackson.annotate.JsonSetter;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.ethereum.crypto.ECKey;
 import org.spongycastle.crypto.generators.SCrypt;
 import org.spongycastle.jcajce.provider.digest.Keccak;
 import org.spongycastle.util.encoders.Hex;
@@ -29,7 +29,7 @@ public class Keystore {
     private Integer version;
     private String address;
 
-    public static ECKey fromKeystore(final File keystore, final String password) throws Exception {
+    public static EthAccount fromKeystore(final File keystore, final String password) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Keystore ksObj = mapper.readValue(keystore, Keystore.class);
         byte[] cipherKey;
@@ -46,7 +46,7 @@ public class Keystore {
 
         byte[] secret = decryptAes(Hex.decode(ksObj.getCrypto().getCipherparams().getIv()), cipherKey, Hex.decode(ksObj.getCrypto().getCiphertext()));
 
-        return ECKey.fromPrivate(secret);
+        return AccountProvider.fromPrivateKey(secret);
     }
 
     private static byte[] decryptAes(byte[] iv, byte[] keyBytes, byte[] cipherText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {

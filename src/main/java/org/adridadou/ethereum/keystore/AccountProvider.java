@@ -1,6 +1,5 @@
 package org.adridadou.ethereum.keystore;
 
-import com.google.common.collect.Lists;
 import org.adridadou.ethereum.EthereumFacade;
 import org.adridadou.ethereum.values.EthAccount;
 import org.adridadou.exception.EthereumApiException;
@@ -10,6 +9,8 @@ import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.WalletUtils;
 
 import java.io.File;
+import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,19 +26,19 @@ public class AccountProvider {
     private AccountProvider() {}
 
     public static EthAccount fromPrivateKey(final byte[] privateKey) {
-        return new EthAccount(ECKey.fromPrivate(privateKey));
+        return new EthAccount(new BigInteger(1, privateKey));
     }
 
     public static EthAccount fromPrivateKey(final String privateKey) {
-        return new EthAccount(ECKey.fromPrivate(Hex.decode(privateKey)));
+        return AccountProvider.fromPrivateKey(Hex.decode(privateKey));
     }
 
     public static EthAccount fromECKey(final ECKey ecKey) {
-        return new EthAccount(ecKey);
+        return new EthAccount(ecKey.getPrivKey());
     }
 
     public static EthAccount fromSeed(final String id) {
-        return new EthAccount(ECKey.fromPrivate(doSha3(id.getBytes(EthereumFacade.CHARSET))));
+        return AccountProvider.fromPrivateKey(doSha3(id.getBytes(EthereumFacade.CHARSET)));
     }
 
     public static SecureKey fromKeystore(final File file) {
@@ -54,7 +55,7 @@ public class AccountProvider {
 
     public static List<SecureKey> listKeystores(final File directory) {
         File[] files = Optional.ofNullable(directory.listFiles()).orElseThrow(() -> new EthereumApiException("cannot find the folder " + WalletUtils.getMainnetKeyDirectory()));
-        return Lists.newArrayList(files).stream()
+        return Arrays.stream(files)
                 .filter(File::isFile)
                 .map(AccountProvider::fromKeystore)
                 .collect(Collectors.toList());

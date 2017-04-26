@@ -1,7 +1,7 @@
 package org.adridadou.util;
 
 import org.adridadou.ethereum.keystore.Keystore;
-import org.ethereum.crypto.ECKey;
+import org.adridadou.ethereum.values.EthAccount;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,7 +17,7 @@ public class KeystoreTest {
 
     @Test
     public void test() throws Exception {
-        final ECKey ecKey = Keystore.fromKeystore(new File("src/test/resources/keystore.json"), "testpassword");
-        assertEquals(new BigInteger("55254095649631781209224057814590225966912998986153936485890744796566334537373"), ecKey.getPrivKey());
+        final EthAccount ecKey = Keystore.fromKeystore(new File("src/test/resources/keystore.json"), "testpassword");
+        assertEquals(new BigInteger("55254095649631781209224057814590225966912998986153936485890744796566334537373"), ecKey.getPrivateKey());
     }
 }

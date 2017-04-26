@@ -6,6 +6,7 @@ import org.adridadou.ethereum.values.EthData;
 import org.adridadou.ethereum.values.EthValue;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.*;
+import org.ethereum.crypto.ECKey;
 
 import java.math.BigInteger;
 
@@ -59,7 +60,11 @@ public class LocalExecutionService {
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasPrice, EthAddress address, EthValue value, EthData data) {
         Transaction tx = CallTransaction.createRawTransaction(nonce.longValue(), gasPrice.longValue(), GAS_LIMIT_FOR_LOCAL_EXECUTION, address.toString(), value.inWei().longValue(), data.data);
-        tx.sign(account.key);
+        tx.sign(getKey(account));
         return tx;
+    }
+
+    private ECKey getKey(EthAccount account) {
+        return ECKey.fromPrivate(account.getPrivateKey());
     }
 }

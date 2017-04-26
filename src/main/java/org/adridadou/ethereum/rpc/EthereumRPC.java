@@ -4,6 +4,7 @@ import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.ethereum.core.Transaction;
+import org.ethereum.crypto.ECKey;
 
 import java.math.BigInteger;
 
@@ -44,7 +45,7 @@ public class EthereumRPC implements EthereumBackend {
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, EthAddress address, EthValue value, EthData data) {
         Transaction tx = web3JFacade.createTransaction(nonce, gasPrice, gasLimit, address, value, data);
-        tx.sign(account.key);
+        tx.sign(getKey(account));
         return tx;
     }
 
@@ -76,5 +77,9 @@ public class EthereumRPC implements EthereumBackend {
     @Override
     public void register(EthereumEventHandler eventHandler) {
         ethereumRpcEventGenerator.addListener(eventHandler);
+    }
+
+    private ECKey getKey(EthAccount account) {
+        return ECKey.fromPrivate(account.getPrivateKey());
     }
 }

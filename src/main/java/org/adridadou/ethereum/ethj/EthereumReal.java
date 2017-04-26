@@ -4,6 +4,7 @@ import org.adridadou.ethereum.EthereumBackend;
 import org.adridadou.ethereum.event.EthereumEventHandler;
 import org.adridadou.ethereum.values.*;
 import org.ethereum.core.*;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.facade.Ethereum;
 
 import java.math.BigInteger;
@@ -41,10 +42,14 @@ public class EthereumReal implements EthereumBackend {
     @Override
     public EthHash submit(EthAccount account, EthAddress address, EthValue value, EthData data, BigInteger nonce, BigInteger gasLimit) {
         Transaction tx = ethereum.createTransaction(nonce, getGasPrice(), gasLimit, address.address, value.inWei(), data.data);
-        tx.sign(account.key);
+        tx.sign(getKey(account));
         ethereum.submitTransaction(tx);
 
         return EthHash.of(tx.getHash());
+    }
+
+    private ECKey getKey(EthAccount account) {
+        return ECKey.fromPrivate(account.getPrivateKey());
     }
 
     @Override

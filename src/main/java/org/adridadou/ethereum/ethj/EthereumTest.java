@@ -6,6 +6,7 @@ import org.adridadou.ethereum.keystore.AccountProvider;
 import org.adridadou.ethereum.values.*;
 import org.adridadou.exception.EthereumApiException;
 import org.ethereum.core.Transaction;
+import org.ethereum.crypto.ECKey;
 import org.ethereum.util.ByteUtil;
 import org.ethereum.util.blockchain.StandaloneBlockchain;
 
@@ -79,7 +80,7 @@ public class EthereumTest implements EthereumBackend {
 
     private Transaction createTransaction(EthAccount account, BigInteger nonce, BigInteger gasLimit, EthAddress address, EthValue value, EthData data) {
         Transaction transaction = new Transaction(ByteUtil.bigIntegerToBytes(nonce), ByteUtil.bigIntegerToBytes(BigInteger.ZERO), ByteUtil.bigIntegerToBytes(gasLimit), address.address, ByteUtil.bigIntegerToBytes(value.inWei()), data.data, null);
-        transaction.sign(account.key);
+        transaction.sign(getKey(account));
         return transaction;
     }
 
@@ -112,5 +113,8 @@ public class EthereumTest implements EthereumBackend {
     public void register(EthereumEventHandler eventHandler) {
         eventHandler.onReady();
         blockchain.addEthereumListener(new EthJEventListener(eventHandler));
+    }
+    private ECKey getKey(EthAccount account) {
+        return ECKey.fromPrivate(account.getPrivateKey());
     }
 }

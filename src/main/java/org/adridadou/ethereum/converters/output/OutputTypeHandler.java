@@ -1,16 +1,11 @@
 package org.adridadou.ethereum.converters.output;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import org.adridadou.exception.EthereumApiException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by davidroon on 17.11.16.
@@ -18,7 +13,7 @@ import java.util.Optional;
  */
 public class OutputTypeHandler {
 
-    public static final List<OutputTypeConverter> JAVA_OUTPUT_CONVERTERS = ImmutableList.<OutputTypeConverter>builder().add(
+    public static final List<OutputTypeConverter> JAVA_OUTPUT_CONVERTERS = Arrays.asList(
             new IntegerConverter(),
             new LongConverter(),
             new StringConverter(),
@@ -28,7 +23,7 @@ public class OutputTypeHandler {
             new EnumConverter(),
             new DateConverter(),
             new BigIntegerConverter()
-    ).build();
+    );
 
     private final List<OutputTypeConverter> outputConverters = new ArrayList<>();
 
@@ -43,7 +38,7 @@ public class OutputTypeHandler {
     }
 
     public void addConverters(final OutputTypeConverter... converters) {
-        addConverters(Lists.newArrayList(converters));
+        addConverters(Arrays.asList(converters));
     }
 
     public void addConverters(final Collection<OutputTypeConverter> converters) {

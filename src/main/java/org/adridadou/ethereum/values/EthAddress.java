@@ -2,7 +2,7 @@ package org.adridadou.ethereum.values;
 
 import java.util.Arrays;
 
-import com.google.common.base.Preconditions;
+import org.adridadou.exception.EthereumApiException;
 import org.ethereum.crypto.ECKey;
 import org.ethereum.util.ByteUtil;
 import org.spongycastle.util.encoders.Hex;
@@ -17,7 +17,9 @@ public class EthAddress {
 
 
     private EthAddress(byte[] address) {
-        Preconditions.checkArgument(address.length <= MAX_ADDRESS_SIZE, "byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
+        if(address.length > MAX_ADDRESS_SIZE){
+            throw new EthereumApiException("byte array of the address cannot be bigger than 32.value:" + Hex.toHexString(address));
+        }
         this.address = address;
     }
 
@@ -48,7 +50,7 @@ public class EthAddress {
     	if (address == null) {
             return empty();
     	}
-        if (address != null && address.startsWith("0x")) {
+        if (address.startsWith("0x")) {
             return of(Hex.decode(address.substring(2)));
         }
         return of(Hex.decode(address));

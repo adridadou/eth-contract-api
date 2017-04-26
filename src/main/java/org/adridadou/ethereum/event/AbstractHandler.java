@@ -1,10 +1,11 @@
 package org.adridadou.ethereum.event;
 
-import com.google.common.collect.Sets;
 import rx.Observable;
 import rx.Subscriber;
 
+
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -13,10 +14,10 @@ import java.util.stream.Collectors;
  */
 public class AbstractHandler<T> implements Observable.OnSubscribe<T> {
     public final Observable<T> observable;
-    private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
+    private final Set<Subscriber<? super T>> subscribers = ConcurrentHashMap.newKeySet();
 
     public AbstractHandler() {
-        observable = Observable.create(this);
+        observable = Observable.unsafeCreate(this);
     }
 
     public void newBlock(final T param) {

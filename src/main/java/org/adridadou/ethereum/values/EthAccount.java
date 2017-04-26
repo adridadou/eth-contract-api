@@ -1,49 +1,47 @@
 package org.adridadou.ethereum.values;
 
-
-import org.ethereum.crypto.ECKey;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
+
+import java.math.BigInteger;
 
 /**
  * Created by davidroon on 05.11.16.
  * This code is released under Apache 2 license
  */
 public class EthAccount {
-    public final ECKey key;
-    public final Credentials credentials;
+    private final BigInteger privateKey;
 
-    public EthAccount(ECKey key) {
-        this.key = key;
-        ECKeyPair keyPair = ECKeyPair.create(key.getPrivKey());
-        this.credentials = Credentials.create(keyPair);
+    public EthAccount(BigInteger privateKey) {
+        this.privateKey = privateKey;
     }
 
     public EthAddress getAddress() {
-        return EthAddress.of(key.getAddress());
+        Credentials credentials = Credentials.create(ECKeyPair.create(privateKey));
+        return EthAddress.of(credentials.getAddress());
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         EthAccount that = (EthAccount) o;
 
-        return key != null ? key.equals(that.key) : that.key == null;
+        return privateKey != null ? privateKey.equals(that.privateKey) : that.privateKey == null;
     }
 
     @Override
     public int hashCode() {
-        return key != null ? key.hashCode() : 0;
+        return privateKey != null ? privateKey.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "account address:" + getAddress().withLeading0x();
+    }
+
+    public BigInteger getPrivateKey() {
+        return privateKey;
     }
 }

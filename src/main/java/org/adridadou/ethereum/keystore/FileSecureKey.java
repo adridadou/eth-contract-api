@@ -1,7 +1,6 @@
 package org.adridadou.ethereum.keystore;
 
 import org.adridadou.ethereum.values.EthAccount;
-
 import java.io.File;
 
 /**
@@ -16,7 +15,7 @@ public class FileSecureKey implements SecureKey {
     }
 
     public EthAccount decode(final String password) throws Exception {
-        return new EthAccount(Keystore.fromKeystore(keyfile, password));
+        return Keystore.fromKeystore(keyfile, password);
     }
 
     public String getName() {
