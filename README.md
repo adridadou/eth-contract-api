@@ -1,3 +1,5 @@
+This repository has been archived, go to https://github.com/adridadou/eth-propeller-core for the version that is actively maintained
+
 # eth-contract-api
 [![CircleCI](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop.svg?style=svg)](https://circleci.com/gh/adridadou/eth-contract-api/tree/develop)
 [![Coverage Status](https://coveralls.io/repos/github/adridadou/eth-contract-api/badge.svg?branch=develop)](https://coveralls.io/github/adridadou/eth-contract-api?branch=develop)
